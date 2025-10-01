@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Multimedia Tutor</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg-primary: #f5f5f5;
+        --bg-secondary: white;
+        --bg-tertiary: #fafafa;
+        --text-primary: #333;
+        --text-secondary: #666;
+        --border-color: #e0e0e0;
+        --hover-bg: #f0f0f0;
+        --active-bg: #e3f2fd;
+      }
+
+      [data-theme="dark"] {
+        --bg-primary: #1a1a1a;
+        --bg-secondary: #2d2d2d;
+        --bg-tertiary: #242424;
+        --text-primary: #ffffff;
+        --text-secondary: #cccccc;
+        --border-color: #404040;
+        --hover-bg: #3a3a3a;
+        --active-bg: #1e3a5f;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: var(--bg-primary);
+        height: 100vh;
+        overflow: hidden;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+      }
+
+      .container {
+        display: flex;
+        height: 100vh;
+      }
+
+      /* Left Panel */
+      .left-panel {
+        width: 300px;
+        background: var(--bg-secondary);
+        border-right: 1px solid var(--border-color);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .tutor-section {
+        padding: 20px;
+        border-bottom: 1px solid var(--border-color);
+        position: relative;
+      }
+
+      .tutor-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .tutor-selector {
+        display: flex;
+        gap: 10px;
+      }
+
+      .tutor-option {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.3s;
+        background-size: cover;
+        background-position: center;
+      }
+
+      .tutor-option.active {
+        border-color: #4caf50;
+        box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+      }
+
+      .tutor-enola {
+        background-image: url("/static/enola.jpg");
+      }
+
+      .tutor-franklin {
+        background-image: url("/static/tutor.png");
+      }
+
+      .theme-toggle {
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 50%;
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        transition: all 0.3s;
+      }
+
+      .theme-toggle:hover {
+        background: var(--hover-bg);
+      }
+
+      .tutor-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-size: cover;
+        background-position: center;
+        margin-bottom: 10px;
+        background-image: url("/static/enola.jpg");
+      }
+
+      .tutor-name {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .user-section {
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 14px;
+        color: var(--text-secondary);
+      }
+
+      .chats-section {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+      }
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .section-title {
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      .add-btn {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #4caf50;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .chat-item,
+      .asset-item {
+        padding: 10px;
+        margin-bottom: 8px;
+        background: var(--bg-tertiary);
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s;
+      }
+
+      .chat-item:hover,
+      .asset-item:hover {
+        background: var(--hover-bg);
+      }
+
+      .chat-item.active {
+        background: var(--active-bg);
+      }
+
+      .item-actions {
+        display: flex;
+        gap: 5px;
+      }
+
+      .action-btn {
+        width: 20px;
+        height: 20px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      .assets-section {
+        padding: 20px;
+        border-top: 1px solid var(--border-color);
+      }
+
+      /* Middle Panel */
+      .middle-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-secondary);
+        position: relative;
+      }
+
+      .drop-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(76, 175, 80, 0.1);
+        border: 3px dashed #4caf50;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        font-size: 24px;
+        font-weight: bold;
+        color: #4caf50;
+      }
+
+      .drop-overlay.active {
+        display: flex;
+      }
+
+      .mode-selector {
+        display: flex;
+        padding: 20px;
+        border-bottom: 1px solid var(--border-color);
+        gap: 10px;
+      }
+
+      .mode-btn {
+        flex: 1;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s;
+      }
+
+      .mode-btn.explanation {
+        background: #ff9800;
+        color: white;
+      }
+
+      .mode-btn.explanation:not(.active) {
+        background: #ffe0b2;
+        color: #f57c00;
+      }
+
+      .mode-btn.testing {
+        background: #9c27b0;
+        color: white;
+      }
+
+      .mode-btn.testing:not(.active) {
+        background: #e1bee7;
+        color: #7b1fa2;
+      }
+
+      .chat-area {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: var(--bg-tertiary);
+      }
+
+      .message {
+        margin-bottom: 20px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .message.user {
+        flex-direction: row-reverse;
+      }
+
+      .message-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-size: cover;
+        background-position: center;
+        flex-shrink: 0;
+        background-image: url("/static/enola.jpg");
+      }
+
+      .message.user .message-avatar {
+        background: #ddd;
+      }
+
+      .message-content {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 18px;
+        background: var(--bg-secondary);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .message.user .message-content {
+        background: #2196f3;
+        color: white;
+      }
+
+      .message-attachments {
+        margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .attachment-preview {
+        padding: 6px 12px;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .input-section {
+        padding: 20px;
+        border-top: 1px solid var(--border-color);
+      }
+
+      .input-container {
+        display: flex;
+        align-items: center;
+        background: var(--bg-secondary);
+        border: 2px solid var(--border-color);
+        border-radius: 25px;
+        padding: 8px 16px;
+        gap: 10px;
+      }
+
+      .input-container.explanation {
+        border-color: #ff9800;
+      }
+
+      .input-container.testing {
+        border-color: #9c27b0;
+      }
+
+      .attach-btn {
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: var(--bg-tertiary);
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+      }
+
+      .attach-btn:hover {
+        background: var(--hover-bg);
+      }
+
+      .message-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        padding: 8px;
+        font-size: 16px;
+        background: transparent;
+        color: var(--text-primary);
+      }
+
+      .message-input::placeholder {
+        color: var(--text-secondary);
+      }
+
+      .send-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+      }
+
+      .send-btn.explanation {
+        background: #ff9800;
+      }
+
+      .send-btn.testing {
+        background: #9c27b0;
+      }
+
+      .attached-files {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+
+      .attached-file {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 8px;
+        background: var(--bg-tertiary);
+        border-radius: 12px;
+        font-size: 12px;
+      }
+
+      .remove-attachment {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      /* Right Panel */
+      .right-panel {
+        width: 300px;
+        background: var(--bg-secondary);
+        border-left: 1px solid var(--border-color);
+        padding: 20px;
+      }
+
+      .source-panel h3 {
+        margin-bottom: 15px;
+        color: var(--text-primary);
+      }
+
+      .source-item {
+        padding: 12px;
+        margin-bottom: 10px;
+        background: var(--bg-tertiary);
+        border-radius: 8px;
+        border-left: 4px solid #2196f3;
+      }
+
+      .source-title {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .source-excerpt {
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.4;
+      }
+
+      /* Hidden file input */
+      .hidden-input {
+        display: none;
+      }
+
+      /* Modal styles */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+      }
+
+      .modal-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--bg-secondary);
+        padding: 20px;
+        border-radius: 10px;
+        min-width: 300px;
+      }
+
+      .modal input {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+      }
+
+      .modal-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 15px;
+      }
+
+      .modal-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .modal-btn.primary {
+        background: #2196f3;
+        color: white;
+      }
+
+      .modal-btn.secondary {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Left Panel -->
+      <div class="left-panel">
+        <div class="tutor-section">
+          <div class="tutor-controls">
+            <div class="tutor-selector">
+              <div
+                class="tutor-option tutor-enola active"
+                onclick="selectTutor('enola')"
+                title="Enola"
+              ></div>
+              <div
+                class="tutor-option tutor-franklin"
+                onclick="selectTutor('franklin')"
+                title="Franklin"
+              ></div>
+            </div>
+            <button
+              class="theme-toggle"
+              onclick="toggleTheme()"
+              id="themeToggle"
+            >
+              🌙
+            </button>
+          </div>
+          <div class="tutor-avatar" id="tutorAvatar"></div>
+          <div class="tutor-name" id="tutorName">Enola</div>
+          <div style="font-size: 12px; color: var(--text-secondary)">
+            Ready to help you learn
+          </div>
+        </div>
+
+        <div class="user-section">👤 Guest User</div>
+
+        <div class="chats-section">
+          <div class="section-header">
+            <div class="section-title">Chats</div>
+            <button class="add-btn" onclick="addNewChat()">+</button>
+          </div>
+          <div id="chatList">
+            <div class="chat-item active" data-chat-id="1">
+              <span>New Chat</span>
+              <div class="item-actions">
+                <button class="action-btn" onclick="renameChat(1)">✏️</button>
+                <button class="action-btn" onclick="deleteChat(1)">🗑️</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="assets-section">
+          <div class="section-header">
+            <div class="section-title">Assets</div>
+            <button class="add-btn" onclick="addAsset()">+</button>
+          </div>
+          <div id="assetList">
+            <div
+              style="
+                color: var(--text-secondary);
+                font-size: 14px;
+                text-align: center;
+                padding: 20px;
+              "
+            >
+              No assets uploaded
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Middle Panel -->
+      <div class="middle-panel" id="middlePanel">
+        <div class="drop-overlay" id="dropOverlay">
+          📎 Drop files here to attach to message
+        </div>
+
+        <div class="mode-selector">
+          <button
+            class="mode-btn explanation active"
+            onclick="setMode('explanation')"
+          >
+            🧠 Explanation Mode
+          </button>
+          <button class="mode-btn testing" onclick="setMode('testing')">
+            📝 Testing Mode
+          </button>
+        </div>
+
+        <div class="chat-area" id="chatArea">
+          <div class="message">
+            <div class="message-avatar" id="initialAvatar"></div>
+            <div class="message-content">
+              Hello! I'm your AI tutor. Upload some files and I'll help you
+              learn from them. Use <strong>Explanation Mode</strong> to ask
+              questions and get detailed answers, or switch to
+              <strong>Testing Mode</strong> to practice with quizzes.
+              <br /><br />
+              You can drag and drop files directly into the chat to attach them
+              to your messages!
+            </div>
+          </div>
+        </div>
+
+        <div class="input-section">
+          <div class="attached-files" id="attachedFiles"></div>
+          <div class="input-container explanation" id="inputContainer">
+            <button class="attach-btn" onclick="attachFile()">📎</button>
+            <input
+              type="text"
+              class="message-input"
+              id="messageInput"
+              placeholder="Ask me anything about your uploaded content..."
+              onkeypress="handleKeyPress(event)"
+            />
+            <button
+              class="send-btn explanation"
+              id="sendBtn"
+              onclick="sendMessage()"
+            >
+              ➤
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel -->
+      <div class="right-panel">
+        <div class="source-panel">
+          <h3>📚 Sources</h3>
+          <div id="sourceList">
+            <div
+              style="
+                color: var(--text-secondary);
+                font-size: 14px;
+                text-align: center;
+                padding: 20px;
+              "
+            >
+              Sources will appear here when you ask questions
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden file inputs -->
+    <input
+      type="file"
+      id="fileInput"
+      class="hidden-input"
+      multiple
+      accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,.gif,.bmp,.mp3,.wav,.m4a,.ogg,.mp4,.avi,.mov,.mkv,.webm"
+      onchange="handleFileUpload(event, 'asset')"
+    />
+
+    <input
+      type="file"
+      id="attachInput"
+      class="hidden-input"
+      multiple
+      accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,.gif,.bmp,.mp3,.wav,.m4a,.ogg,.mp4,.avi,.mov,.mkv,.webm"
+      onchange="handleFileUpload(event, 'attach')"
+    />
+
+    <!-- Modals -->
+    <div id="renameModal" class="modal">
+      <div class="modal-content">
+        <h3>Rename Chat</h3>
+        <input type="text" id="renameInput" placeholder="Enter new name" />
+        <div class="modal-buttons">
+          <button
+            class="modal-btn secondary"
+            onclick="closeModal('renameModal')"
+          >
+            Cancel
+          </button>
+          <button class="modal-btn primary" onclick="confirmRename()">
+            Rename
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentMode = "explanation";
+      let currentTutor = "enola";
+      let currentChatId = 1;
+      let chatCounter = 1;
+      let assetCounter = 0;
+      let attachedFiles = [];
+
+      // Theme management
+      function toggleTheme() {
+        const body = document.body;
+        const themeToggle = document.getElementById("themeToggle");
+
+        if (body.getAttribute("data-theme") === "dark") {
+          body.removeAttribute("data-theme");
+          themeToggle.textContent = "🌙";
+          localStorage.setItem("theme", "light");
+        } else {
+          body.setAttribute("data-theme", "dark");
+          themeToggle.textContent = "☀️";
+          localStorage.setItem("theme", "dark");
+        }
+      }
+
+      // Load saved theme
+      function loadTheme() {
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "dark") {
+          document.body.setAttribute("data-theme", "dark");
+          document.getElementById("themeToggle").textContent = "☀️";
+        }
+      }
+
+      // Tutor selection
+      function selectTutor(tutor) {
+        currentTutor = tutor;
+
+        // Update active tutor option
+        document.querySelectorAll(".tutor-option").forEach((option) => {
+          option.classList.remove("active");
+        });
+        document.querySelector(`.tutor-${tutor}`).classList.add("active");
+
+        // Update tutor avatar and name
+        const tutorAvatar = document.getElementById("tutorAvatar");
+        const tutorName = document.getElementById("tutorName");
+        const initialAvatar = document.getElementById("initialAvatar");
+
+        if (tutor === "enola") {
+          tutorAvatar.style.backgroundImage = "url('/static/enola.jpg')";
+          initialAvatar.style.backgroundImage = "url('/static/enola.jpg')";
+          tutorName.textContent = "Enola";
+        } else {
+          tutorAvatar.style.backgroundImage = "url('/static/tutor.png')";
+          initialAvatar.style.backgroundImage = "url('/static/tutor.png')";
+          tutorName.textContent = "Franklin";
+        }
+
+        // Update all bot message avatars
+        document
+          .querySelectorAll(".message:not(.user) .message-avatar")
+          .forEach((avatar) => {
+            if (tutor === "enola") {
+              avatar.style.backgroundImage = "url('/static/enola.jpg')";
+            } else {
+              avatar.style.backgroundImage = "url('/static/tutor.png')";
+            }
+          });
+      }
+
+      // Drag and drop functionality
+      function setupDragAndDrop() {
+        const middlePanel = document.getElementById("middlePanel");
+        const dropOverlay = document.getElementById("dropOverlay");
+
+        middlePanel.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          dropOverlay.classList.add("active");
+        });
+
+        middlePanel.addEventListener("dragleave", (e) => {
+          if (!middlePanel.contains(e.relatedTarget)) {
+            dropOverlay.classList.remove("active");
+          }
+        });
+
+        middlePanel.addEventListener("drop", (e) => {
+          e.preventDefault();
+          dropOverlay.classList.remove("active");
+
+          const files = Array.from(e.dataTransfer.files);
+          files.forEach((file) => {
+            attachFileToMessage(file);
+          });
+        });
+      }
+
+      function attachFileToMessage(file) {
+        attachedFiles.push(file);
+        updateAttachedFilesDisplay();
+      }
+
+      function updateAttachedFilesDisplay() {
+        const container = document.getElementById("attachedFiles");
+        container.innerHTML = "";
+
+        attachedFiles.forEach((file, index) => {
+          const fileDiv = document.createElement("div");
+          fileDiv.className = "attached-file";
+          fileDiv.innerHTML = `
+                    <span>📄 ${file.name}</span>
+                    <button class="remove-attachment" onclick="removeAttachment(${index})">×</button>
+                `;
+          container.appendChild(fileDiv);
+        });
+      }
+
+      function removeAttachment(index) {
+        attachedFiles.splice(index, 1);
+        updateAttachedFilesDisplay();
+      }
+
+      // Mode switching
+      function setMode(mode) {
+        currentMode = mode;
+
+        // Update mode buttons
+        document.querySelectorAll(".mode-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        document.querySelector(`.mode-btn.${mode}`).classList.add("active");
+
+        // Update input container styling
+        const inputContainer = document.getElementById("inputContainer");
+        const sendBtn = document.getElementById("sendBtn");
+
+        inputContainer.className = `input-container ${mode}`;
+        sendBtn.className = `send-btn ${mode}`;
+
+        // Update placeholder
+        const input = document.getElementById("messageInput");
+        if (mode === "explanation") {
+          input.placeholder = "Ask me anything about your uploaded content...";
+        } else {
+          input.placeholder = "Request a quiz or test your knowledge...";
+        }
+      }
+
+      // Chat management
+      function addNewChat() {
+        chatCounter++;
+        const chatList = document.getElementById("chatList");
+
+        // Remove active class from all chats
+        document.querySelectorAll(".chat-item").forEach((item) => {
+          item.classList.remove("active");
+        });
+
+        const newChat = document.createElement("div");
+        newChat.className = "chat-item active";
+        newChat.setAttribute("data-chat-id", chatCounter);
+        newChat.innerHTML = `
+                <span>New Chat ${chatCounter}</span>
+                <div class="item-actions">
+                    <button class="action-btn" onclick="renameChat(${chatCounter})">✏️</button>
+                    <button class="action-btn" onclick="deleteChat(${chatCounter})">🗑️</button>
+                </div>
+            `;
+
+        chatList.appendChild(newChat);
+        currentChatId = chatCounter;
+
+        // Clear chat area
+        const avatarUrl =
+          currentTutor === "enola" ? "/static/enola.jpg" : "/static/tutor.png";
+        const tutorName = currentTutor === "enola" ? "Enola" : "Franklin";
+
+        document.getElementById("chatArea").innerHTML = `
+                <div class="message">
+                    <div class="message-avatar" style="background-image: url('${avatarUrl}')"></div>
+                    <div class="message-content">
+                        New chat started! I'm ${tutorName}, how can I help you today?
+                    </div>
+                </div>
+            `;
+      }
+
+      function renameChat(chatId) {
+        const modal = document.getElementById("renameModal");
+        const input = document.getElementById("renameInput");
+        const chatItem = document.querySelector(
+          `[data-chat-id="${chatId}"] span`
+        );
+
+        input.value = chatItem.textContent;
+        modal.style.display = "block";
+        modal.setAttribute("data-chat-id", chatId);
+      }
+
+      function confirmRename() {
+        const modal = document.getElementById("renameModal");
+        const chatId = modal.getAttribute("data-chat-id");
+        const newName = document.getElementById("renameInput").value;
+
+        if (newName.trim()) {
+          const chatItem = document.querySelector(
+            `[data-chat-id="${chatId}"] span`
+          );
+          chatItem.textContent = newName;
+        }
+
+        closeModal("renameModal");
+      }
+
+      function deleteChat(chatId) {
+        if (confirm("Are you sure you want to delete this chat?")) {
+          const chatItem = document.querySelector(`[data-chat-id="${chatId}"]`);
+          chatItem.remove();
+
+          // If this was the active chat, switch to another one
+          if (currentChatId == chatId) {
+            const remainingChats = document.querySelectorAll(".chat-item");
+            if (remainingChats.length > 0) {
+              remainingChats[0].classList.add("active");
+              currentChatId = remainingChats[0].getAttribute("data-chat-id");
+            }
+          }
+        }
+      }
+
+      // Asset management
+      function addAsset() {
+        document.getElementById("fileInput").click();
+      }
+
+      function attachFile() {
+        document.getElementById("attachInput").click();
+      }
+
+      async function handleFileUpload(event, type) {
+        const files = event.target.files;
+
+        if (type === "attach") {
+          // Add to message attachments
+          Array.from(files).forEach((file) => {
+            attachFileToMessage(file);
+          });
+        } else {
+          // Add to assets
+          await addFilesToAssets(files);
+        }
+
+        // Clear input
+        event.target.value = "";
+      }
+
+      async function addFilesToAssets(files) {
+        const assetList = document.getElementById("assetList");
+
+        // Clear "no assets" message
+        if (assetCounter === 0) {
+          assetList.innerHTML = "";
+        }
+
+        for (let file of files) {
+          assetCounter++;
+
+          // Get file icon based on type
+          const fileIcon = getFileIcon(file.name);
+
+          // Add to UI
+          const assetItem = document.createElement("div");
+          assetItem.className = "asset-item";
+          assetItem.setAttribute("data-asset-id", assetCounter);
+          assetItem.innerHTML = `
+                    <span>${fileIcon} ${file.name}</span>
+                    <div class="item-actions">
+                        <button class="action-btn" onclick="renameAsset(${assetCounter})">✏️</button>
+                        <button class="action-btn" onclick="deleteAsset(${assetCounter})">🗑️</button>
+                    </div>
+                `;
+          assetList.appendChild(assetItem);
+
+          // Upload file
+          await uploadFile(file);
+        }
+      }
+
+      function getFileIcon(filename) {
+        const extension = filename.split(".").pop().toLowerCase();
+
+        if (["jpg", "jpeg", "png", "gif", "bmp"].includes(extension)) {
+          return "🖼️";
+        } else if (["mp3", "wav", "m4a", "ogg"].includes(extension)) {
+          return "🎵";
+        } else if (["mp4", "avi", "mov", "mkv", "webm"].includes(extension)) {
+          return "🎬";
+        } else if (["pdf"].includes(extension)) {
+          return "📕";
+        } else if (["docx", "doc"].includes(extension)) {
+          return "📘";
+        } else if (["txt"].includes(extension)) {
+          return "📄";
+        } else {
+          return "📎";
+        }
+      }
+
+      async function uploadFile(file) {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+          const response = await fetch("/documents/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (response.ok) {
+            console.log("File uploaded successfully:", file.name);
+          } else {
+            console.error("Upload failed for:", file.name);
+          }
+        } catch (error) {
+          console.error("Upload error:", error);
+        }
+      }
+
+      function deleteAsset(assetId) {
+        if (confirm("Are you sure you want to delete this asset?")) {
+          const assetItem = document.querySelector(
+            `[data-asset-id="${assetId}"]`
+          );
+          assetItem.remove();
+
+          // Check if no assets left
+          const remainingAssets = document.querySelectorAll(".asset-item");
+          if (remainingAssets.length === 0) {
+            document.getElementById("assetList").innerHTML = `
+                        <div style="color: var(--text-secondary); font-size: 14px; text-align: center; padding: 20px;">
+                            No assets uploaded
+                        </div>
+                    `;
+            assetCounter = 0;
+          }
+        }
+      }
+
+      // Chat functionality
+      function handleKeyPress(event) {
+        if (event.key === "Enter") {
+          sendMessage();
+        }
+      }
+
+      async function sendMessage() {
+        const input = document.getElementById("messageInput");
+        const message = input.value.trim();
+
+        if (!message && attachedFiles.length === 0) return;
+
+        // Upload attached files to assets first
+        if (attachedFiles.length > 0) {
+          await addFilesToAssets(attachedFiles);
+        }
+
+        // Create message content
+        let messageContent = message;
+        let attachmentHtml = "";
+
+        if (attachedFiles.length > 0) {
+          attachmentHtml = '<div class="message-attachments">';
+          attachedFiles.forEach((file) => {
+            const fileIcon = getFileIcon(file.name);
+            attachmentHtml += `<div class="attachment-preview">${fileIcon} ${file.name}</div>`;
+          });
+          attachmentHtml += "</div>";
+        }
+
+        // Add user message
+        addMessage(messageContent + attachmentHtml, "user");
+        input.value = "";
+
+        // Clear attachments
+        attachedFiles = [];
+        updateAttachedFilesDisplay();
+
+        try {
+          const response = await fetch("/simple-chat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              message: message,
+              mode: currentMode,
+              tutor: currentTutor,
+            }),
+          });
+
+          const data = await response.json();
+          addMessage(data.response, "bot");
+
+          // Add source if available
+          if (data.sources) {
+            updateSources(data.sources);
+          }
+        } catch (error) {
+          addMessage("Sorry, I encountered an error. Please try again.", "bot");
+        }
+      }
+
+      function addMessage(text, sender) {
+        const chatArea = document.getElementById("chatArea");
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${sender}`;
+
+        const avatarUrl =
+          sender === "user"
+            ? ""
+            : currentTutor === "enola"
+            ? "/static/enola.jpg"
+            : "/static/tutor.png";
+
+        messageDiv.innerHTML = `
+                <div class="message-avatar" style="background-image: url('${avatarUrl}')"></div>
+                <div class="message-content">${text}</div>
+            `;
+
+        chatArea.appendChild(messageDiv);
+        chatArea.scrollTop = chatArea.scrollHeight;
+      }
+
+      function updateSources(sources) {
+        const sourceList = document.getElementById("sourceList");
+        sourceList.innerHTML = "";
+
+        sources.forEach((source) => {
+          const sourceItem = document.createElement("div");
+          sourceItem.className = "source-item";
+          sourceItem.innerHTML = `
+                    <div class="source-title">${source.title}</div>
+                    <div class="source-excerpt">${source.excerpt}</div>
+                `;
+          sourceList.appendChild(sourceItem);
+        });
+      }
+
+      // Utility functions
+      function closeModal(modalId) {
+        document.getElementById(modalId).style.display = "none";
+      }
+
+      // Close modals when clicking outside
+      window.onclick = function (event) {
+        if (event.target.classList.contains("modal")) {
+          event.target.style.display = "none";
+        }
+      };
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", function () {
+        loadTheme();
+        setupDragAndDrop();
+        selectTutor("enola"); // Set default tutor
+      });
+    </script>
+  </body>
+</html>

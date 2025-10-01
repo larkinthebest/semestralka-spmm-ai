@@ -1,0 +1,342 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #ff9800, #ab47bc);
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    background: rgba(255,255,255,0.95);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #ff9800;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    background: #ff9800;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    background: #e68900;
+    transform: translateY(-2px);
+}
+
+.btn.secondary {
+    background: #ab47bc;
+}
+
+.btn.secondary:hover {
+    background: #9c27b0;
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.panel {
+    background: rgba(255,255,255,0.95);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.panel h2 {
+    color: #ff9800;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.upload-area {
+    border: 2px dashed #ff9800;
+    border-radius: 10px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.upload-area:hover {
+    background: rgba(255, 152, 0, 0.1);
+    border-color: #e68900;
+}
+
+.upload-area.dragover {
+    background: rgba(255, 152, 0, 0.2);
+    border-color: #e68900;
+}
+
+.upload-info {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 10px;
+}
+
+.file-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.file-btn {
+    padding: 5px 10px;
+    font-size: 0.8em;
+}
+
+.chat-container {
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: #f9f9f9;
+}
+
+.message {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 80%;
+}
+
+.message.user {
+    background: #ff9800;
+    color: white;
+    margin-left: auto;
+    text-align: right;
+}
+
+.message.ai {
+    background: #ab47bc;
+    color: white;
+}
+
+.chat-input {
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    outline: none;
+}
+
+.chat-input input:focus {
+    border-color: #ff9800;
+}
+
+.quiz-section {
+    grid-column: 1 / -1;
+    background: rgba(255,255,255,0.95);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    margin-top: 20px;
+}
+
+.quiz-controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.quiz-select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.quiz-question {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border-left: 4px solid #ff9800;
+}
+
+.quiz-options {
+    margin-top: 15px;
+}
+
+.quiz-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background 0.2s;
+}
+
+.quiz-option:hover {
+    background: rgba(255, 152, 0, 0.1);
+}
+
+.quiz-option input {
+    margin: 0;
+}
+
+.quiz-answer-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.quiz-results {
+    text-align: center;
+    padding: 30px;
+    border-radius: 15px;
+    margin: 20px 0;
+}
+
+.quiz-results.success {
+    background: #e8f5e8;
+}
+
+.quiz-results.fail {
+    background: #ffebee;
+}
+
+.quiz-score {
+    font-size: 2em;
+    margin: 20px 0;
+}
+
+.quiz-btn {
+    margin-top: 20px;
+}
+
+.quiz-question.correct {
+    border-left-color: #4caf50;
+}
+
+.quiz-question.incorrect {
+    border-left-color: #f44336;
+}
+
+.auth-form {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.auth-btn {
+    width: 100%;
+    margin-top: 15px;
+}
+
+.auth-link {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.auth-link a {
+    color: #ff9800;
+}
+
+.hidden {
+    display: none;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+.error {
+    background: #ffebee;
+    color: #c62828;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+.success {
+    background: #e8f5e8;
+    color: #2e7d32;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .nav-buttons {
+        width: 100%;
+        justify-content: center;
+    }
+}
