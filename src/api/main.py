@@ -92,11 +92,22 @@ async def upload_document(
     db: Session = Depends(get_db)
 ):
     # Accept various file types
-    allowed_extensions = ['.pdf', '.docx', '.txt', '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.mp3', '.wav', '.m4a', '.ogg', '.mp4', '.avi', '.mov', '.mkv', '.webm']
+    allowed_extensions = ['.pdf', '.docx', '.txt', '.md', '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.mp3', '.wav', '.m4a', '.ogg', '.mp4', '.avi', '.mov', '.mkv', '.webm']
     file_extension = Path(file.filename).suffix.lower()
     
     if file_extension not in allowed_extensions:
         raise HTTPException(status_code=400, detail=f"File type {file_extension} not supported")
+    
+    # Check if file already exists to avoid duplicates
+    existing_doc = db.query(Document).filter(Document.filename == file.filename, Document.user_id == 1).first()
+    if existing_doc:
+        return {
+            "id": existing_doc.id, 
+            "filename": existing_doc.filename, 
+            "file_type": "existing",
+            "description": "File already exists",
+            "message": "File already uploaded"
+        }
     
     # Save file with absolute path
     file_path = BASE_DIR / "uploads" / file.filename
@@ -169,46 +180,68 @@ async def simple_chat(request: dict, db: Session = Depends(get_db)):
     message = request.get("message", "")
     mode = request.get("mode", "explanation")
     tutor = request.get("tutor", "enola")
+    chat_id = request.get("chat_id", 1)
+    attached_files = request.get("attached_files", [])
     
     if not message:
         raise HTTPException(status_code=400, detail="Message is required")
     
-    # Get all uploaded documents for context
-    documents = db.query(Document).filter(Document.user_id == 1).all()
-    file_context = ""
+    # Get only files mentioned in this conversation or attached
+    relevant_files = []
     sources = []
     
-    if documents:
-        file_context = "\n\nAvailable files and their content:\n"
-        for doc in documents:
-            file_info = multimedia_processor.process_file(doc.file_path)
-            summary = multimedia_processor.get_content_summary(file_info)
-            file_context += f"\n{summary}\n"
-            
-            # Add to sources for response
-            sources.append({
-                "title": doc.filename,
-                "excerpt": file_info.get('description', 'No description available')
-            })
+    if attached_files:
+        for filename in attached_files:
+            doc = db.query(Document).filter(Document.filename == filename, Document.user_id == 1).first()
+            if doc:
+                relevant_files.append(doc)
     
-    # Customize prompt based on tutor and mode
-    if tutor == "enola":
-        tutor_context = "You are Enola, a friendly and enthusiastic tutor. Never refer to yourself as an AI - you are simply Enola. Be conversational and engaging. "
-    else:
-        tutor_context = "You are Franklin, a wise and methodical tutor. Never refer to yourself as an AI - you are simply Franklin. Be structured and thorough in your explanations. "
+    # Build context only from relevant files
+    file_context = ""
+    if relevant_files:
+        file_context = "\n\nRelevant files for this conversation:\n"
+        for doc in relevant_files:
+            try:
+                file_info = multimedia_processor.process_file(doc.file_path)
+                summary = multimedia_processor.get_content_summary(file_info)
+                file_context += f"\n{summary}\n"
+                
+                # Add to sources for response
+                sources.append({
+                    "title": doc.filename,
+                    "excerpt": file_info.get('description', 'No description available')
+                })
+            except Exception as e:
+                print(f"Error processing file {doc.filename}: {e}")
     
-    if mode == "testing":
-        tutor_context += "Focus on creating quizzes, tests, and practice questions based on the uploaded materials. "
-    else:
-        tutor_context += "Focus on explaining concepts clearly and providing detailed answers based on the uploaded materials. "
+    # Specialized tutor prompts based on mode
+    if tutor == "enola" and mode == "explanation":
+        tutor_context = "You are Enola, a friendly and enthusiastic tutor who specializes in explaining concepts. Format your responses with clear structure using markdown-like formatting. Use bullet points, numbered lists, and emphasis to make content easy to understand. Be encouraging and conversational. "
+    elif tutor == "franklin" and mode == "testing":
+        tutor_context = "You are Franklin, a wise and methodical tutor who specializes in testing knowledge. Create quizzes, ask probing questions, and provide structured assessments. Format your responses clearly with numbered questions and organized content. Be thorough and systematic. "
+    elif tutor == "enola" and mode == "testing":
+        tutor_context = "You are Enola, but the student wants testing. Suggest they switch to Franklin for better testing experience, but still help with basic questions if needed. "
+    else:  # franklin + explanation
+        tutor_context = "You are Franklin, but the student wants explanations. Suggest they switch to Enola for better explanatory experience, but still provide structured explanations if needed. "
     
     # Generate response using LLM service
     full_message = tutor_context + file_context + "\n\nStudent question: " + message
     response = await llm_service.generate_response(full_message)
     
+    # Generate chat title suggestion if this looks like a new topic
+    chat_title = None
+    if len(message.split()) > 2 and any(word in message.lower() for word in ['about', 'explain', 'what', 'how', 'tell']):
+        if attached_files:
+            chat_title = f"Discussion: {attached_files[0]}"
+        else:
+            # Extract key topic from message
+            words = message.split()[:4]
+            chat_title = f"Chat: {' '.join(words)}..."
+    
     return {
         "response": response,
-        "sources": sources if sources else None
+        "sources": sources if sources else None,
+        "suggested_title": chat_title
     }
 
 # Chat endpoints

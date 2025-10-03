@@ -689,7 +689,7 @@
       id="fileInput"
       class="hidden-input"
       multiple
-      accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,.gif,.bmp,.mp3,.wav,.m4a,.ogg,.mp4,.avi,.mov,.mkv,.webm"
+      accept=".pdf,.docx,.txt,.md,.jpg,.jpeg,.png,.gif,.bmp,.mp3,.wav,.m4a,.ogg,.mp4,.avi,.mov,.mkv,.webm"
       onchange="handleFileUpload(event, 'asset')"
     />
 
@@ -698,7 +698,7 @@
       id="attachInput"
       class="hidden-input"
       multiple
-      accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,.gif,.bmp,.mp3,.wav,.m4a,.ogg,.mp4,.avi,.mov,.mkv,.webm"
+      accept=".pdf,.docx,.txt,.md,.jpg,.jpeg,.png,.gif,.bmp,.mp3,.wav,.m4a,.ogg,.mp4,.avi,.mov,.mkv,.webm"
       onchange="handleFileUpload(event, 'attach')"
     />
 
@@ -728,6 +728,8 @@
       let chatCounter = 1;
       let assetCounter = 0;
       let attachedFiles = [];
+      let chatModeHistory = {};
+      let currentChatFiles = [];
 
       // Theme management
       function toggleTheme() {
@@ -843,30 +845,77 @@
         updateAttachedFilesDisplay();
       }
 
-      // Mode switching
+      // Mode switching with dual conversations
       function setMode(mode) {
         currentMode = mode;
 
-        // Update mode buttons
         document.querySelectorAll(".mode-btn").forEach((btn) => {
           btn.classList.remove("active");
         });
         document.querySelector(`.mode-btn.${mode}`).classList.add("active");
 
-        // Update input container styling
         const inputContainer = document.getElementById("inputContainer");
         const sendBtn = document.getElementById("sendBtn");
 
         inputContainer.className = `input-container ${mode}`;
         sendBtn.className = `send-btn ${mode}`;
 
-        // Update placeholder
         const input = document.getElementById("messageInput");
         if (mode === "explanation") {
           input.placeholder = "Ask me anything about your uploaded content...";
+          if (currentTutor !== "enola") {
+            showTutorSuggestion("💡 Enola specializes in explanations!");
+          }
         } else {
           input.placeholder = "Request a quiz or test your knowledge...";
+          if (currentTutor !== "franklin") {
+            showTutorSuggestion("💡 Franklin specializes in testing!");
+          }
         }
+
+        loadModeHistory();
+      }
+      
+      function loadModeHistory() {
+        const chatKey = `${currentChatId}_${currentMode}`;
+        const chatArea = document.getElementById("chatArea");
+        
+        if (chatModeHistory[chatKey] && chatModeHistory[chatKey].length > 0) {
+          chatArea.innerHTML = '';
+          chatModeHistory[chatKey].forEach(msg => {
+            addMessage(msg.content, msg.type);
+          });
+        } else {
+          const avatarUrl = currentTutor === "enola" ? "/static/enola.jpg" : "/static/tutor.png";
+          const tutorName = currentTutor === "enola" ? "Enola" : "Franklin";
+          
+          let welcomeMsg;
+          if (currentMode === "explanation") {
+            welcomeMsg = `Hello! I'm ${tutorName}. I specialize in explaining concepts clearly. Upload files and ask me questions!`;
+          } else {
+            welcomeMsg = `Hello! I'm ${tutorName}. I specialize in testing knowledge with quizzes. Upload study materials and I'll help you practice!`;
+          }
+          
+          chatArea.innerHTML = `
+            <div class="message">
+              <div class="message-avatar" style="background-image: url('${avatarUrl}')"></div>
+              <div class="message-content">${welcomeMsg}</div>
+            </div>
+          `;
+        }
+      }
+      
+      function showTutorSuggestion(message) {
+        const suggestion = document.createElement('div');
+        suggestion.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #ff9800; color: white; padding: 10px; border-radius: 5px; z-index: 1000; font-size: 14px;';
+        suggestion.textContent = message;
+        document.body.appendChild(suggestion);
+        
+        setTimeout(() => {
+          if (document.body.contains(suggestion)) {
+            document.body.removeChild(suggestion);
+          }
+        }, 3000);
       }
 
       // Chat management
@@ -1085,6 +1134,11 @@
         // Upload attached files to assets first
         if (attachedFiles.length > 0) {
           await addFilesToAssets(attachedFiles);
+          attachedFiles.forEach(file => {
+            if (!currentChatFiles.includes(file.name)) {
+              currentChatFiles.push(file.name);
+            }
+          });
         }
 
         // Create message content
@@ -1104,7 +1158,14 @@
         addMessage(messageContent + attachmentHtml, "user");
         input.value = "";
 
-        // Clear attachments
+        // Store in mode-specific history
+        const chatKey = `${currentChatId}_${currentMode}`;
+        if (!chatModeHistory[chatKey]) {
+          chatModeHistory[chatKey] = [];
+        }
+        chatModeHistory[chatKey].push({type: 'user', content: messageContent + attachmentHtml});
+
+        const fileNames = attachedFiles.map(f => f.name);
         attachedFiles = [];
         updateAttachedFilesDisplay();
 
@@ -1118,13 +1179,24 @@
               message: message,
               mode: currentMode,
               tutor: currentTutor,
+              chat_id: currentChatId,
+              attached_files: fileNames
             }),
           });
 
           const data = await response.json();
           addMessage(data.response, "bot");
+          
+          chatModeHistory[chatKey].push({type: 'bot', content: data.response});
 
-          // Add source if available
+          // Auto-rename chat
+          if (data.suggested_title) {
+            const chatItem = document.querySelector(`[data-chat-id="${currentChatId}"] span`);
+            if (chatItem && chatItem.textContent.startsWith('New Chat')) {
+              chatItem.textContent = data.suggested_title;
+            }
+          }
+
           if (data.sources) {
             updateSources(data.sources);
           }

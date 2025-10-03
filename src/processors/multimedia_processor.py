@@ -7,7 +7,7 @@ from docx import Document as DocxDocument
 class MultimediaProcessor:
     def __init__(self):
         self.supported_formats = {
-            'text': ['.pdf', '.docx', '.txt'],
+            'text': ['.pdf', '.docx', '.txt', '.md'],
             'image': ['.jpg', '.jpeg', '.png', '.gif', '.bmp'],
             'audio': ['.mp3', '.wav', '.m4a', '.ogg'],
             'video': ['.mp4', '.avi', '.mov', '.mkv', '.webm']
@@ -59,7 +59,7 @@ class MultimediaProcessor:
                 return self._extract_from_pdf(file_path)
             elif file_extension == '.docx':
                 return self._extract_from_docx(file_path)
-            elif file_extension == '.txt':
+            elif file_extension in ['.txt', '.md']:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     return f.read()
         except Exception as e:
