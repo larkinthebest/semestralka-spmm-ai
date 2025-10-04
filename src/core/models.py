@@ -47,11 +47,15 @@ class Chat(Base):
     __tablename__ = "chats"
     
     id = Column(Integer, primary_key=True, index=True)
-    message = Column(Text)
-    response = Column(Text)
+    chat_id = Column(Integer, index=True)  # Frontend chat ID
+    title = Column(String, default="New Chat")
+    mode = Column(String, default="explanation")
+    tutor = Column(String, default="enola")
+    messages = Column(JSON)  # Store full conversation
+    files_used = Column(JSON)  # Store files used in this chat
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = Column(Integer, ForeignKey("users.id"))
-    document_id = Column(Integer, ForeignKey("documents.id"), nullable=True)
     
     user = relationship("User", back_populates="chats")
 

@@ -44,37 +44,52 @@ class LLMService:
             return self._fallback_response(prompt, context)
         
         try:
-            # Prepare the full prompt with context
+            # Prepare the full prompt with context and token management
             full_prompt = self._prepare_prompt(prompt, context)
+            
+            # Ensure prompt fits in 16K context window
+            max_prompt_chars = 60000  # 16K tokens = ~60K characters
+            if len(full_prompt) > max_prompt_chars:
+                # Truncate context while keeping system prompt and user message
+                system_part = full_prompt.split("Context from document:")[0]
+                user_part = full_prompt.split("Student:")[-1] if "Student:" in full_prompt else prompt
+                
+                available_chars = max_prompt_chars - len(system_part) - len(user_part) - 200
+                if available_chars > 0 and context:
+                    truncated_context = context[:available_chars] + "...[truncated]"
+                    full_prompt = f"{system_part}Context from document:\n{truncated_context}\n\nStudent:{user_part}"
+                else:
+                    full_prompt = f"{system_part}Student:{user_part}"
             
             # Generate response using GPT4All
             response = self.model.generate(
                 full_prompt,
-                max_tokens=500,
+                max_tokens=4096,  # Increased for 16K context
                 temp=0.7,
                 top_p=0.9,
                 repeat_penalty=1.1
             )
             
-            return response.strip()
+            return response.strip() if response else self._fallback_response(prompt, context)
+            
         except Exception as e:
             print(f"Error generating response: {e}")
             return self._fallback_response(prompt, context)
     
     def _prepare_prompt(self, user_message: str, context: str = "") -> str:
         """Prepare the prompt with context and instructions"""
-        system_prompt = """You are an AI tutor assistant. You help students learn by:
-- Explaining concepts clearly and simply
-- Answering questions about study materials
-- Providing helpful examples
-- Encouraging learning
+        system_prompt = """You are a helpful AI tutor. Provide clear, educational responses based on the provided materials.
 
 """
         
         if context:
-            system_prompt += f"Context from document:\n{context}\n\n"
+            # Limit context size to prevent token overflow
+            max_context_chars = 4000
+            if len(context) > max_context_chars:
+                context = context[:max_context_chars] + "...[content truncated]"
+            system_prompt += f"Study Material:\n{context}\n\n"
         
-        return f"{system_prompt}Student: {user_message}\nTutor:"
+        return f"{system_prompt}Question: {user_message}\nAnswer:"
     
     def _fallback_response(self, prompt: str, context: str = "") -> str:
         """Fallback responses when LLM is not available"""
@@ -104,7 +119,7 @@ class LLMService:
             prompt = self._prepare_quiz_prompt(content, quiz_type, num_questions)
             response = self.model.generate(
                 prompt,
-                max_tokens=800,
+                max_tokens=2048,  # Increased for detailed quiz generation
                 temp=0.8,
                 top_p=0.9
             )
@@ -117,7 +132,7 @@ class LLMService:
     
     def _prepare_quiz_prompt(self, content: str, quiz_type: str, num_questions: int) -> str:
         """Prepare prompt for quiz generation"""
-        content_snippet = content[:1500]  # Limit content size
+        content_snippet = content[:15000]  # Much larger content for comprehensive quiz generation
         
         if quiz_type == "multiple_choice":
             return f"""Create {num_questions} multiple choice questions based on this content:

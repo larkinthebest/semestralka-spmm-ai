@@ -94,7 +94,7 @@ ai-multimedia-tutor/
 - **Assets Panel**: Use the + button to add files to your permanent library
 - **Chat Attachments**: Drag files directly into chat or use the 📎 button
 - **Supported Formats**: 
-  - Documents: PDF, DOCX, TXT
+  - Documents: PDF, DOCX, TXT, MD
   - Images: JPG, PNG, GIF, BMP
   - Audio: MP3, WAV, M4A, OGG
   - Video: MP4, AVI, MOV, MKV, WEBM
