@@ -4,14 +4,28 @@ An intelligent offline learning platform that processes multimedia content local
 
 ## ✨ Features
 
+### Core Features
 - **📚 Multimedia Processing**: Upload and process PDF, DOCX, TXT, images, audio, and video files
 - **🤖 AI Tutors**: Choose between Enola (friendly & enthusiastic) and Franklin (wise & methodical)
+  - **Enola**: Specializes in detailed explanations with Amazon Q-style formatting
+  - **Franklin**: Asks clarifying questions before creating customized tests
 - **💬 Smart Chat**: Two modes - Explanation (detailed answers) and Testing (quizzes & practice)
 - **🎨 Modern UI**: Beautiful 3-panel interface with dark/light theme support
 - **📎 Drag & Drop**: Easy file attachment directly in chat or organized asset management
-- **🌍 Multilingual**: Works with English, German, Slovak, and other languages
+- **🌍 Multilingual**: Full UI and AI support for English, German, and Slovak
+  - Language selector with automatic UI translation
+  - AI responds in your selected language
 - **🔒 Privacy First**: Everything runs locally - your data never leaves your machine
 - **📊 Source Panel**: See relevant sources and file descriptions for each conversation
+- **✨ Enhanced Formatting**: Amazon Q-style message formatting with headings, lists, and emojis
+- **📝 Interactive Quizzes**: Multiple question types with progress tracking and scoring
+
+### 🆕 New Features (Latest Update)
+- **👤 User Profile Modal**: Click username to view all chats, assets, and quiz history in one place
+- **📊 Quiz History & Stats**: Track your performance over time with improvement trends
+- **🎬 Enhanced Video Processing**: 50 frames analyzed + full audio transcription with timestamps
+- **🎵 Unlimited Audio Transcription**: Complete transcription with [MM:SS] timestamps
+- **🐛 Bug Fixes**: Franklin now correctly accesses chat sources when switching from Enola
 
 ## 🚀 Quick Start
 
@@ -86,8 +100,14 @@ ai-multimedia-tutor/
 - The system creates a local SQLite database automatically
 
 ### 2. Choose Your Tutor
-- **Enola**: Friendly and enthusiastic, great for exploration and discovery
-- **Franklin**: Wise and methodical, perfect for structured learning
+- **Enola**: Friendly and enthusiastic explanation specialist
+  - Provides detailed explanations with examples
+  - Uses Amazon Q-style formatting for clarity
+  - Great for learning new concepts
+- **Franklin**: Methodical testing specialist
+  - Asks clarifying questions before creating tests
+  - Creates customized quizzes based on your preferences
+  - Perfect for practice and assessment
 - Switch between tutors anytime using the avatar selector
 
 ### 3. Upload Content
@@ -100,15 +120,25 @@ ai-multimedia-tutor/
   - Video: MP4, AVI, MOV, MKV, WEBM
 
 ### 4. Learning Modes
-- **🧠 Explanation Mode**: Ask questions, get detailed explanations with sources
-- **📝 Testing Mode**: Generate quizzes, practice questions, and assessments
+- **🧠 Explanation Mode** (Enola):
+  - Ask questions, get detailed explanations with sources
+  - Amazon Q-style formatting with headings, lists, and emojis
+  - Short paragraphs with proper spacing for easy reading
+- **📝 Testing Mode** (Franklin):
+  - Franklin asks for your test preferences first
+  - Choose test format: multiple choice, true/false, short answer, or mixed
+  - Interactive quiz interface with progress tracking
+  - Immediate scoring and feedback
 - Switch modes anytime to match your learning style
 
 ### 5. Chat Features
 - **Multi-chat**: Create multiple chat sessions with the + button
-- **File Context**: AI has access to all your uploaded files
+- **File Context**: AI has access to all your uploaded files (16K token context window)
 - **Sources**: See which files were referenced in responses
 - **Themes**: Toggle between light and dark modes
+- **Language Selector**: Switch between English, German, and Slovak
+- **Custom Modals**: Themed confirmation dialogs for deletions
+- **Enhanced Formatting**: Professional message display with proper spacing
 
 ## 🔧 Configuration
 
@@ -119,10 +149,13 @@ The system uses GPT4All models that download automatically on first use:
 - **Alternative**: GPT4All Falcon (good general purpose)
 
 ### Supported Languages
-- English (primary)
-- German (Deutsch)
-- Slovak (Slovenčina)
-- Other languages supported through AI model capabilities
+- **English** (EN) - Full UI and AI support
+- **German** (DE) - Full UI and AI support (Deutsch)
+- **Slovak** (SK) - Full UI and AI support (Slovenčina)
+- Language selector in top-right corner
+- UI elements translate automatically
+- AI responds in your selected language
+- Language preference saved across sessions
 
 ### File Size Limits
 - Documents: Up to 50MB

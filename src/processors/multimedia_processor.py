@@ -341,22 +341,34 @@ class MultimediaProcessor:
             return f"OCR failed: {str(e)}"
     
     def _transcribe_audio(self, file_path: str) -> str:
-        """Transcribe audio using Whisper"""
+        """Transcribe audio using Whisper with full unlimited transcription"""
         if not WHISPER_AVAILABLE:
             return "Whisper not available"
         
         try:
+            model = whisper.load_model("base")  # Use base model for better accuracy
+            result = model.transcribe(
+                file_path, 
+                language=None, 
+                task="transcribe",
+                verbose=False,
+                word_timestamps=True  # Enable word-level timestamps
+            )
             
-            model = whisper.load_model("small")
-            result = model.transcribe(file_path, language=None, task="transcribe")
-            
+            # Build full transcription with timestamps
             if "segments" in result:
-                segments = []
+                transcription_parts = []
                 for segment in result["segments"]:
+                    start_time = segment.get("start", 0)
                     text = segment["text"].strip()
                     if text:
-                        segments.append(text)
-                return " ".join(segments)
+                        # Format timestamp as [MM:SS]
+                        minutes = int(start_time // 60)
+                        seconds = int(start_time % 60)
+                        timestamp = f"[{minutes:02d}:{seconds:02d}]"
+                        transcription_parts.append(f"{timestamp} {text}")
+                
+                return "\n".join(transcription_parts)
             else:
                 return result["text"].strip()
             
@@ -367,52 +379,87 @@ class MultimediaProcessor:
             return f"Audio transcription failed: {str(e)}"
     
     def _extract_video_text(self, file_path: str) -> str:
-        """Extract text from video frames using OCR"""
-        if not CV2_AVAILABLE or not OCR_AVAILABLE:
+        """Extract text from video frames using OCR and transcribe audio track"""
+        if not CV2_AVAILABLE:
             return ""
         
         try:
-            
             cap = cv2.VideoCapture(file_path)
             if not cap.isOpened():
                 return ""
             
             fps = cap.get(cv2.CAP_PROP_FPS)
             total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            duration = total_frames / fps if fps > 0 else 0
             
-            # Process entire video for complete transcription
-            frame_interval = max(int(fps * 10), total_frames // 20) if fps > 0 else total_frames // 20  # Every 10 seconds
-            frame_interval = max(frame_interval, 1)
+            # Extract more frames for better coverage (every 5 seconds or 50 frames total)
+            frame_interval = max(int(fps * 5), 1) if fps > 0 else max(total_frames // 50, 1)
+            max_frames = 50  # Process up to 50 frames
             
-            extracted_text = []
+            frame_texts = []
             frame_count = 0
+            processed_frames = 0
             
-            while frame_count < total_frames and len(extracted_text) < 20:  # Process up to 20 frames
+            while frame_count < total_frames and processed_frames < max_frames:
                 ret, frame = cap.read()
                 if not ret:
                     break
                 
                 if frame_count % frame_interval == 0:
+                    timestamp = frame_count / fps if fps > 0 else 0
+                    minutes = int(timestamp // 60)
+                    seconds = int(timestamp % 60)
+                    
                     with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as temp_file:
                         cv2.imwrite(temp_file.name, frame)
-                        frame_text = self._extract_text_from_image(temp_file.name)
                         
-                        if frame_text and len(frame_text.strip()) > 10:
-                            extracted_text.append(frame_text)
+                        if OCR_AVAILABLE:
+                            frame_text = self._extract_text_from_image(temp_file.name)
+                            if frame_text and len(frame_text.strip()) > 10 and not frame_text.startswith(("OCR", "No text", "Image")):
+                                frame_texts.append(f"[{minutes:02d}:{seconds:02d}] {frame_text.strip()}")
                         
                         os.unlink(temp_file.name)
+                    
+                    processed_frames += 1
                 
                 frame_count += 1
             
             cap.release()
             
-            if extracted_text:
-                # Combine all extracted text with timestamps
-                combined_text = ' '.join(extracted_text)
-                # Remove duplicates and clean up
-                sentences = list(dict.fromkeys(combined_text.split('.')))
-                return '. '.join([s.strip() for s in sentences if len(s.strip()) > 5])[:2000]
-            return ""
+            # Extract audio and transcribe
+            audio_transcription = ""
+            if WHISPER_AVAILABLE:
+                try:
+                    # Extract audio from video
+                    with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_audio:
+                        audio_path = temp_audio.name
+                    
+                    # Use ffmpeg via cv2 to extract audio (if available)
+                    import subprocess
+                    try:
+                        subprocess.run(
+                            ['ffmpeg', '-i', file_path, '-vn', '-acodec', 'pcm_s16le', '-ar', '16000', '-ac', '1', audio_path],
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL,
+                            timeout=60
+                        )
+                        audio_transcription = self._transcribe_audio(audio_path)
+                        os.unlink(audio_path)
+                    except (subprocess.TimeoutExpired, FileNotFoundError, Exception):
+                        pass
+                except Exception as e:
+                    print(f"Audio extraction from video failed: {e}")
+            
+            # Combine frame text and audio transcription
+            result_parts = []
+            
+            if audio_transcription and len(audio_transcription.strip()) > 20:
+                result_parts.append(f"=== AUDIO TRANSCRIPTION ===\n{audio_transcription}")
+            
+            if frame_texts:
+                result_parts.append(f"\n=== TEXT FROM VIDEO FRAMES ===\n" + "\n".join(frame_texts))
+            
+            return "\n\n".join(result_parts) if result_parts else ""
             
         except ImportError:
             return ""

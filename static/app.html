@@ -24,19 +24,32 @@
                 title="Franklin - Testing Specialist"
               ></div>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="display: flex; align-items: right; gap: 8px">
               <div class="language-selector">
-                <button class="language-btn" onclick="toggleLanguageDropdown()" id="languageBtn">
+                <button
+                  class="language-btn"
+                  onclick="toggleLanguageDropdown()"
+                  id="languageBtn"
+                >
                   🌐 EN
                 </button>
                 <div class="language-dropdown" id="languageDropdown">
-                  <div class="language-option active" onclick="selectLanguage('en', 'EN')">
+                  <div
+                    class="language-option active"
+                    onclick="selectLanguage('en', 'EN')"
+                  >
                     🇺🇸 English
                   </div>
-                  <div class="language-option" onclick="selectLanguage('de', 'DE')">
+                  <div
+                    class="language-option"
+                    onclick="selectLanguage('de', 'DE')"
+                  >
                     🇩🇪 Deutsch
                   </div>
-                  <div class="language-option" onclick="selectLanguage('sk', 'SK')">
+                  <div
+                    class="language-option"
+                    onclick="selectLanguage('sk', 'SK')"
+                  >
                     🇸🇰 Slovenčina
                   </div>
                 </div>
@@ -58,7 +71,7 @@
         </div>
 
         <div class="user-section" id="userSection">
-          <div id="userInfo" class="user-info">👤 Guest User</div>
+          <div id="userInfo" class="user-info" onclick="openUserProfile()" style="cursor: pointer;">👤 Guest User</div>
           <div id="authActions" class="auth-actions">
             <a href="/auth">Sign In</a>
           </div>
@@ -70,11 +83,25 @@
             <button class="add-btn" onclick="addNewChat()">+</button>
           </div>
           <div id="chatList">
-            <div class="chat-item active" data-chat-id="1" onclick="switchToChat(1)">
+            <div
+              class="chat-item active"
+              data-chat-id="1"
+              onclick="switchToChat(1)"
+            >
               <span>New Chat</span>
               <div class="item-actions">
-                <button class="action-btn" onclick="event.stopPropagation(); renameChat(1)">✏️</button>
-                <button class="action-btn" onclick="event.stopPropagation(); deleteChat(1)">🗑️</button>
+                <button
+                  class="action-btn"
+                  onclick="event.stopPropagation(); renameChat(1)"
+                >
+                  ✏️
+                </button>
+                <button
+                  class="action-btn"
+                  onclick="event.stopPropagation(); deleteChat(1)"
+                >
+                  🗑️
+                </button>
               </div>
             </div>
           </div>
@@ -86,9 +113,7 @@
             <button class="add-btn" onclick="addAsset()">+</button>
           </div>
           <div id="assetList">
-            <div class="no-assets-message">
-              No assets uploaded
-            </div>
+            <div class="no-assets-message">No assets uploaded</div>
           </div>
         </div>
       </div>
@@ -107,8 +132,8 @@
           >
             🧠 Explanation Mode
           </button>
-          <button 
-            class="mode-btn testing" 
+          <button
+            class="mode-btn testing"
             onclick="switchToTestingMode()"
             id="testingModeBtn"
           >
@@ -163,9 +188,9 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Quiz Panel (hidden by default) -->
-        <div id="quizPanel" style="display: none;">
+        <div id="quizPanel" style="display: none">
           <h3>📝 Interactive Quiz</h3>
           <div id="quizContainer"></div>
         </div>
@@ -212,6 +237,34 @@
       </div>
     </div>
 
+    <!-- User Profile Modal -->
+    <div id="userProfileModal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 900px; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h3>👤 User Profile</h3>
+          <button onclick="closeModal('userProfileModal')" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        
+        <div style="display: flex; gap: 20px; flex: 1; overflow: hidden;">
+          <!-- Left: Chats -->
+          <div style="flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); padding-right: 20px;">
+            <h4 style="margin: 0 0 15px 0;">💬 All Chats</h4>
+            <div id="profileChatList" style="flex: 1; overflow-y: auto;"></div>
+          </div>
+          
+          <!-- Right: Assets & Quiz History -->
+          <div style="flex: 1; display: flex; flex-direction: column;">
+            <h4 style="margin: 0 0 15px 0;">📚 Assets</h4>
+            <div id="profileAssetList" style="flex: 1; overflow-y: auto; max-height: 200px; margin-bottom: 20px;"></div>
+            
+            <h4 style="margin: 20px 0 15px 0;">📊 Quiz History</h4>
+            <div id="profileQuizStats" style="margin-bottom: 15px;"></div>
+            <div id="profileQuizHistory" style="flex: 1; overflow-y: auto;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
       let currentMode = "explanation";
       let currentTutor = "enola";
@@ -221,11 +274,78 @@
       let attachedFiles = [];
       let chatModeHistory = {};
       let currentChatFiles = [];
-      let chatSources = {};  // Store sources per chat
-      let chatTitles = {};   // Store chat titles
-      let currentLanguage = 'en';
+      let chatSources = {}; // Store sources per chat
+      let chatTitles = {}; // Store chat titles
+      let currentLanguage = "en";
       let currentQuiz = null;
       let quizAnswers = {};
+
+      // UI Translations
+      const translations = {
+        en: {
+          chats: "Chats",
+          assets: "Assets",
+          sources: "Sources",
+          noAssets: "No assets uploaded",
+          noSources: "Sources will appear here when you ask questions",
+          explanationMode: "🧠 Explanation Mode",
+          testingMode: "📝 Testing Mode",
+          askPlaceholder: "Ask me anything about your uploaded content...",
+          quizPlaceholder: "Ask me to create quizzes from your files...",
+          enovaWelcome:
+            "Hello! I'm <strong>Enola</strong>, your explanation tutor! 📚<br><br>I specialize in <strong>detailed explanations</strong> and helping you understand concepts from your study materials. I'll break down complex topics, provide examples, and make learning enjoyable!<br><br><strong>Upload files and ask me to explain anything!</strong> 😊",
+          franklinWelcome:
+            "Greetings! I'm <strong>Franklin</strong>, your testing tutor. 📝<br><br>I specialize in <strong>quizzes and assessments</strong> to help you practice and test your knowledge. I'll create structured questions, multiple choice tests, and comprehensive evaluations based on your materials.<br><br><strong>Upload study materials and let's test your knowledge!</strong> 🎯",
+          deleteConfirm: "Are you sure you want to delete this?",
+          cancel: "Cancel",
+          delete: "Delete",
+          rename: "Rename",
+          newChat: "New Chat",
+        },
+        de: {
+          chats: "Chats",
+          assets: "Dateien",
+          sources: "Quellen",
+          noAssets: "Keine Dateien hochgeladen",
+          noSources: "Quellen erscheinen hier, wenn Sie Fragen stellen",
+          explanationMode: "🧠 Erklärungsmodus",
+          testingMode: "📝 Testmodus",
+          askPlaceholder: "Fragen Sie mich über Ihre hochgeladenen Inhalte...",
+          quizPlaceholder:
+            "Bitten Sie mich, Quiz aus Ihren Dateien zu erstellen...",
+          enovaWelcome:
+            "Hallo! Ich bin <strong>Enola</strong>, deine Erklärungs-Tutorin! 📚<br><br>Ich spezialisiere mich auf <strong>detaillierte Erklärungen</strong> und helfe dir, Konzepte aus deinen Lernmaterialien zu verstehen. Ich werde komplexe Themen aufschlüsseln, Beispiele geben und das Lernen angenehm machen!<br><br><strong>Lade Dateien hoch und frag mich alles!</strong> 😊",
+          franklinWelcome:
+            "Grüße! Ich bin <strong>Franklin</strong>, dein Test-Tutor. 📝<br><br>Ich spezialisiere mich auf <strong>Quiz und Bewertungen</strong>, um dir beim Üben und Testen deines Wissens zu helfen. Ich erstelle strukturierte Fragen, Multiple-Choice-Tests und umfassende Bewertungen basierend auf deinen Materialien.<br><br><strong>Lade Lernmaterialien hoch und lass uns dein Wissen testen!</strong> 🎯",
+          deleteConfirm: "Möchten Sie dies wirklich löschen?",
+          cancel: "Abbrechen",
+          delete: "Löschen",
+          rename: "Umbenennen",
+          newChat: "Neuer Chat",
+        },
+        sk: {
+          chats: "Chaty",
+          assets: "Súbory",
+          sources: "Zdroje",
+          noAssets: "Žiadne súbory nie sú nahrané",
+          noSources: "Zdroje sa objavia, keď položíte otázky",
+          explanationMode: "🧠 Režim vysvetlenia",
+          testingMode: "📝 Testovací režim",
+          askPlaceholder:
+            "Opýtajte sa ma na čokoľvek o vašich nahraných súboroch...",
+          quizPlaceholder:
+            "Požiadajte ma o vytvorenie kvízu z vašich súborov...",
+          enovaWelcome:
+            "Ahoj! Som <strong>Enola</strong>, tvoja tutórka pre vysvetlenia! 📚<br><br>Špecializujem sa na <strong>podrobné vysvetlenia</strong> a pomáham ti porozumieť konceptom z tvojich učebných materiálov. Rozobratím zložité témy, poskytujem príklady a sprístupním učenie!<br><br><strong>Nahraj súbory a opýtaj sa ma na čokoľvek!</strong> 😊",
+          franklinWelcome:
+            "Pozdravujem! Som <strong>Franklin</strong>, tvôj testovací tutór. 📝<br><br>Špecializujem sa na <strong>kvízy a hodnotenia</strong>, aby som ti pomáhal cvičiť a testovať tvoje vedomosti. Vytvorím štruktúrované otázky, testy s výberom odpovedí a komplexné hodnotenia podľa tvojich materiálov.<br><br><strong>Nahraj učebné materiály a otestujme tvoje vedomosti!</strong> 🎯",
+          deleteConfirm: "Naozaj chcete toto vymazať?",
+          cancel: "Zrušiť",
+          delete: "Vymazať",
+          rename: "Premenovať",
+          newChat: "Nový chat",
+        },
+      };
 
       // Theme management
       function toggleTheme() {
@@ -255,7 +375,7 @@
       // Tutor selection with enforced specialization
       function selectTutor(tutor) {
         currentTutor = tutor;
-        
+
         // ENFORCE TUTOR-MODE PAIRING
         if (tutor === "enola") {
           currentMode = "explanation";
@@ -266,18 +386,26 @@
         updateTutorDisplay();
         updateModeDisplay();
         loadModeHistory();
-        
+
         // Show tutor switch notification
-        const modeText = tutor === 'enola' ? 'Explanation Mode' : 'Testing Mode';
-        showNotification(`Switched to ${tutor.charAt(0).toUpperCase() + tutor.slice(1)} - ${modeText}`, 'info');
+        const modeText =
+          tutor === "enola" ? "Explanation Mode" : "Testing Mode";
+        showNotification(
+          `Switched to ${
+            tutor.charAt(0).toUpperCase() + tutor.slice(1)
+          } - ${modeText}`,
+          "info"
+        );
       }
-      
+
       function updateTutorDisplay() {
         // Update active tutor option
         document.querySelectorAll(".tutor-option").forEach((option) => {
           option.classList.remove("active");
         });
-        document.querySelector(`.tutor-${currentTutor}`).classList.add("active");
+        document
+          .querySelector(`.tutor-${currentTutor}`)
+          .classList.add("active");
 
         // Update tutor info
         const tutorAvatar = document.getElementById("tutorAvatar");
@@ -287,24 +415,28 @@
 
         if (currentTutor === "enola") {
           tutorAvatar.style.backgroundImage = "url('/static/enola.jpg')";
-          if (initialAvatar) initialAvatar.style.backgroundImage = "url('/static/enola.jpg')";
+          if (initialAvatar)
+            initialAvatar.style.backgroundImage = "url('/static/enola.jpg')";
           tutorName.textContent = "Enola";
           tutorDescription.textContent = "I will explain the world to you";
         } else {
           tutorAvatar.style.backgroundImage = "url('/static/tutor.png')";
-          if (initialAvatar) initialAvatar.style.backgroundImage = "url('/static/tutor.png')";
+          if (initialAvatar)
+            initialAvatar.style.backgroundImage = "url('/static/tutor.png')";
           tutorName.textContent = "Franklin";
           tutorDescription.textContent = "I will test your *ss";
         }
 
         // Update all bot message avatars
-        document.querySelectorAll(".message:not(.user) .message-avatar").forEach((avatar) => {
-          if (currentTutor === "enola") {
-            avatar.style.backgroundImage = "url('/static/enola.jpg')";
-          } else {
-            avatar.style.backgroundImage = "url('/static/tutor.png')";
-          }
-        });
+        document
+          .querySelectorAll(".message:not(.user) .message-avatar")
+          .forEach((avatar) => {
+            if (currentTutor === "enola") {
+              avatar.style.backgroundImage = "url('/static/enola.jpg')";
+            } else {
+              avatar.style.backgroundImage = "url('/static/tutor.png')";
+            }
+          });
       }
 
       // Drag and drop functionality
@@ -362,24 +494,24 @@
       // Mode switching functions that also switch tutors
       function switchToExplanationMode() {
         if (currentTutor !== "enola") {
-          selectTutor("enola");  // This will also set explanation mode
+          selectTutor("enola"); // This will also set explanation mode
         } else {
           currentMode = "explanation";
           updateModeDisplay();
           loadModeHistory();
         }
       }
-      
+
       function switchToTestingMode() {
         if (currentTutor !== "franklin") {
-          selectTutor("franklin");  // This will also set testing mode
+          selectTutor("franklin"); // This will also set testing mode
         } else {
           currentMode = "testing";
           updateModeDisplay();
           loadModeHistory();
         }
       }
-      
+
       // Legacy function for compatibility
       function setMode(mode) {
         if (mode === "explanation") {
@@ -388,14 +520,15 @@
           switchToTestingMode();
         }
       }
-      
+
       function updateModeDisplay() {
         const explanationBtn = document.getElementById("explanationModeBtn");
         const testingBtn = document.getElementById("testingModeBtn");
         const inputContainer = document.getElementById("inputContainer");
         const sendBtn = document.getElementById("sendBtn");
         const input = document.getElementById("messageInput");
-        
+        const t = translations[currentLanguage];
+
         // Reset all button states
         explanationBtn.classList.remove("active");
         testingBtn.classList.remove("active");
@@ -403,57 +536,55 @@
         testingBtn.disabled = false;
         explanationBtn.style.opacity = "1";
         testingBtn.style.opacity = "1";
-        
+
         // Apply current mode styling
         if (currentMode === "explanation") {
           explanationBtn.classList.add("active");
           inputContainer.className = "input-container explanation";
           sendBtn.className = "send-btn explanation";
-          input.placeholder = "Ask me to explain concepts from your files...";
+          input.placeholder = t.askPlaceholder;
         } else {
           testingBtn.classList.add("active");
           inputContainer.className = "input-container testing";
           sendBtn.className = "send-btn testing";
-          input.placeholder = "Ask me to create quizzes from your files...";
+          input.placeholder = t.quizPlaceholder;
         }
       }
-      
+
       function loadModeHistory() {
         const chatKey = `${currentChatId}_${currentMode}`;
         const chatArea = document.getElementById("chatArea");
-        
+        const t = translations[currentLanguage];
+
         if (chatModeHistory[chatKey] && chatModeHistory[chatKey].length > 0) {
-          chatArea.innerHTML = '';
+          chatArea.innerHTML = "";
           // Always show initial welcome message first
-          const avatarUrl = currentTutor === "enola" ? "/static/enola.jpg" : "/static/tutor.png";
-          let welcomeMsg;
-          if (currentTutor === "enola") {
-            welcomeMsg = `Hello! I'm <strong>Enola</strong>, your explanation tutor! 📚<br><br>I specialize in <strong>detailed explanations</strong> and helping you understand concepts from your study materials. I'll break down complex topics, provide examples, and make learning enjoyable!<br><br><strong>Upload files and ask me to explain anything!</strong> 😊`;
-          } else {
-            welcomeMsg = `Greetings! I'm <strong>Franklin</strong>, your testing tutor. 📝<br><br>I specialize in <strong>quizzes and assessments</strong> to help you practice and test your knowledge. I'll create structured questions, multiple choice tests, and comprehensive evaluations based on your materials.<br><br><strong>Upload study materials and let's test your knowledge!</strong> 🎯`;
-          }
-          
+          const avatarUrl =
+            currentTutor === "enola"
+              ? "/static/enola.jpg"
+              : "/static/tutor.png";
+          const welcomeMsg =
+            currentTutor === "enola" ? t.enovaWelcome : t.franklinWelcome;
+
           chatArea.innerHTML = `
             <div class="message">
               <div class="message-avatar" style="background-image: url('${avatarUrl}')"></div>
               <div class="message-content">${welcomeMsg}</div>
             </div>
           `;
-          
+
           // Then add chat history
-          chatModeHistory[chatKey].forEach(msg => {
+          chatModeHistory[chatKey].forEach((msg) => {
             addMessage(msg.content, msg.type);
           });
         } else {
-          const avatarUrl = currentTutor === "enola" ? "/static/enola.jpg" : "/static/tutor.png";
-          
-          let welcomeMsg;
-          if (currentTutor === "enola") {
-            welcomeMsg = `Hello! I'm <strong>Enola</strong>, your explanation tutor! 📚<br><br>I specialize in <strong>detailed explanations</strong> and helping you understand concepts from your study materials. I'll break down complex topics, provide examples, and make learning enjoyable!<br><br><strong>Upload files and ask me to explain anything!</strong> 😊`;
-          } else {
-            welcomeMsg = `Greetings! I'm <strong>Franklin</strong>, your testing tutor. 📝<br><br>I specialize in <strong>quizzes and assessments</strong> to help you practice and test your knowledge. I'll create structured questions, multiple choice tests, and comprehensive evaluations based on your materials.<br><br><strong>Upload study materials and let's test your knowledge!</strong> 🎯`;
-          }
-          
+          const avatarUrl =
+            currentTutor === "enola"
+              ? "/static/enola.jpg"
+              : "/static/tutor.png";
+          const welcomeMsg =
+            currentTutor === "enola" ? t.enovaWelcome : t.franklinWelcome;
+
           chatArea.innerHTML = `
             <div class="message">
               <div class="message-avatar" style="background-image: url('${avatarUrl}')"></div>
@@ -462,9 +593,9 @@
           `;
         }
       }
-      
-      function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
+
+      function showNotification(message, type = "info") {
+        const notification = document.createElement("div");
         notification.style.cssText = `
           position: fixed;
           top: 20px;
@@ -477,16 +608,16 @@
           max-width: 300px;
           animation: slideIn 0.3s ease;
         `;
-        
-        if (type === 'warning') {
-          notification.style.background = '#ff9800';
+
+        if (type === "warning") {
+          notification.style.background = "#ff9800";
         } else {
-          notification.style.background = '#2196f3';
+          notification.style.background = "#2196f3";
         }
-        
+
         notification.textContent = message;
         document.body.appendChild(notification);
-        
+
         setTimeout(() => {
           if (document.body.contains(notification)) {
             document.body.removeChild(notification);
@@ -498,30 +629,32 @@
       function switchToChat(chatId) {
         // Save current chat before switching
         saveChatToDatabase();
-        
+
         // Remove active class from all chats
         document.querySelectorAll(".chat-item").forEach((item) => {
           item.classList.remove("active");
         });
-        
+
         // Add active class to selected chat
-        const selectedChat = document.querySelector(`[data-chat-id="${chatId}"]`);
+        const selectedChat = document.querySelector(
+          `[data-chat-id="${chatId}"]`
+        );
         if (selectedChat) {
           selectedChat.classList.add("active");
           currentChatId = parseInt(chatId);
-          
+
           // Load chat history for this chat and current mode
           loadModeHistory();
-          
+
           // Load sources for this chat
           loadChatSources(chatId);
         }
       }
-      
+
       function addNewChat() {
         // Save current chat before creating new one
         saveChatToDatabase();
-        
+
         chatCounter++;
         const chatList = document.getElementById("chatList");
 
@@ -544,10 +677,10 @@
 
         chatList.appendChild(newChat);
         currentChatId = chatCounter;
-        
+
         // Initialize chat title
         chatTitles[chatCounter] = "New Chat";
-        
+
         // Clear sources for new chat
         chatSources[chatCounter] = [];
         updateSources([]);
@@ -578,10 +711,10 @@
             `[data-chat-id="${chatId}"] span`
           );
           chatItem.textContent = newName;
-          
+
           // Update local storage
           chatTitles[chatId] = newName;
-          
+
           // Save to database
           saveChatToDatabase();
         }
@@ -590,26 +723,33 @@
       }
 
       async function deleteChat(chatId) {
-        if (confirm("Are you sure you want to delete this chat?")) {
+        const confirmed = await showDeleteConfirm(
+          translations[currentLanguage].deleteConfirm
+        );
+        if (confirmed) {
           try {
             // Delete from database
             const response = await fetch(`/chats/${chatId}`, {
-              method: 'DELETE',
+              method: "DELETE",
               headers: {
-                'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`
-              }
+                Authorization: `Bearer ${
+                  localStorage.getItem("access_token") || ""
+                }`,
+              },
             });
-            
+
             // Remove from UI
-            const chatItem = document.querySelector(`[data-chat-id="${chatId}"]`);
+            const chatItem = document.querySelector(
+              `[data-chat-id="${chatId}"]`
+            );
             if (chatItem) {
               chatItem.remove();
             }
-            
+
             // Clean up local data
             delete chatTitles[chatId];
             delete chatSources[chatId];
-            Object.keys(chatModeHistory).forEach(key => {
+            Object.keys(chatModeHistory).forEach((key) => {
               if (key.startsWith(`${chatId}_`)) {
                 delete chatModeHistory[key];
               }
@@ -619,7 +759,8 @@
             if (currentChatId == chatId) {
               const remainingChats = document.querySelectorAll(".chat-item");
               if (remainingChats.length > 0) {
-                const newChatId = remainingChats[0].getAttribute("data-chat-id");
+                const newChatId =
+                  remainingChats[0].getAttribute("data-chat-id");
                 switchToChat(newChatId);
               } else {
                 // Create a new chat if none remain
@@ -627,7 +768,7 @@
               }
             }
           } catch (error) {
-            console.error('Error deleting chat:', error);
+            console.error("Error deleting chat:", error);
           }
         }
       }
@@ -731,15 +872,24 @@
       }
 
       async function deleteAsset(assetId) {
-        if (confirm("Are you sure you want to delete this asset?")) {
-          const assetItem = document.querySelector(`[data-asset-id="${assetId}"]`);
-          const filename = assetItem.querySelector('span').textContent.split(' ').slice(1).join(' ');
-          
+        const confirmed = await showDeleteConfirm(
+          translations[currentLanguage].deleteConfirm
+        );
+        if (confirmed) {
+          const assetItem = document.querySelector(
+            `[data-asset-id="${assetId}"]`
+          );
+          const filename = assetItem
+            .querySelector("span")
+            .textContent.split(" ")
+            .slice(1)
+            .join(" ");
+
           try {
             // Call backend to delete file (if implemented)
             // For now, just remove from UI
             assetItem.remove();
-            
+
             // Remove from current chat files if present
             const index = currentChatFiles.indexOf(filename);
             if (index > -1) {
@@ -757,7 +907,7 @@
               assetCounter = 0;
             }
           } catch (error) {
-            console.error('Error deleting asset:', error);
+            console.error("Error deleting asset:", error);
           }
         }
       }
@@ -774,13 +924,23 @@
         const message = input.value.trim();
 
         if (!message && attachedFiles.length === 0) return;
-        
-        // Get all available files (assets + current chat files)
-        const allAvailableFiles = [...new Set([...currentChatFiles, ...attachedFiles.map(f => f.name)])];
-        
+
+        // Get all available files (assets + current chat files + chat sources)
+        const chatSourceFiles = (chatSources[currentChatId] || []).map(s => s.title);
+        const allAvailableFiles = [
+          ...new Set([
+            ...currentChatFiles,
+            ...attachedFiles.map((f) => f.name),
+            ...chatSourceFiles,
+          ]),
+        ];
+
         // Check if files are required
         if (allAvailableFiles.length === 0) {
-          showNotification("Please upload files first! Use the + button in Assets or drag files here.", "warning");
+          showNotification(
+            "Please upload files first! Use the + button in Assets or drag files here.",
+            "warning"
+          );
           return;
         }
 
@@ -790,7 +950,7 @@
         // Upload attached files to assets first
         if (attachedFiles.length > 0) {
           await addFilesToAssets(attachedFiles);
-          attachedFiles.forEach(file => {
+          attachedFiles.forEach((file) => {
             if (!currentChatFiles.includes(file.name)) {
               currentChatFiles.push(file.name);
             }
@@ -819,12 +979,18 @@
         if (!chatModeHistory[chatKey]) {
           chatModeHistory[chatKey] = [];
         }
-        chatModeHistory[chatKey].push({type: 'user', content: messageContent + attachmentHtml});
-        
-        // Save to localStorage for persistence
-        localStorage.setItem('chatModeHistory', JSON.stringify(chatModeHistory));
+        chatModeHistory[chatKey].push({
+          type: "user",
+          content: messageContent + attachmentHtml,
+        });
 
-        const fileNames = attachedFiles.map(f => f.name);
+        // Save to localStorage for persistence
+        localStorage.setItem(
+          "chatModeHistory",
+          JSON.stringify(chatModeHistory)
+        );
+
+        const fileNames = attachedFiles.map((f) => f.name);
         attachedFiles = [];
         updateAttachedFilesDisplay();
 
@@ -840,31 +1006,43 @@
               tutor: currentTutor,
               chat_id: currentChatId,
               attached_files: allAvailableFiles,
-              language: currentLanguage
+              language: currentLanguage,
             }),
           });
 
           const data = await response.json();
-          
+
           // Remove loading message
           removeLoadingMessage();
-          
+
           if (data.requires_files) {
             showNotification("Please upload files first!", "warning");
             return;
           }
-          
+
           addMessage(data.response, "bot");
-          
-          chatModeHistory[chatKey].push({type: 'bot', content: data.response});
-          
+
+          chatModeHistory[chatKey].push({
+            type: "bot",
+            content: data.response,
+          });
+
           // Save to localStorage
-          localStorage.setItem('chatModeHistory', JSON.stringify(chatModeHistory));
+          localStorage.setItem(
+            "chatModeHistory",
+            JSON.stringify(chatModeHistory)
+          );
 
           // Auto-rename chat only once with unique titles
           if (data.suggested_title) {
-            const chatItem = document.querySelector(`[data-chat-id="${currentChatId}"] span`);
-            if (chatItem && (chatItem.textContent === 'New Chat' || chatItem.textContent.startsWith('New Chat'))) {
+            const chatItem = document.querySelector(
+              `[data-chat-id="${currentChatId}"] span`
+            );
+            if (
+              chatItem &&
+              (chatItem.textContent === "New Chat" ||
+                chatItem.textContent.startsWith("New Chat"))
+            ) {
               // Ensure unique title
               let uniqueTitle = data.suggested_title;
               let counter = 1;
@@ -878,19 +1056,22 @@
           }
 
           // Check if Franklin generated a quiz and display interactive version
-          if (currentTutor === 'franklin' && data.response.includes('📝 **Quiz:')) {
+          if (
+            currentTutor === "franklin" &&
+            data.response.includes("📝 **Quiz:")
+          ) {
             const quizData = parseQuizFromResponse(data.response);
             if (quizData && quizData.questions.length > 0) {
               displayQuiz(quizData);
             }
           }
-          
+
           // Update sources for this specific chat
           if (data.sources) {
             chatSources[currentChatId] = data.sources;
             updateSources(data.sources, allAvailableFiles);
           }
-          
+
           // Save chat to database
           saveChatToDatabase();
         } catch (error) {
@@ -903,9 +1084,9 @@
         const chatArea = document.getElementById("chatArea");
         const messageDiv = document.createElement("div");
         messageDiv.className = `message ${sender}`;
-        messageDiv.style.opacity = '0';
-        messageDiv.style.transform = 'translateY(20px)';
-        messageDiv.style.transition = 'all 0.3s ease';
+        messageDiv.style.opacity = "0";
+        messageDiv.style.transform = "translateY(20px)";
+        messageDiv.style.transition = "all 0.3s ease";
 
         const avatarUrl =
           sender === "user"
@@ -923,30 +1104,168 @@
             `;
 
         chatArea.appendChild(messageDiv);
-        
+
         // Animate message appearance
         setTimeout(() => {
-          messageDiv.style.opacity = '1';
-          messageDiv.style.transform = 'translateY(0)';
+          messageDiv.style.opacity = "1";
+          messageDiv.style.transform = "translateY(0)";
         }, 50);
-        
+
         chatArea.scrollTop = chatArea.scrollHeight;
       }
-      
+
       function formatMessageText(text) {
-        // Convert comprehensive markdown formatting to HTML
-        return text
-          .replace(/### (.*?)$/gm, '<h3>$1</h3>')           // H3 headings
-          .replace(/## (.*?)$/gm, '<h2>$1</h2>')            // H2 headings
-          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
-          .replace(/\*(.*?)\*/g, '<em>$1</em>')             // Italic
-          .replace(/`(.*?)`/g, '<code>$1</code>')           // Inline code
-          .replace(/^> (.*?)$/gm, '<blockquote>$1</blockquote>') // Blockquotes
-          .replace(/• /g, '&bull; ')                       // Bullet points
-          .replace(/^(\d+\. .*?)$/gm, '<ol><li>$1</li></ol>') // Numbered lists (basic)
-          .replace(/\|(.*)\|/g, '<table><tr><td>$1</td></tr></table>') // Basic tables
-          .replace(/\n\n/g, '<br><br>')                     // Double line breaks
-          .replace(/\n/g, '<br>');                          // Single line breaks
+        // Convert comprehensive markdown formatting to HTML with Amazon Q-style spacing
+        let formatted = text;
+
+        // Process line by line for better control
+        const lines = formatted.split("\n");
+        const processedLines = [];
+        let inList = false;
+        let inCodeBlock = false;
+
+        for (let i = 0; i < lines.length; i++) {
+          let line = lines[i];
+          const trimmed = line.trim();
+
+          // Handle code blocks
+          if (trimmed.startsWith("```")) {
+            inCodeBlock = !inCodeBlock;
+            processedLines.push(line);
+            continue;
+          }
+
+          if (inCodeBlock) {
+            processedLines.push(line);
+            continue;
+          }
+
+          // Empty lines
+          if (!trimmed) {
+            processedLines.push("");
+            inList = false;
+            continue;
+          }
+
+          // Headings with spacing
+          if (trimmed.startsWith("### ")) {
+            if (
+              processedLines.length > 0 &&
+              processedLines[processedLines.length - 1] !== ""
+            ) {
+              processedLines.push(""); // Add space before
+            }
+            processedLines.push(
+              `<h3 style="margin: 12px 0 8px 0; font-size: 16px; font-weight: 600; color: var(--text-primary);">${trimmed.substring(
+                4
+              )}</h3>`
+            );
+            inList = false;
+          } else if (trimmed.startsWith("## ")) {
+            if (
+              processedLines.length > 0 &&
+              processedLines[processedLines.length - 1] !== ""
+            ) {
+              processedLines.push(""); // Add space before
+            }
+            processedLines.push(
+              `<h2 style="margin: 16px 0 10px 0; font-size: 18px; font-weight: 700; color: var(--text-primary);">${trimmed.substring(
+                3
+              )}</h2>`
+            );
+            inList = false;
+          } else if (trimmed.startsWith("# ")) {
+            if (
+              processedLines.length > 0 &&
+              processedLines[processedLines.length - 1] !== ""
+            ) {
+              processedLines.push("");
+            }
+            processedLines.push(
+              `<h2 style="margin: 16px 0 10px 0; font-size: 18px; font-weight: 700; color: var(--text-primary);">${trimmed.substring(
+                2
+              )}</h2>`
+            );
+            inList = false;
+          }
+          // Bullet points with spacing
+          else if (
+            trimmed.startsWith("• ") ||
+            trimmed.startsWith("- ") ||
+            trimmed.startsWith("* ")
+          ) {
+            if (
+              !inList &&
+              processedLines.length > 0 &&
+              processedLines[processedLines.length - 1] !== ""
+            ) {
+              processedLines.push(""); // Add space before list
+            }
+            const content = trimmed.substring(2).trim();
+            processedLines.push(
+              `<div style="margin: 4px 0; padding-left: 20px; position: relative;"><span style="position: absolute; left: 0;">•</span>${content}</div>`
+            );
+            inList = true;
+          }
+          // Numbered lists
+          else if (/^\d+\.\s/.test(trimmed)) {
+            if (
+              !inList &&
+              processedLines.length > 0 &&
+              processedLines[processedLines.length - 1] !== ""
+            ) {
+              processedLines.push("");
+            }
+            processedLines.push(
+              `<div style="margin: 4px 0; padding-left: 20px;">${trimmed}</div>`
+            );
+            inList = true;
+          }
+          // Blockquotes
+          else if (trimmed.startsWith("> ")) {
+            if (
+              processedLines.length > 0 &&
+              processedLines[processedLines.length - 1] !== ""
+            ) {
+              processedLines.push("");
+            }
+            processedLines.push(
+              `<blockquote style="margin: 12px 0; padding: 10px 15px; border-left: 4px solid #2196f3; background: rgba(33, 150, 243, 0.1); border-radius: 4px;">${trimmed.substring(
+                2
+              )}</blockquote>`
+            );
+            if (i < lines.length - 1 && lines[i + 1].trim()) {
+              processedLines.push("");
+            }
+            inList = false;
+          }
+          // Regular paragraphs
+          else {
+            if (inList && processedLines.length > 0) {
+              processedLines.push(""); // Add space after list
+            }
+            processedLines.push(line);
+            inList = false;
+          }
+        }
+
+        formatted = processedLines.join("\n");
+
+        // Apply inline formatting
+        formatted = formatted
+          .replace(
+            /\*\*(.*?)\*\*/g,
+            '<strong style="font-weight: 600;">$1</strong>'
+          ) // Bold
+          .replace(/\*(.*?)\*/g, "<em>$1</em>") // Italic
+          .replace(
+            /`([^`]+)`/g,
+            '<code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 0.9em;">$1</code>'
+          ) // Inline code
+          .replace(/\n\n/g, "<br><br>") // Double line breaks
+          .replace(/\n/g, "<br>"); // Single line breaks
+
+        return formatted;
       }
 
       function updateSources(sources, usedFiles = []) {
@@ -975,23 +1294,25 @@
         sources.forEach((source) => {
           const sourceItem = document.createElement("div");
           sourceItem.className = "source-item";
-          
+
           const fileIcon = getFileIcon(source.title);
-          const typeInfo = source.type ? `${source.type.toUpperCase()} • ` : '';
-          const wordInfo = source.word_count ? `${source.word_count} words` : '';
-          
+          const typeInfo = source.type ? `${source.type.toUpperCase()} • ` : "";
+          const wordInfo = source.word_count
+            ? `${source.word_count} words`
+            : "";
+
           // Generate thumbnail for images and videos
-          let thumbnailHtml = '';
-          const extension = source.title.split('.').pop().toLowerCase();
-          
-          if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(extension)) {
+          let thumbnailHtml = "";
+          const extension = source.title.split(".").pop().toLowerCase();
+
+          if (["jpg", "jpeg", "png", "gif", "bmp"].includes(extension)) {
             thumbnailHtml = `
               <div class="source-thumbnail">
                 <img src="/uploads/${source.title}" alt="${source.title}" 
                      style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px; margin-right: 8px;" 
                      onerror="this.style.display='none'">
               </div>`;
-          } else if (['mp4', 'avi', 'mov', 'mkv', 'webm'].includes(extension)) {
+          } else if (["mp4", "avi", "mov", "mkv", "webm"].includes(extension)) {
             thumbnailHtml = `
               <div class="source-thumbnail">
                 <video style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px; margin-right: 8px;" 
@@ -1000,7 +1321,7 @@
                 </video>
               </div>`;
           }
-          
+
           sourceItem.innerHTML = `
             <div style="display: flex; align-items: flex-start; gap: 8px;" onclick="previewFile('${source.title}', '${extension}')" style="cursor: pointer;">
               ${thumbnailHtml}
@@ -1013,27 +1334,30 @@
               </div>
             </div>
           `;
-          
+
           // Add click handler for file preview
-          sourceItem.style.cursor = 'pointer';
-          sourceItem.addEventListener('click', () => previewFile(source.title, extension));
+          sourceItem.style.cursor = "pointer";
+          sourceItem.addEventListener("click", () =>
+            previewFile(source.title, extension)
+          );
           sourceList.appendChild(sourceItem);
         });
       }
-      
+
       function loadChatSources(chatId) {
         const sources = chatSources[chatId] || [];
         updateSources(sources);
       }
-      
+
       function showLoadingMessage() {
         const chatArea = document.getElementById("chatArea");
         const loadingDiv = document.createElement("div");
         loadingDiv.className = "message loading-message";
         loadingDiv.id = "loadingMessage";
-        
-        const avatarUrl = currentTutor === "enola" ? "/static/enola.jpg" : "/static/tutor.png";
-        
+
+        const avatarUrl =
+          currentTutor === "enola" ? "/static/enola.jpg" : "/static/tutor.png";
+
         loadingDiv.innerHTML = `
           <div class="message-avatar" style="background-image: url('${avatarUrl}')"></div>
           <div class="message-content">
@@ -1041,16 +1365,56 @@
             Thinking...
           </div>
         `;
-        
+
         chatArea.appendChild(loadingDiv);
         chatArea.scrollTop = chatArea.scrollHeight;
       }
-      
+
       function removeLoadingMessage() {
         const loadingMsg = document.getElementById("loadingMessage");
         if (loadingMsg) {
           loadingMsg.remove();
         }
+      }
+
+      // Custom delete confirmation modal
+      function showDeleteConfirm(message) {
+        return new Promise((resolve) => {
+          const t = translations[currentLanguage];
+          const modal = document.createElement("div");
+          modal.className = "custom-modal";
+          modal.innerHTML = `
+            <div class="custom-modal-overlay"></div>
+            <div class="custom-modal-content">
+              <div class="custom-modal-icon">⚠️</div>
+              <div class="custom-modal-message">${message}</div>
+              <div class="custom-modal-buttons">
+                <button class="custom-modal-btn cancel" id="cancelBtn">${t.cancel}</button>
+                <button class="custom-modal-btn delete" id="deleteBtn">${t.delete}</button>
+              </div>
+            </div>
+          `;
+
+          document.body.appendChild(modal);
+
+          // Animate in
+          setTimeout(() => modal.classList.add("show"), 10);
+
+          const cleanup = (result) => {
+            modal.classList.remove("show");
+            setTimeout(() => {
+              if (document.body.contains(modal)) {
+                document.body.removeChild(modal);
+              }
+            }, 300);
+            resolve(result);
+          };
+
+          modal.querySelector("#cancelBtn").onclick = () => cleanup(false);
+          modal.querySelector("#deleteBtn").onclick = () => cleanup(true);
+          modal.querySelector(".custom-modal-overlay").onclick = () =>
+            cleanup(false);
+        });
       }
 
       // Utility functions
@@ -1067,47 +1431,51 @@
 
       // Authentication functions
       function checkAuthStatus() {
-        const token = localStorage.getItem('access_token');
-        const user = localStorage.getItem('user');
-        
+        const token = localStorage.getItem("access_token");
+        const user = localStorage.getItem("user");
+
         if (token && user) {
           const userData = JSON.parse(user);
-          document.getElementById('userInfo').innerHTML = `👤 ${userData.username}`;
-          document.getElementById('authActions').innerHTML = `
+          document.getElementById(
+            "userInfo"
+          ).innerHTML = `👤 ${userData.username}`;
+          document.getElementById("authActions").innerHTML = `
             <a href="#" onclick="logout()">Sign Out</a>
           `;
         }
       }
-      
+
       function logout() {
         // Add fade out animation
-        document.body.style.transition = 'opacity 0.3s ease';
-        document.body.style.opacity = '0';
-        
+        document.body.style.transition = "opacity 0.3s ease";
+        document.body.style.opacity = "0";
+
         setTimeout(() => {
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('user');
-          localStorage.removeItem('chatModeHistory');
-          localStorage.removeItem('selectedLanguage');
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("user");
+          localStorage.removeItem("chatModeHistory");
+          localStorage.removeItem("selectedLanguage");
           location.reload();
         }, 300);
       }
-      
+
       // Chat persistence functions
       async function saveChatToDatabase() {
         if (!currentChatId) return;
-        
+
         const chatKey = `${currentChatId}_${currentMode}`;
         const messages = chatModeHistory[chatKey] || [];
         const title = chatTitles[currentChatId] || "New Chat";
         const filesUsed = chatSources[currentChatId] || [];
-        
+
         try {
-          await fetch('/chats/save', {
-            method: 'POST',
+          await fetch("/chats/save", {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${
+                localStorage.getItem("access_token") || ""
+              }`,
             },
             body: JSON.stringify({
               chat_id: currentChatId,
@@ -1115,35 +1483,40 @@
               mode: currentMode,
               tutor: currentTutor,
               messages: messages,
-              files_used: filesUsed.map(s => s.title)
-            })
+              files_used: filesUsed.map((s) => s.title),
+            }),
           });
         } catch (error) {
-          console.error('Error saving chat:', error);
+          console.error("Error saving chat:", error);
         }
       }
-      
+
       async function loadChatsFromDatabase() {
         try {
-          const response = await fetch('/chats/list', {
+          const response = await fetch("/chats/list", {
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`
-            }
+              Authorization: `Bearer ${
+                localStorage.getItem("access_token") || ""
+              }`,
+            },
           });
-          
+
           if (response.ok) {
             const data = await response.json();
-            const chatList = document.getElementById('chatList');
-            
+            const chatList = document.getElementById("chatList");
+
             // Clear existing chats except the default one
-            chatList.innerHTML = '';
-            
+            chatList.innerHTML = "";
+
             if (data.chats && data.chats.length > 0) {
               data.chats.forEach((chat, index) => {
-                const chatItem = document.createElement('div');
-                chatItem.className = `chat-item ${index === 0 ? 'active' : ''}`;
-                chatItem.setAttribute('data-chat-id', chat.chat_id);
-                chatItem.setAttribute('onclick', `switchToChat(${chat.chat_id})`);
+                const chatItem = document.createElement("div");
+                chatItem.className = `chat-item ${index === 0 ? "active" : ""}`;
+                chatItem.setAttribute("data-chat-id", chat.chat_id);
+                chatItem.setAttribute(
+                  "onclick",
+                  `switchToChat(${chat.chat_id})`
+                );
                 chatItem.innerHTML = `
                   <span>${chat.title}</span>
                   <div class="item-actions">
@@ -1152,7 +1525,7 @@
                   </div>
                 `;
                 chatList.appendChild(chatItem);
-                
+
                 // Restore chat data
                 chatTitles[chat.chat_id] = chat.title;
                 if (chat.messages) {
@@ -1160,78 +1533,124 @@
                   chatModeHistory[chatKey] = chat.messages;
                 }
                 if (chat.files_used) {
-                  chatSources[chat.chat_id] = chat.files_used.map(filename => ({title: filename}));
+                  chatSources[chat.chat_id] = chat.files_used.map(
+                    (filename) => ({ title: filename })
+                  );
                 }
-                
+
                 if (index === 0) {
                   currentChatId = chat.chat_id;
                   currentMode = chat.mode;
                   currentTutor = chat.tutor;
                 }
               });
-              
-              chatCounter = Math.max(...data.chats.map(c => c.chat_id));
+
+              chatCounter = Math.max(...data.chats.map((c) => c.chat_id));
             } else {
               // Create default chat if none exist
               addNewChat();
             }
           }
         } catch (error) {
-          console.error('Error loading chats:', error);
+          console.error("Error loading chats:", error);
           // Create default chat on error
           addNewChat();
         }
       }
-      
+
       // Auto-save chat periodically (reduced frequency)
       setInterval(saveChatToDatabase, 120000); // Save every 2 minutes
-      
+
       // Save chat before page unload
-      window.addEventListener('beforeunload', saveChatToDatabase);
+      window.addEventListener("beforeunload", saveChatToDatabase);
 
       // Language management
       function toggleLanguageDropdown() {
-        document.getElementById('languageDropdown').classList.toggle('show');
+        document.getElementById("languageDropdown").classList.toggle("show");
       }
-      
+
       function selectLanguage(code, display) {
         currentLanguage = code;
-        document.getElementById('languageBtn').innerHTML = `🌐 ${display}`;
-        document.getElementById('languageDropdown').classList.remove('show');
-        document.querySelectorAll('.language-option').forEach(opt => opt.classList.remove('active'));
-        event.target.classList.add('active');
-        localStorage.setItem('selectedLanguage', code);
-        showNotification(`Language changed to ${display}`, 'info');
+        document.getElementById("languageBtn").innerHTML = `🌐 ${display}`;
+        document.getElementById("languageDropdown").classList.remove("show");
+        document
+          .querySelectorAll(".language-option")
+          .forEach((opt) => opt.classList.remove("active"));
+        event.target.classList.add("active");
+        localStorage.setItem("selectedLanguage", code);
+        updateUILanguage();
+        showNotification(`Language changed to ${display}`, "info");
       }
-      
+
+      function updateUILanguage() {
+        const t = translations[currentLanguage];
+
+        // Update section titles
+        document.querySelectorAll(".section-title")[0].textContent = t.chats;
+        document.querySelectorAll(".section-title")[1].textContent = t.assets;
+        document.querySelector(
+          ".source-panel h3"
+        ).textContent = `📚 ${t.sources}`;
+
+        // Update mode buttons
+        document.getElementById("explanationModeBtn").innerHTML =
+          t.explanationMode;
+        document.getElementById("testingModeBtn").innerHTML = t.testingMode;
+
+        // Update input placeholder
+        const input = document.getElementById("messageInput");
+        if (currentMode === "explanation") {
+          input.placeholder = t.askPlaceholder;
+        } else {
+          input.placeholder = t.quizPlaceholder;
+        }
+
+        // Update no assets message
+        const noAssetsMsg = document.querySelector(".no-assets-message");
+        if (noAssetsMsg) {
+          noAssetsMsg.textContent = t.noAssets;
+        }
+
+        // Reload welcome message
+        loadModeHistory();
+      }
+
       // Quiz management
       function displayQuiz(quizData) {
-        const quizPanel = document.getElementById('quizPanel');
-        const quizContainer = document.getElementById('quizContainer');
-        const sourcePanel = document.querySelector('.source-panel');
-        
+        const quizPanel = document.getElementById("quizPanel");
+        const quizContainer = document.getElementById("quizContainer");
+        const sourcePanel = document.querySelector(".source-panel");
+
         currentQuiz = quizData;
         quizAnswers = {};
-        
-        quizPanel.style.display = 'block';
-        sourcePanel.style.display = 'none';
-        
+
+        quizPanel.style.display = "block";
+        sourcePanel.style.display = "none";
+
         let quizHtml = `
           <div class="quiz-container">
             <div class="quiz-header">
-              <div class="quiz-title">${quizData.title || 'Interactive Quiz'}</div>
-              <div class="quiz-progress">Question 1 of ${quizData.questions.length}</div>
+              <div class="quiz-title">${
+                quizData.title || "Interactive Quiz"
+              }</div>
+              <div class="quiz-progress">Question 1 of ${
+                quizData.questions.length
+              }</div>
             </div>
             <div id="quizQuestions">
         `;
-        
+
         quizData.questions.forEach((question, index) => {
           quizHtml += `
-            <div class="quiz-question" id="question-${index}" style="${index === 0 ? '' : 'display: none;'}">
-              <div class="question-text">${index + 1}. ${question.question}</div>
+            <div class="quiz-question" id="question-${index}" style="${
+            index === 0 ? "" : "display: none;"
+          }">
+              <div class="question-text">${index + 1}. ${
+            question.question
+          }</div>
           `;
-          
-          if (question.type === 'multiple_choice') {
+
+          if (question.type === "multiple_choice") {
             quizHtml += '<div class="quiz-options">';
             question.options.forEach((option, optIndex) => {
               const letter = String.fromCharCode(65 + optIndex);
@@ -1242,8 +1661,8 @@
                 </div>
               `;
             });
-            quizHtml += '</div>';
-          } else if (question.type === 'true_false') {
+            quizHtml += "</div>";
+          } else if (question.type === "true_false") {
             quizHtml += `
               <div class="quiz-options">
                 <div class="quiz-option" onclick="selectQuizOption(${index}, 'True', this)">
@@ -1256,16 +1675,16 @@
                 </div>
               </div>
             `;
-          } else if (question.type === 'short_answer') {
+          } else if (question.type === "short_answer") {
             quizHtml += `
               <textarea class="quiz-input" placeholder="Write your answer in 2-3 sentences..." 
                        onchange="quizAnswers[${index}] = this.value" rows="3"></textarea>
             `;
           }
-          
-          quizHtml += '</div>';
+
+          quizHtml += "</div>";
         });
-        
+
         quizHtml += `
             </div>
             <div class="quiz-actions">
@@ -1275,187 +1694,400 @@
             </div>
           </div>
         `;
-        
+
         quizContainer.innerHTML = quizHtml;
       }
-      
+
       function selectQuizOption(questionIndex, answer, element) {
-        element.parentNode.querySelectorAll('.quiz-option').forEach(opt => {
-          opt.classList.remove('selected');
+        element.parentNode.querySelectorAll(".quiz-option").forEach((opt) => {
+          opt.classList.remove("selected");
         });
-        element.classList.add('selected');
+        element.classList.add("selected");
         quizAnswers[questionIndex] = answer;
       }
-      
+
       let currentQuestionIndex = 0;
-      
+
       function nextQuestion() {
-        const questions = document.querySelectorAll('.quiz-question');
+        const questions = document.querySelectorAll(".quiz-question");
         if (currentQuestionIndex < questions.length - 1) {
-          questions[currentQuestionIndex].style.display = 'none';
+          questions[currentQuestionIndex].style.display = "none";
           currentQuestionIndex++;
-          questions[currentQuestionIndex].style.display = 'block';
-          
-          document.querySelector('.quiz-progress').textContent = 
-            `Question ${currentQuestionIndex + 1} of ${questions.length}`;
-          
-          document.getElementById('prevBtn').style.display = 'inline-block';
-          
+          questions[currentQuestionIndex].style.display = "block";
+
+          document.querySelector(".quiz-progress").textContent = `Question ${
+            currentQuestionIndex + 1
+          } of ${questions.length}`;
+
+          document.getElementById("prevBtn").style.display = "inline-block";
+
           if (currentQuestionIndex === questions.length - 1) {
-            document.getElementById('nextBtn').style.display = 'none';
-            document.getElementById('submitBtn').style.display = 'inline-block';
+            document.getElementById("nextBtn").style.display = "none";
+            document.getElementById("submitBtn").style.display = "inline-block";
           }
         }
       }
-      
+
       function previousQuestion() {
-        const questions = document.querySelectorAll('.quiz-question');
+        const questions = document.querySelectorAll(".quiz-question");
         if (currentQuestionIndex > 0) {
-          questions[currentQuestionIndex].style.display = 'none';
+          questions[currentQuestionIndex].style.display = "none";
           currentQuestionIndex--;
-          questions[currentQuestionIndex].style.display = 'block';
-          
-          document.querySelector('.quiz-progress').textContent = 
-            `Question ${currentQuestionIndex + 1} of ${questions.length}`;
-          
+          questions[currentQuestionIndex].style.display = "block";
+
+          document.querySelector(".quiz-progress").textContent = `Question ${
+            currentQuestionIndex + 1
+          } of ${questions.length}`;
+
           if (currentQuestionIndex === 0) {
-            document.getElementById('prevBtn').style.display = 'none';
+            document.getElementById("prevBtn").style.display = "none";
           }
-          
-          document.getElementById('nextBtn').style.display = 'inline-block';
-          document.getElementById('submitBtn').style.display = 'none';
+
+          document.getElementById("nextBtn").style.display = "inline-block";
+          document.getElementById("submitBtn").style.display = "none";
         }
       }
-      
-      function submitQuiz() {
+
+      async function submitQuiz() {
         if (!currentQuiz) return;
-        
+
         let score = 0;
         currentQuiz.questions.forEach((question, index) => {
           if (quizAnswers[index] === question.correct_answer) {
             score++;
           }
         });
+
+        const percentage = Math.round(
+          (score / currentQuiz.questions.length) * 100
+        );
         
-        const percentage = Math.round((score / currentQuiz.questions.length) * 100);
-        const quizContainer = document.getElementById('quizContainer');
+        // Save quiz result to database
+        try {
+          await fetch("/quiz-results/save", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("access_token") || ""}`,
+            },
+            body: JSON.stringify({
+              quiz_data: currentQuiz,
+              score: score,
+              total_questions: currentQuiz.questions.length,
+              answers: quizAnswers
+            })
+          });
+        } catch (error) {
+          console.error("Error saving quiz result:", error);
+        }
         
+        const quizContainer = document.getElementById("quizContainer");
+
         let resultsHtml = `
           <div class="quiz-results">
-            <div class="quiz-score">Score: ${score}/${currentQuiz.questions.length} (${percentage}%)</div>
+            <div class="quiz-score">Score: ${score}/${
+          currentQuiz.questions.length
+        } (${percentage}%)</div>
             <div class="quiz-feedback">
-              ${percentage >= 80 ? 'Excellent work! 🎉' : 
-                percentage >= 60 ? 'Good job! Keep practicing. 👍' : 
-                'Keep studying and try again! 📚'}
+              ${
+                percentage >= 80
+                  ? "Excellent work! 🎉"
+                  : percentage >= 60
+                  ? "Good job! Keep practicing. 👍"
+                  : "Keep studying and try again! 📚"
+              }
             </div>
           </div>
         `;
-        
+
         // Show detailed results for each question
         currentQuiz.questions.forEach((question, index) => {
           const userAnswer = quizAnswers[index];
-          const correctAnswer = question.correct_answer || 'A';
+          const correctAnswer = question.correct_answer || "A";
           const isCorrect = userAnswer === correctAnswer;
-          
+
           resultsHtml += `
             <div class="quiz-question">
-              <div class="question-text">${index + 1}. ${question.question}</div>
-              <div class="quiz-option ${isCorrect ? 'correct' : 'incorrect'}">
-                Your answer: ${userAnswer || 'Not answered'}
+              <div class="question-text">${index + 1}. ${
+            question.question
+          }</div>
+              <div class="quiz-option ${isCorrect ? "correct" : "incorrect"}">
+                Your answer: ${userAnswer || "Not answered"}
               </div>
-              ${!isCorrect && question.type !== 'short_answer' ? `
+              ${
+                !isCorrect && question.type !== "short_answer"
+                  ? `
                 <div class="quiz-option correct">
                   Correct answer: ${correctAnswer}
                 </div>
-              ` : ''}
+              `
+                  : ""
+              }
             </div>
           `;
         });
-        
+
         resultsHtml += `
           <div class="quiz-actions">
             <button class="quiz-btn secondary" onclick="hideQuiz()">Close Quiz</button>
             <button class="quiz-btn primary" onclick="retakeQuiz()">Retake Quiz</button>
           </div>
         `;
-        
+
         quizContainer.innerHTML = resultsHtml;
       }
-      
+
       function retakeQuiz() {
         if (currentQuiz) {
           currentQuestionIndex = 0;
           displayQuiz(currentQuiz);
         }
       }
-      
+
       function hideQuiz() {
-        document.getElementById('quizPanel').style.display = 'none';
-        document.querySelector('.source-panel').style.display = 'block';
+        document.getElementById("quizPanel").style.display = "none";
+        document.querySelector(".source-panel").style.display = "block";
         currentQuiz = null;
         quizAnswers = {};
       }
-      
+
       // Enhanced quiz parsing from Franklin's response
       function parseQuizFromResponse(response) {
         try {
-          const lines = response.split('\n');
+          const lines = response.split("\n");
           const questions = [];
           let currentQuestion = null;
           let questionCount = 0;
-          
+
           for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
-            
+
             // Detect question start
             if (line.match(/^\*\*Question \d+:\*\*/)) {
               if (currentQuestion) questions.push(currentQuestion);
               questionCount++;
               currentQuestion = {
-                question: line.replace(/^\*\*Question \d+:\*\*\s*/, ''),
-                type: 'multiple_choice',
+                question: line.replace(/^\*\*Question \d+:\*\*\s*/, ""),
+                type: "multiple_choice",
                 options: [],
-                correct_answer: 'A'
+                correct_answer: "A",
               };
             }
             // Detect multiple choice options
             else if (line.match(/^\*\*[A-D]\)\*\*/)) {
               if (currentQuestion) {
-                currentQuestion.options.push(line.replace(/^\*\*[A-D]\)\*\*\s*/, ''));
+                currentQuestion.options.push(
+                  line.replace(/^\*\*[A-D]\)\*\*\s*/, "")
+                );
               }
             }
             // Detect True/False questions
-            else if (line.includes('True or False')) {
+            else if (line.includes("True or False")) {
               if (currentQuestion) {
-                currentQuestion.type = 'true_false';
-                currentQuestion.options = ['True', 'False'];
+                currentQuestion.type = "true_false";
+                currentQuestion.options = ["True", "False"];
               }
             }
             // Detect short answer questions
-            else if (line.includes('Write your answer') || line.includes('2-3 sentences')) {
+            else if (
+              line.includes("Write your answer") ||
+              line.includes("2-3 sentences")
+            ) {
               if (currentQuestion) {
-                currentQuestion.type = 'short_answer';
+                currentQuestion.type = "short_answer";
                 currentQuestion.options = [];
               }
             }
           }
-          
+
           if (currentQuestion) questions.push(currentQuestion);
-          
-          return questions.length > 0 ? {
-            title: 'Interactive Quiz',
-            questions: questions
-          } : null;
-          
+
+          return questions.length > 0
+            ? {
+                title: "Interactive Quiz",
+                questions: questions,
+              }
+            : null;
         } catch (error) {
-          console.error('Quiz parsing error:', error);
+          console.error("Quiz parsing error:", error);
           return null;
         }
       }
+
+      // User profile modal
+      async function openUserProfile() {
+        const modal = document.getElementById("userProfileModal");
+        modal.style.display = "block";
+        
+        // Load all data
+        await loadProfileChats();
+        await loadProfileAssets();
+        await loadProfileQuizHistory();
+      }
       
-      document.addEventListener('click', function(event) {
-        if (!event.target.closest('.language-selector')) {
-          document.getElementById('languageDropdown').classList.remove('show');
+      async function loadProfileChats() {
+        const container = document.getElementById("profileChatList");
+        container.innerHTML = '<div style="text-align: center; padding: 20px;">Loading...</div>';
+        
+        try {
+          const response = await fetch("/chats/list", {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token") || ""}`
+            }
+          });
+          const data = await response.json();
+          
+          if (data.chats && data.chats.length > 0) {
+            container.innerHTML = '';
+            data.chats.forEach(chat => {
+              const chatDiv = document.createElement("div");
+              chatDiv.style.cssText = "padding: 10px; margin-bottom: 8px; background: var(--bg-tertiary); border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;";
+              chatDiv.innerHTML = `
+                <div onclick="switchToChatFromProfile(${chat.chat_id})" style="flex: 1;">
+                  <div style="font-weight: 600;">${chat.title}</div>
+                  <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                    ${chat.tutor === 'enola' ? '👩 Enola' : '👨 Franklin'} • ${new Date(chat.updated_at).toLocaleDateString()}
+                  </div>
+                </div>
+                <button onclick="event.stopPropagation(); deleteChat(${chat.chat_id}); setTimeout(loadProfileChats, 500);" 
+                        style="background: none; border: none; cursor: pointer; font-size: 18px;">🗑️</button>
+              `;
+              container.appendChild(chatDiv);
+            });
+          } else {
+            container.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 20px;">No chats yet</div>';
+          }
+        } catch (error) {
+          console.error("Error loading profile chats:", error);
+          container.innerHTML = '<div style="text-align: center; color: red; padding: 20px;">Error loading chats</div>';
+        }
+      }
+      
+      async function loadProfileAssets() {
+        const container = document.getElementById("profileAssetList");
+        container.innerHTML = '<div style="text-align: center; padding: 20px;">Loading...</div>';
+        
+        try {
+          const response = await fetch("/documents", {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token") || ""}`
+            }
+          });
+          const data = await response.json();
+          
+          if (data && data.length > 0) {
+            container.innerHTML = '';
+            data.forEach(doc => {
+              const assetDiv = document.createElement("div");
+              assetDiv.style.cssText = "padding: 8px; margin-bottom: 6px; background: var(--bg-tertiary); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;";
+              const icon = getFileIcon(doc.filename);
+              assetDiv.innerHTML = `
+                <div style="flex: 1;">
+                  <div>${icon} ${doc.filename}</div>
+                  <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">
+                    ${new Date(doc.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+              `;
+              container.appendChild(assetDiv);
+            });
+          } else {
+            container.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 20px;">No assets uploaded</div>';
+          }
+        } catch (error) {
+          console.error("Error loading profile assets:", error);
+          container.innerHTML = '<div style="text-align: center; color: red; padding: 20px;">Error loading assets</div>';
+        }
+      }
+      
+      async function loadProfileQuizHistory() {
+        const statsContainer = document.getElementById("profileQuizStats");
+        const historyContainer = document.getElementById("profileQuizHistory");
+        
+        statsContainer.innerHTML = '<div style="text-align: center; padding: 10px;">Loading stats...</div>';
+        historyContainer.innerHTML = '<div style="text-align: center; padding: 10px;">Loading history...</div>';
+        
+        try {
+          // Load stats
+          const statsResponse = await fetch("/quiz-results/stats", {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token") || ""}`
+            }
+          });
+          const stats = await statsResponse.json();
+          
+          if (stats.total_quizzes > 0) {
+            const trendEmoji = stats.improvement_trend === 'improving' ? '📈' : 
+                              stats.improvement_trend === 'declining' ? '📉' : '➡️';
+            statsContainer.innerHTML = `
+              <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 6px;">
+                <div style="display: flex; justify-content: space-around; text-align: center;">
+                  <div>
+                    <div style="font-size: 24px; font-weight: bold; color: var(--primary-color);">${stats.total_quizzes}</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">Quizzes</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 24px; font-weight: bold; color: var(--primary-color);">${stats.average_score}%</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">Avg Score</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 24px;">${trendEmoji}</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); text-transform: capitalize;">${stats.improvement_trend}</div>
+                  </div>
+                </div>
+              </div>
+            `;
+          } else {
+            statsContainer.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 10px;">No quiz stats yet</div>';
+          }
+          
+          // Load history
+          const historyResponse = await fetch("/quiz-results/history", {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token") || ""}`
+            }
+          });
+          const history = await historyResponse.json();
+          
+          if (history.results && history.results.length > 0) {
+            historyContainer.innerHTML = '';
+            history.results.forEach(result => {
+              const resultDiv = document.createElement("div");
+              resultDiv.style.cssText = "padding: 10px; margin-bottom: 8px; background: var(--bg-tertiary); border-radius: 6px;";
+              const scoreColor = result.percentage >= 80 ? '#4caf50' : result.percentage >= 60 ? '#ff9800' : '#f44336';
+              resultDiv.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-weight: 600;">${result.score}/${result.total_questions} questions</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                      ${new Date(result.completed_at).toLocaleString()}
+                    </div>
+                  </div>
+                  <div style="font-size: 20px; font-weight: bold; color: ${scoreColor};">
+                    ${result.percentage}%
+                  </div>
+                </div>
+              `;
+              historyContainer.appendChild(resultDiv);
+            });
+          } else {
+            historyContainer.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 20px;">No quiz history yet</div>';
+          }
+        } catch (error) {
+          console.error("Error loading quiz history:", error);
+          statsContainer.innerHTML = '<div style="text-align: center; color: red;">Error loading stats</div>';
+          historyContainer.innerHTML = '<div style="text-align: center; color: red;">Error loading history</div>';
+        }
+      }
+      
+      function switchToChatFromProfile(chatId) {
+        closeModal('userProfileModal');
+        switchToChat(chatId);
+      }
+
+      document.addEventListener("click", function (event) {
+        if (!event.target.closest(".language-selector")) {
+          document.getElementById("languageDropdown").classList.remove("show");
         }
       });
 
@@ -1464,56 +2096,61 @@
         loadTheme();
         setupDragAndDrop();
         checkAuthStatus();
-        
+
         // Load chat history from localStorage as fallback
-        const savedHistory = localStorage.getItem('chatModeHistory');
+        const savedHistory = localStorage.getItem("chatModeHistory");
         if (savedHistory) {
           try {
             chatModeHistory = JSON.parse(savedHistory);
           } catch (e) {
-            console.error('Error loading chat history:', e);
+            console.error("Error loading chat history:", e);
           }
         }
-        
+
         // Initialize with Enola
         currentTutor = "enola";
         currentMode = "explanation";
         updateTutorDisplay();
         updateModeDisplay();
-        
+
         // Load chats from database
         await loadChatsFromDatabase();
-        
+
         // Load saved language
-        const savedLanguage = localStorage.getItem('selectedLanguage');
+        const savedLanguage = localStorage.getItem("selectedLanguage");
         if (savedLanguage) {
-          const langMap = {en: 'EN', de: 'DE', sk: 'SK'};
+          const langMap = { en: "EN", de: "DE", sk: "SK" };
           if (langMap[savedLanguage]) {
             currentLanguage = savedLanguage;
-            document.getElementById('languageBtn').innerHTML = `🌐 ${langMap[savedLanguage]}`;
+            document.getElementById(
+              "languageBtn"
+            ).innerHTML = `🌐 ${langMap[savedLanguage]}`;
+            updateUILanguage();
           }
+        } else {
+          updateUILanguage(); // Apply default language
         }
-        
+
         // Load initial chat
         loadModeHistory();
       });
-      
+
       // File preview function
       function previewFile(filename, extension) {
-        const modal = document.createElement('div');
+        const modal = document.createElement("div");
         modal.style.cssText = `
           position: fixed; top: 0; left: 0; width: 100%; height: 100%;
           background: rgba(0,0,0,0.8); z-index: 2000; display: flex;
           align-items: center; justify-content: center;
         `;
-        
-        const content = document.createElement('div');
+
+        const content = document.createElement("div");
         content.style.cssText = `
           background: var(--bg-secondary); border-radius: 8px; padding: 20px;
           max-width: 80%; max-height: 80%; overflow: auto; position: relative;
         `;
-        
-        const header = document.createElement('div');
+
+        const header = document.createElement("div");
         header.innerHTML = `
           <h3>${filename}</h3>
           <button onclick="this.closest('.modal').remove()" style="
@@ -1521,33 +2158,33 @@
             border: none; font-size: 20px; cursor: pointer;
           ">&times;</button>
         `;
-        
-        const body = document.createElement('div');
-        
-        if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(extension)) {
+
+        const body = document.createElement("div");
+
+        if (["jpg", "jpeg", "png", "gif", "bmp"].includes(extension)) {
           body.innerHTML = `<img src="/uploads/${filename}" style="max-width: 100%; height: auto;" alt="${filename}">`;
-        } else if (['mp4', 'avi', 'mov', 'mkv', 'webm'].includes(extension)) {
+        } else if (["mp4", "avi", "mov", "mkv", "webm"].includes(extension)) {
           body.innerHTML = `<video controls style="max-width: 100%; height: auto;"><source src="/uploads/${filename}" type="video/${extension}"></video>`;
-        } else if (['mp3', 'wav', 'm4a', 'ogg'].includes(extension)) {
+        } else if (["mp3", "wav", "m4a", "ogg"].includes(extension)) {
           body.innerHTML = `<audio controls style="width: 100%;"><source src="/uploads/${filename}" type="audio/${extension}"></audio>`;
         } else {
-          body.innerHTML = '<div>Loading...</div>';
+          body.innerHTML = "<div>Loading...</div>";
           fetch(`/uploads/${filename}`)
-            .then(response => response.text())
-            .then(text => {
+            .then((response) => response.text())
+            .then((text) => {
               body.innerHTML = `<pre style="white-space: pre-wrap; font-family: monospace; font-size: 14px;">${text}</pre>`;
             })
             .catch(() => {
-              body.innerHTML = '<div>Error loading file</div>';
+              body.innerHTML = "<div>Error loading file</div>";
             });
         }
-        
+
         content.appendChild(header);
         content.appendChild(body);
         modal.appendChild(content);
         document.body.appendChild(modal);
-        
-        modal.addEventListener('click', (e) => {
+
+        modal.addEventListener("click", (e) => {
           if (e.target === modal) modal.remove();
         });
       }
