@@ -23,7 +23,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 Ensure you have the following installed:
 
-*   **Python 3.9+**: [Download Python](https://www.python.org/downloads/)
+*   **Python 3.10.13**: [Download Python](https://www.python.org/downloads/)
 *   **pip**: Python package installer (usually comes with Python)
 *   **Git**: For cloning the repository
 
@@ -86,7 +86,6 @@ Ensure you have the following installed:
 │   ├── static/             # Frontend static files (HTML, CSS, JS, images)
 │   ├── tests/              # Unit and integration tests
 │   └── uploads/            # Directory for user-uploaded files
-└── Dockerfile              # Docker configuration for containerization (will be added)
 ```
 
 ## Technologies Used
@@ -99,30 +98,6 @@ Ensure you have the following installed:
 *   **Multimedia Processing:** OpenCV, Pillow
 *   **Frontend:** HTML, CSS, JavaScript (served statically)
 
-## Docker Setup (Recommended for Cross-Platform Development)
-
-Docker provides a consistent environment for running the application, regardless of your operating system.
-
-### Prerequisites for Docker
-
-*   **Docker Desktop**: [Download Docker Desktop](https://www.docker.com/products/docker-desktop/)
-
-### Building and Running with Docker
-
-1.  **Build the Docker image:**
-    ```bash
-    docker build -t ai-tutor .
-    ```
-    This command builds a Docker image named `ai-tutor` from the `Dockerfile` in the current directory.
-
-2.  **Run the Docker container:**
-    ```bash
-    docker run -p 8002:8002 ai-tutor
-    ```
-    This command starts a container from the `ai-tutor` image, mapping port 8002 on your host machine to port 8002 inside the container.
-
-3.  **Access the application:**
-    Once the container is running, the application will be accessible in your web browser at `http://localhost:8002`.
 
 ## Contributing
 
