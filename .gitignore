@@ -1,0 +1,166 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+ai_tutor.db
+
+# Uploads and User Data
+uploads/*
+!uploads/.gitkeep
+data/*
+!data/.gitkeep
+
+# AI Models
+models/*
+!models/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.cursor/
+.continue/
+.claude/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Cache directories
+.cache/
+.android/
+.aws/
+.npm/
+.ollama/
+.pub-cache/
+.rustup/
+.sdkman/
+.skiko/
+.swiftpm/
+.wdm/
+.gradle/
+.huggingface/
+.dart-tool/
+.dartServer/
+.docker/
+.dotnet/
+.eclipse/
+.expo/
+.flutter/
+.gemini/
+.m2/
+.matplotlib/
+.mitmproxy/
+.nuget/
+.openjfx/
+.oracle_jre_usage/
+.p2/
+.pyenv/
+.railway/
+.redhat/
+.streamlit/
+.trading_bot/
+.viminfo
+.void-editor/
+.wine_backup/
+.wine_backup2/
+
+# Other generated files
+.emulator_console_auth_token
+.gitconfig
+.h2.server.properties
+.lesshst
+.lingma/
+.local/
+.packettracer
+.sleep
+.sqlite_history
+.ssh/
+.wakeup
+.zcompdump
+.zprofile
+.zprofile.pysave
+.zsh_history
+.zsh_sessions/
+.zshrc
+Applications/
+Cisco Packet Tracer 8.2.2/
+Desktop/
+Downloads/
+GNS3/
+Library/
+Movies/
+Music/
+Pictures/
+Public/
+PyCharmMiscProject.iml
+PyCharmMiscProject/
+PycharmProjects/
+Setup Guide In-Editor Tutorial/
+Virtual Machines.localized/
+cAlgo/
+cTrader/
+eclipse/
+iCloud Drive (Archive)/
+java_error_in_pycharm_50393.log
+jbr_err_pid50393.log
+librarydb.mv.db
+librarydb.trace.db
+matlab_crash_dump.*
+nginx_proxy/
+nltk_data/
+pine-script-project/
+test.pcapng
+test/
