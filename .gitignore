@@ -135,32 +135,3 @@ tmp/
 .zsh_history
 .zsh_sessions/
 .zshrc
-Applications/
-Cisco Packet Tracer 8.2.2/
-Desktop/
-Downloads/
-GNS3/
-Library/
-Movies/
-Music/
-Pictures/
-Public/
-PyCharmMiscProject.iml
-PyCharmMiscProject/
-PycharmProjects/
-Setup Guide In-Editor Tutorial/
-Virtual Machines.localized/
-cAlgo/
-cTrader/
-eclipse/
-iCloud Drive (Archive)/
-java_error_in_pycharm_50393.log
-jbr_err_pid50393.log
-librarydb.mv.db
-librarydb.trace.db
-matlab_crash_dump.*
-nginx_proxy/
-nltk_data/
-pine-script-project/
-test.pcapng
-test/
