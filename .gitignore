@@ -48,9 +48,6 @@ models/*
 *.swp
 *.swo
 *~
-.cursor/
-.continue/
-.claude/
 
 # OS
 .DS_Store
@@ -80,58 +77,3 @@ tmp/
 
 # Cache directories
 .cache/
-.android/
-.aws/
-.npm/
-.ollama/
-.pub-cache/
-.rustup/
-.sdkman/
-.skiko/
-.swiftpm/
-.wdm/
-.gradle/
-.huggingface/
-.dart-tool/
-.dartServer/
-.docker/
-.dotnet/
-.eclipse/
-.expo/
-.flutter/
-.gemini/
-.m2/
-.matplotlib/
-.mitmproxy/
-.nuget/
-.openjfx/
-.oracle_jre_usage/
-.p2/
-.pyenv/
-.railway/
-.redhat/
-.streamlit/
-.trading_bot/
-.viminfo
-.void-editor/
-.wine_backup/
-.wine_backup2/
-
-# Other generated files
-.emulator_console_auth_token
-.gitconfig
-.h2.server.properties
-.lesshst
-.lingma/
-.local/
-.packettracer
-.sleep
-.sqlite_history
-.ssh/
-.wakeup
-.zcompdump
-.zprofile
-.zprofile.pysave
-.zsh_history
-.zsh_sessions/
-.zshrc

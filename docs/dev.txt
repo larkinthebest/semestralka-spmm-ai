@@ -1,0 +1,80 @@
+Development Path Overview
+Tech Stack: Python with Tkinter (for GUI) or Flask (for a local web app), using open-source libraries for file processing and AI. Everything runs offline on a local PC, with potential LLM exceptions after consultation. The system will:
+
+Accept file uploads (PDF, text, images, audio, video).
+Extract content (text, images, transcriptions) and store in a local SQLite database.
+Implement an AI tutor with basic NLP (e.g., keyword matching or embeddings) for question answering and quiz generation.
+Track user progress (topics, errors, recommendations) in SQLite.
+Provide a simple GUI with a chat window and source panel.
+
+Tools and Libraries (All Open-Source):
+
+GUI: Tkinter (lightweight, desktop-based) or Flask + HTML/CSS/JS (local web app, more modern UI).
+File Processing:
+
+PDF: PyPDF2 or pdfplumber (text/tables extraction).
+Text: Built-in io module.
+Images: Pillow (display); tesserocr (OCR for text extraction).
+Audio: SpeechRecognition with PocketSphinx (offline speech-to-text).
+Video: moviepy (extract frames/audio); PocketSphinx for transcription.
+
+
+AI/NLP: scikit-learn or sentence-transformers for text embeddings (offline); custom logic for quiz generation.
+Database: sqlite3 (store extracted content, user profiles).
+Other: pandas for data handling; numpy for embeddings.
+
+Architecture:
+
+Frontend: Tkinter window or Flask web interface with chat input, mode toggle (Explanation/Testing), and source panel for displaying text/images.
+Backend: Python scripts for file parsing, content indexing, AI query handling, quiz generation, and user profile management.
+Data Flow: Upload files → Extract content → Store in SQLite → AI queries DB for answers/quizzes → Log user interactions → Display results/citations.
+
+Advantages Over Unity:
+
+Simpler setup: No 3D/scene management; focus on coding and UI.
+Stronger multimedia processing: Python libraries are mature for PDF/audio/video.
+Easier AI integration: Python’s ecosystem (e.g., scikit-learn) simplifies NLP tasks.
+Offline-friendly: All libraries work locally; no Unity-specific dependencies.
+
+Challenges and Mitigations:
+
+AI Limitations: Without an LLM, question answering may rely on basic keyword search or embeddings. Consult early for LLM approval (e.g., Llama.cpp or GPT4All).
+Multimedia Processing: Audio/video transcription can be slow; limit file sizes or pre-process samples.
+GUI Design: Tkinter is basic; Flask offers better visuals but requires local server setup (still offline).
+
+Timeline: 8-12 weeks. Phases: Planning (Week 1), Prototyping (Weeks 2-4), Integration (Weeks 5-7), Testing/Polish (Weeks 8+).
+Phased Development Path
+
+Phase 1: Setup and File Processing (Weeks 1-2)
+
+Set up Python environment, Git repo, and basic GUI (Tkinter or Flask).
+Implement file upload (file dialog for Tkinter; drag-drop for Flask).
+Develop parsers for PDF/text/images/audio/video; store extracted data (text, images, metadata) in SQLite.
+Milestone: Upload a PDF/image/audio file and display extracted text in the source panel.
+
+
+Phase 2: AI Core and Quiz Generation (Weeks 3-4)
+
+Build knowledge base: Index extracted text using scikit-learn (TF-IDF) or sentence-transformers (embeddings).
+Implement question answering: Match queries to DB content; cite sources; refuse off-topic questions.
+Add quiz generation: Extract keywords/sentences to create multiple-choice and open-ended questions.
+Integrate modes: Explanation (answers, citations, image display) and Testing (quizzes with scoring).
+Milestone: Ask a question in chat; get a response/quiz based on uploaded data.
+
+
+Phase 3: User Profile and Analysis (Weeks 5-6)
+
+Create SQLite schema for user profiles (topics, errors, progress).
+Implement tracking: Log questions, quiz results, and errors.
+Add recommendations: Suggest topics based on errors (e.g., “Revisit X after 2 wrong answers”).
+Enhance source panel: Display cited images/videos.
+Milestone: Complete a session, view profile, and see recommendations.
+
+
+Phase 4: UI Polish and Testing (Weeks 7+)
+
+Refine GUI: Clean chat layout, scrollable history, mode toggle button, source panel for text/images.
+Ensure offline: Test no internet dependency; validate on multiple PCs.
+Add error handling: Handle invalid files, large inputs, or parsing failures.
+Test: Unit tests for parsers/AI; user testing for usability.
+Milestone: Full demo with multiple file types, chat modes, and profile tracking.
