@@ -23,7 +23,9 @@ These instructions will get you a copy of the project up and running on your loc
 
 Ensure you have the following installed:
 
-*   **Python 3.10.13**: [Download Python](https://www.python.org/downloads/)
+*   **Python 3.13**:
+    *   **macOS/Linux**: Python 3.13 can be installed via `pyenv` or downloaded from [Python.org](https://www.python.org/downloads/). For macOS, `brew install python@3.13` might also be available.
+    *   **Windows**: Download the installer from [Python.org](https://www.python.org/downloads/). Make sure to check "Add Python 3.13 to PATH" during installation.
 *   **pip**: Python package installer (usually comes with Python)
 *   **Git**: For cloning the repository
 
@@ -37,25 +39,48 @@ Ensure you have the following installed:
 
 2.  **Create a virtual environment (recommended):**
     ```bash
-    python -m venv venv
-    # On Windows:
-    # .\venv\Scripts\activate
-    # On macOS/Linux:
-    # source venv/bin/activate
+    python3.13 -m venv venv
     ```
+    *Note: Use `python` instead of `python3.13` if your system's default `python` command points to Python 3.13.*
 
-3.  **Install dependencies:**
+3.  **Activate the virtual environment:**
+    *   **On Windows (Command Prompt/PowerShell):**
+        ```bash
+        .\venv\Scripts\activate
+        ```
+    *   **On macOS/Linux (Bash/Zsh):**
+        ```bash
+        source venv/bin/activate
+        ```
+
+4.  **Install dependencies:**
     ```bash
     pip install -r requirements.txt
     ```
 
-4.  **Initialize the database:**
+5.  **Initialize the database:**
     ```bash
-    python semestralka-spmm-ai/migrate_database.py
+    python migrate_database.py
     ```
     This will create the `ai_tutor.db` SQLite database in the project root.
 
-5.  **Run the application:**
+6.  **Set Environment Variables (Optional for local development):**
+    The application uses a `SECRET_KEY` for authentication. While a default is provided, it's best practice to set a strong, unique key via an environment variable, especially for production.
+    *   **macOS/Linux:**
+        ```bash
+        export SECRET_KEY="your_super_secret_key_here"
+        ```
+    *   **Windows (Command Prompt):**
+        ```bash
+        set SECRET_KEY="your_super_secret_key_here"
+        ```
+    *   **Windows (PowerShell):**
+        ```bash
+        $env:SECRET_KEY="your_super_secret_key_here"
+        ```
+    Replace `"your_super_secret_key_here"` with a strong, unique secret key.
+
+7.  **Run the application:**
     ```bash
     python run.py
     ```
