@@ -25,6 +25,7 @@ MANIFEST
 venv/
 env/
 ENV/
+.venv/
 
 # Database
 *.db
@@ -64,6 +65,7 @@ logs/
 
 # Environment variables
 .env
+.venv
 .env.local
 .env.development.local
 .env.test.local

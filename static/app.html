@@ -2093,46 +2093,60 @@
 
       // Initialize
       document.addEventListener("DOMContentLoaded", async function () {
-        loadTheme();
-        setupDragAndDrop();
-        checkAuthStatus();
+        try {
+          loadTheme();
+          setupDragAndDrop();
+          checkAuthStatus();
 
-        // Load chat history from localStorage as fallback
-        const savedHistory = localStorage.getItem("chatModeHistory");
-        if (savedHistory) {
-          try {
-            chatModeHistory = JSON.parse(savedHistory);
-          } catch (e) {
-            console.error("Error loading chat history:", e);
+          // Load chat history from localStorage as fallback
+          const savedHistory = localStorage.getItem("chatModeHistory");
+          if (savedHistory) {
+            try {
+              chatModeHistory = JSON.parse(savedHistory);
+            } catch (e) {
+              console.error("Error loading chat history from localStorage:", e);
+            }
           }
-        }
 
-        // Initialize with Enola
-        currentTutor = "enola";
-        currentMode = "explanation";
-        updateTutorDisplay();
-        updateModeDisplay();
+          // Initialize with Enola
+          currentTutor = "enola";
+          currentMode = "explanation";
+          updateTutorDisplay();
+          updateModeDisplay();
 
-        // Load chats from database
-        await loadChatsFromDatabase();
+          // Load chats from database
+          await loadChatsFromDatabase();
 
-        // Load saved language
-        const savedLanguage = localStorage.getItem("selectedLanguage");
-        if (savedLanguage) {
-          const langMap = { en: "EN", de: "DE", sk: "SK" };
-          if (langMap[savedLanguage]) {
-            currentLanguage = savedLanguage;
-            document.getElementById(
-              "languageBtn"
-            ).innerHTML = `🌐 ${langMap[savedLanguage]}`;
-            updateUILanguage();
+          // Load saved language
+          const savedLanguage = localStorage.getItem("selectedLanguage");
+          if (savedLanguage) {
+            const langMap = { en: "EN", de: "DE", sk: "SK" };
+            if (langMap[savedLanguage]) {
+              currentLanguage = savedLanguage;
+              document.getElementById(
+                "languageBtn"
+              ).innerHTML = `🌐 ${langMap[savedLanguage]}`;
+              updateUILanguage();
+            }
+          } else {
+            updateUILanguage(); // Apply default language
           }
-        } else {
-          updateUILanguage(); // Apply default language
-        }
 
-        // Load initial chat
-        loadModeHistory();
+          // Load initial chat
+          loadModeHistory();
+        } catch (error) {
+          console.error("Error during DOMContentLoaded initialization:", error);
+          // Display a user-friendly error message on the screen
+          const body = document.body;
+          body.innerHTML = `
+            <div style="text-align: center; padding: 50px; font-family: sans-serif; color: #333;">
+              <h1>Oops! Something went wrong.</h1>
+              <p>We're having trouble loading the application. Please check the browser console for more details.</p>
+              <p>Error: ${error.message}</p>
+            </div>
+          `;
+          body.style.background = '#f8d7da'; // Light red background for error
+        }
       });
 
       // File preview function

@@ -1,0 +1,9 @@
+services:
+  ai-tutor:
+    build: .
+    ports:
+      - "8002:8002"
+    volumes:
+      - .:/app
+    environment:
+      GPT4ALL_MODELS_PATH: /app/models
