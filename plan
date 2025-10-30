@@ -1,0 +1,56 @@
+**AI Tutor Project Update Plan**
+
+This plan outlines the steps to re-implement the features described in 'update.txt', covering both frontend and backend modifications.
+
+**Phase 1: Frontend Enhancements (HTML, CSS, JavaScript in `static/app.html` and `static/app.css`)**
+
+1.  **Enable file drag and drop from assets folder to the chat:**
+    *   [x] Make `asset-item` elements draggable.
+    *   [x] Implement `dragAsset(event, filename)` to set data transfer.
+    *   [x] Enhance `middle-panel`'s `drop` listener to handle internal asset drops and call `toggleChatAssetSelection`.
+2.  **Remove pin emoji from asset names and add markdown for selection:**
+    *   [x] Modify `addFilesToAssets` to replace the pin emoji with a clickable icon/checkbox for selection.
+    *   [x] Introduce `chatAttachedAssets` array to track selected assets for the current chat.
+    *   [x] Implement `toggleChatAssetSelection(filename)` to manage `chatAttachedAssets` and update UI.
+    *   [x] Update `sendMessage` to include `chatAttachedAssets` in the payload.
+    *   [x] Modify `switchToChat` and `addNewChat` to manage `chatAttachedAssets` per chat.
+3.  **Enable file preview from sources, assets, and user profile:**
+    *   [x] Enhance the existing `previewFile` function to support all specified media and document types (PDF, DOCX, TXT, MD, images, audio, video) using `<iframe>` for documents and fetching text for markdown/text files.
+    *   [x] Ensure `previewFile` is called from `assetList`, `sourceList`, and `userProfileModal` asset list.
+4.  **Enhance user profile layout and dimensions:**
+    *   [x] Update CSS for `#userProfileModal .modal-content` to `width: 1600px; height: 900px;` and implement a two-column layout.
+    *   [x] Adjust HTML structure within `userProfileModal` to match the new layout.
+    *   [x] Ensure content within sections is scrollable.
+5.  **Enable all users to have @user.png in their chat icon:**
+    *   [x] Modify `.message.user .message-avatar` CSS to use `url("/static/user.png")`.
+
+**Phase 2: Backend & Database Integration**
+
+6.  **Database for chat data, assets, and sources:**
+    *   [x] **`src/core/models.py`:** Define `User`, `Chat`, `Asset`, `Source` models and relationships.
+    *   [x] **`src/core/database.py`:** Ensure CRUD operations for new models.
+    *   [x] **`src/api/main.py`:**
+        *   [x] Modify `/chats/save` to store messages, assets, and sources linked to `User` and `Chat`.
+        *   [x] Modify `/chats/list` to retrieve all chat data for a user.
+        *   [x] Implement `/documents/upload` to link uploaded assets to the current user.
+        *   [x] Implement `/documents` to list assets for the current user.
+7.  **Interactive Quiz System:**
+    *   **Frontend (`static/app.html` / `app.css`):**
+        *   [x] Add UI for quiz parameters (topic, questions, difficulty) in `testing` mode.
+        *   [x] Style quiz container and questions for "Google Tests" aesthetic.
+        *   [x] Implement JS to send quiz parameters to backend and render interactive quiz.
+        *   [x] Display quiz results with study suggestions.
+        *   [x] Integrate "Quiz History" in user profile to review past quizzes.
+    *   **Backend (`src/services/quiz_generator.py`, `src/api/main.py`, `src/core/models.py`, `src/core/database.py`):**
+        *   [x] **`src/services/quiz_generator.py`:** Enhance quiz generation to accept parameters and return structured quiz data.
+        *   [x] **`src/api/main.py`:**
+            *   [x] Create `/quiz/generate` endpoint for quiz creation.
+            *   [x] Create `/quiz/submit` endpoint for grading and saving results.
+            *   [x] Create `/quiz-results/history` and `/quiz-results/stats` endpoints for user profile.
+        *   [x] **`src/core/models.py`:** Define `Quiz`, `Question`, `Answer`, `QuizResult`, `StudySuggestion` models.
+        *   [x] **`src/core/database.py`:** Implement CRUD for quiz-related models.
+
+**Testing and Validation:**
+*   Manually test all new and modified frontend features.
+*   Verify backend API endpoints with sample data.
+*   Ensure data persistence and correct relationships in the database.

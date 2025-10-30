@@ -20,6 +20,10 @@ if __name__ == "__main__":
     from src.api.main import app
     import uvicorn
     
+    # Explicitly set SECRET_KEY for consistency during development
+    # IMPORTANT: In production, this should be managed securely (e.g., Docker secrets, Kubernetes secrets, cloud environment variables)
+    os.environ["SECRET_KEY"] = "super-secret-dev-key-please-change-in-production-environment" 
+    
     print("🚀 Starting AI Multimedia Tutor...")
     print("📍 Project root:", project_root)
     print("🌐 Server will be available at: http://localhost:8002")

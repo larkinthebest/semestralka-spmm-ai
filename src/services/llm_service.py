@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional
+from typing import Optional, List, Dict, Any
 import json
 
 class LLMService:
@@ -8,33 +8,25 @@ class LLMService:
         self.initialized = False
     
     async def initialize(self):
-        """Initialize the local LLM model"""
+        """Initialize the local LLM model (GPT4All)"""
         try:
             from gpt4all import GPT4All
             # Use a current model that exists (will auto-download on first use)
-            # Try multiple models in order of preference
-            models_to_try = [
-                "mistral-7b-openorca.gguf2.Q4_0.gguf",
-                "orca-mini-3b-gguf2-q4_0.gguf",
-                "gpt4all-falcon-newbpe-q4_0.gguf"
-            ]
+            # Use a single model as specified in Makefile for space preservation
+            # The Makefile now downloads only 'mistral-7b-openorca.gguf2.Q4_0.gguf'
+            model_name = "mistral-7b-openorca.gguf2.Q4_0.gguf"
             
-            for model_name in models_to_try:
-                try:
-                    print(f"🔄 Trying to load model: {model_name}")
-                    self.model = GPT4All(model_name)
-                    self.initialized = True
-                    print(f"✅ GPT4All model loaded successfully: {model_name}")
-                    break
-                except Exception as model_error:
-                    print(f"❌ Failed to load {model_name}: {model_error}")
-                    continue
-            
-            if not self.initialized:
-                raise Exception("No working models found")
+            try:
+                print(f"🔄 Trying to load model: {model_name}")
+                self.model = GPT4All(model_name)
+                self.initialized = True
+                print(f"✅ GPT4All model loaded successfully: {model_name}")
+            except Exception as model_error:
+                print(f"❌ Failed to load {model_name}: {model_error}")
+                raise Exception(f"Failed to load the specified GPT4All model: {model_name}")
                 
         except Exception as e:
-            print(f"❌ Failed to load any GPT4All model: {e}")
+            print(f"❌ Failed to initialize GPT4All model: {e}")
             print("📝 Using fallback responses for demo purposes")
             self.initialized = False
     
@@ -110,142 +102,287 @@ class LLMService:
         
         return responses["default"]
 
-    async def generate_quiz_questions(self, content: str, quiz_type: str, num_questions: int) -> list:
+    async def generate_quiz_questions(self, content: str, quiz_type: str, num_questions: int, topic: str = None, difficulty: str = None, language: str = "en") -> Dict[str, Any]:
         """Generate quiz questions from content"""
         if not self.initialized:
-            return self._fallback_quiz_questions(content, quiz_type, num_questions)
+            return {"questions": self._fallback_quiz_questions(content, quiz_type, num_questions)}
         
         try:
-            prompt = self._prepare_quiz_prompt(content, quiz_type, num_questions)
+            prompt = self._prepare_quiz_prompt(content, quiz_type, num_questions, topic, difficulty, language)
             response = self.model.generate(
                 prompt,
                 max_tokens=2048,  # Increased for detailed quiz generation
                 temp=0.8,
                 top_p=0.9
             )
-            
-            # Parse the response to extract questions
-            return self._parse_quiz_response(response, quiz_type)
+            print(f"DEBUG: Raw LLM quiz response: {response}") # Added debug print
+            # Parse the response to extract questions and wrap in a dictionary
+            parsed_questions = self._parse_quiz_response(response, quiz_type, num_questions)
+            return {"questions": parsed_questions}
         except Exception as e:
             print(f"Error generating quiz: {e}")
-            return self._fallback_quiz_questions(content, quiz_type, num_questions)
+            return {"questions": self._fallback_quiz_questions(content, quiz_type, num_questions)}
     
-    def _prepare_quiz_prompt(self, content: str, quiz_type: str, num_questions: int) -> str:
+    def _prepare_quiz_prompt(self, content: str, quiz_type: str, num_questions: int, topic: str = None, difficulty: str = None, language: str = "en") -> str:
         """Prepare prompt for quiz generation"""
         content_snippet = content[:15000]  # Much larger content for comprehensive quiz generation
         
-        if quiz_type == "multiple_choice":
-            return f"""Create {num_questions} multiple choice questions based on this content:
+        language_instruction = ""
+        if language == "de":
+            language_instruction = "The questions and answers MUST be in German."
+        elif language == "sk":
+            language_instruction = "The questions and answers MUST be in Slovak."
+        elif language == "en":
+            language_instruction = "The questions and answers MUST be in English."
 
-{content_snippet}
+        topic_instruction = f" on the topic of '{topic}'" if topic else ""
+        difficulty_instruction = f" with '{difficulty}' difficulty" if difficulty else ""
 
-Format each question as:
-Q: [Question]
-A) [Option 1]
-B) [Option 2] 
-C) [Option 3]
-D) [Option 4]
-Correct: [Letter]
+        json_format_instructions = """
+**CRITICAL INSTRUCTIONS FOR JSON OUTPUT:**
+- The output MUST be a JSON array of question objects.
+- Do NOT include any other text, markdown, or conversational elements outside the JSON array.
+- Each question object MUST include `question_text`, `question_type`, `correct_answer`, and `explanation`.
+- For 'multiple_choice' questions, include an `options` list with 4 distinct choices.
+- For 'true_false' questions, the `options` list MUST be `["True", "False"]`.
+- For 'fill_in_the_blank' questions, indicate the blank with `[BLANK]` in `question_text` and provide the missing word/phrase as `correct_answer`. Do NOT include options.
+- For 'short_answer' questions, `options` can be omitted.
+- The `explanation` should be a concise, helpful explanation for the correct answer.
 
+**Example JSON Structure for Multiple Choice:**
+```json
+[
+    {{
+        "question_text": "What is the capital of France?",
+        "question_type": "multiple_choice",
+        "options": ["Berlin", "Madrid", "Paris", "Rome"],
+        "correct_answer": "Paris",
+        "explanation": "Paris is the capital and most populous city of France."
+    }}
+]
+```
+
+**Example JSON Structure for True/False:**
+```json
+[
+    {{
+        "question_text": "The Earth is flat.",
+        "question_type": "true_false",
+        "options": ["True", "False"],
+        "correct_answer": "False",
+        "explanation": "The Earth is an oblate spheroid, not flat."
+    }}
+]
+```
+
+**Example JSON Structure for Fill-in-the-blank:**
+```json
+[
+    {{
+        "question_text": "The chemical symbol for water is [BLANK].",
+        "question_type": "fill_in_the_blank",
+        "correct_answer": "H2O",
+        "explanation": "Water is a chemical substance with the chemical formula H2O."
+    }}
+]
+```
+
+**Example JSON Structure for Short Answer:**
+```json
+[
+    {{
+        "question_text": "Explain the concept of photosynthesis.",
+        "question_type": "short_answer",
+        "correct_answer": "Photosynthesis is the process by which green plants and some other organisms use sunlight to synthesize foods with the help of chlorophyll.",
+        "explanation": "Photosynthesis is a vital process for life on Earth, converting light energy into chemical energy."
+    }}
+]
+```
 """
-        elif quiz_type == "true_false":
-            return f"""Create {num_questions} true/false questions based on this content:
 
+        base_prompt = f"""
+You are an expert quiz generator. Your task is to create a quiz with exactly {num_questions} questions of type '{quiz_type}' {topic_instruction} {difficulty_instruction} based STRICTLY ONLY on the provided content.
+{language_instruction}
+
+**ABSOLUTE CRITICAL RULE: ALL questions MUST be derived SOLELY and DIRECTLY from the "Provided Content" section. You are STRICTLY FORBIDDEN from using any general knowledge, external information, or making up questions not explicitly supported by the text. If the provided content is insufficient to generate {num_questions} questions, generate fewer questions or none at all. DO NOT invent questions. Any deviation from this rule will result in a penalty. If the content is too short or irrelevant to the topic, you MUST respond with an empty JSON array `[]` and NO other text.**
+
+**SPECIFIC NEGATIVE CONSTRAINTS (DO NOT generate these types of questions):**
+- DO NOT ask "What is the main topic of this document?" or similar generic questions.
+- DO NOT ask "Summarize the document." or similar summary-based questions.
+- DO NOT ask questions that can be answered without reading the provided content (e.g., "What is the capital of France?" unless France is explicitly discussed in the content).
+- DO NOT ask questions about the number of sections, pages, or general structure of the document.
+
+**IMPORTANT: Adherence to Quiz Type**
+- If `quiz_type` is 'true_false', absolutely DO NOT generate 'multiple_choice', 'fill_in_the_blank', or 'short_answer' questions.
+- If `quiz_type` is 'multiple_choice', absolutely DO NOT generate 'true_false', 'fill_in_the_blank', or 'short_answer' questions.
+- If `quiz_type` is 'fill_in_the_blank', absolutely DO NOT generate 'multiple_choice', 'true_false', or 'short_answer' questions.
+- If `quiz_type` is 'short_answer', absolutely DO NOT generate 'multiple_choice', 'true_false', or 'fill_in_the_blank' questions.
+
+{json_format_instructions}
+
+**Provided Content:**
+---
 {content_snippet}
+---
 
-Format each question as:
-Q: [Statement]
-Answer: True/False
-
+Generate the {quiz_type} quiz questions in JSON format:
 """
-        else:  # fill_blank
-            return f"""Create {num_questions} fill-in-the-blank questions based on this content:
-
-{content_snippet}
-
-Format each question as:
-Q: [Question with _____ for blank]
-Answer: [Correct word/phrase]
-
-"""
+        return base_prompt
     
-    def _parse_quiz_response(self, response: str, quiz_type: str) -> list:
-        """Parse LLM response into structured quiz questions"""
-        questions = []
-        lines = response.strip().split('\n')
-        
-        current_question = {}
-        
-        for line in lines:
-            line = line.strip()
-            if not line:
-                continue
-                
-            if line.startswith('Q:'):
-                if current_question:
-                    questions.append(current_question)
-                current_question = {"question": line[2:].strip()}
-                
-            elif quiz_type == "multiple_choice":
-                if line.startswith(('A)', 'B)', 'C)', 'D)')):
-                    if "options" not in current_question:
-                        current_question["options"] = []
-                    current_question["options"].append(line[2:].strip())
-                elif line.startswith('Correct:'):
-                    current_question["correct_answer"] = line[8:].strip()
-                    
-            elif quiz_type == "true_false":
-                if line.startswith('Answer:'):
-                    current_question["correct_answer"] = line[7:].strip()
-                    current_question["options"] = ["True", "False"]
-                    
-            elif quiz_type == "fill_blank":
-                if line.startswith('Answer:'):
-                    current_question["correct_answer"] = line[7:].strip()
-        
-        if current_question:
-            questions.append(current_question)
+    def _parse_quiz_response(self, response: str, quiz_type: str, num_questions: int) -> List[Dict[str, Any]]:
+        """Parse LLM response into structured quiz questions (expecting JSON from GPT4All)"""
+        try:
+            # Attempt to find the JSON array in the response
+            import re
+            json_str = ""
             
-        return questions[:5]  # Limit to requested number
+            # First, try to extract JSON from a markdown code block
+            json_match = re.search(r'```json\s*(\[[\s\S]*?\])\s*```', response, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(1)
+            else:
+                # If no markdown block, try to find a standalone JSON array
+                json_match = re.search(r'(\[\s*\{[\s\S]*?\}\s*\])', response, re.DOTALL)
+                if json_match:
+                    json_str = json_match.group(1)
+            
+            if not json_str:
+                raise ValueError("Could not find a JSON array in the LLM response.")
+            
+            # Pre-processing: Replace single quotes with double quotes, remove trailing commas
+            json_str = json_str.replace("'", '"')
+            json_str = re.sub(r',\s*([\]}])', r'\1', json_str)
+            
+            print(f"DEBUG: Extracted and cleaned JSON string (pre-parse): {json_str}")
+            
+            try:
+                parsed_data = json.loads(json_str)
+            except json.JSONDecodeError as e:
+                print(f"DEBUG: Initial JSON parse failed. Attempting aggressive quote escaping. Error: {e}")
+                json_str = re.sub(r'("question_text":\s*".*?)"(.*?)"', r'\1\\"\2"', json_str, flags=re.DOTALL)
+                json_str = re.sub(r'("correct_answer":\s*".*?)"(.*?)"', r'\1\\"\2"', json_str, flags=re.DOTALL)
+                json_str = re.sub(r'("explanation":\s*".*?)"(.*?)"', r'\1\\"\2"', json_str, flags=re.DOTALL)
+                json_str = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', json_str) # Remove invalid control characters
+                print(f"DEBUG: Extracted and aggressively cleaned JSON string: {json_str}")
+                parsed_data = json.loads(json_str)
+            
+            if not isinstance(parsed_data, list):
+                raise ValueError("LLM response is not a JSON array.")
+            
+            # Post-generation validation and filtering for generic questions and type adherence
+            filtered_data = []
+            generic_question_keywords = [
+                "main topic", "summarize", "main idea", "what is this document about",
+                "number of sections", "number of pages", "structure of the document"
+            ]
+
+            for q in parsed_data:
+                if not all(k in q for k in ["question_text", "question_type", "correct_answer"]):
+                    print(f"Warning: Missing required fields in a question object: {q}. Skipping.")
+                    continue
+                if q["question_type"] == "multiple_choice" and "options" not in q:
+                    print(f"Warning: Multiple choice question missing options: {q}. Skipping.")
+                    continue
+                if q["question_type"] == "true_false":
+                    if q.get("options") != ["True", "False"]:
+                        print(f"Warning: True/False question options not as expected: {q.get('options')}. Forcing to ['True', 'False'].")
+                        q["options"] = ["True", "False"]
+                
+                is_generic = False
+                for keyword in generic_question_keywords:
+                    if keyword in q["question_text"].lower():
+                        is_generic = True
+                        break
+                
+                if is_generic:
+                    print(f"Warning: Detected generic question: '{q['question_text']}'. Skipping.")
+                    continue
+                
+                if q["question_type"] != quiz_type:
+                    print(f"Warning: Question type mismatch. Expected '{quiz_type}', got '{q['question_type']}'. Skipping question: '{q['question_text']}'.")
+                    continue
+
+                filtered_data.append(q)
+            
+            return filtered_data[:num_questions] # Limit to requested number after filtering
+        except json.JSONDecodeError as e:
+            print(f"JSON decoding error: {e}")
+            print(f"Problematic LLM response: {response}")
+            raise ValueError(f"Failed to parse LLM response as JSON: {e}")
+        except ValueError as e:
+            print(f"Validation error in parsed quiz data: {e}")
+            print(f"Problematic LLM response: {response}")
+            raise ValueError(f"Invalid quiz data structure from LLM: {e}")
+        except Exception as e:
+            print(f"Unexpected error parsing LLM response: {e}")
+            print(f"Problematic LLM response: {response}")
+            raise ValueError(f"An unexpected error occurred during parsing: {e}")
     
-    def _fallback_quiz_questions(self, content: str, quiz_type: str, num_questions: int) -> list:
+    def _fallback_quiz_questions(self, content: str, quiz_type: str, num_questions: int) -> List[Dict[str, Any]]:
         """Generate fallback quiz questions"""
         if quiz_type == "multiple_choice":
             return [
                 {
-                    "question": "What is the main topic of this document?",
+                    "question_text": "What is the main topic of this document?",
                     "options": ["Topic A", "Topic B", "Topic C", "Topic D"],
-                    "correct_answer": "A"
+                    "correct_answer": "A",
+                    "question_type": "multiple_choice",
+                    "explanation": "This is a fallback explanation."
                 },
                 {
-                    "question": "Which concept is most important?",
+                    "question_text": "Which concept is most important?",
                     "options": ["Concept 1", "Concept 2", "Concept 3", "Concept 4"],
-                    "correct_answer": "B"
+                    "correct_answer": "B",
+                    "question_type": "multiple_choice",
+                    "explanation": "This is a fallback explanation."
                 }
             ][:num_questions]
         
         elif quiz_type == "true_false":
             return [
                 {
-                    "question": "The document contains important information.",
+                    "question_text": "The document contains important information.",
                     "options": ["True", "False"],
-                    "correct_answer": "True"
+                    "correct_answer": "True",
+                    "question_type": "true_false",
+                    "explanation": "This is a fallback explanation."
                 },
                 {
-                    "question": "This is a complex topic that requires study.",
+                    "question_text": "This is a complex topic that requires study.",
                     "options": ["True", "False"],
-                    "correct_answer": "True"
+                    "correct_answer": "True",
+                    "question_type": "true_false",
+                    "explanation": "This is a fallback explanation."
                 }
             ][:num_questions]
         
-        else:  # fill_blank
+        elif quiz_type == "fill_in_the_blank": # Corrected from "fill_blank"
             return [
                 {
-                    "question": "The main concept discussed is _____.",
-                    "correct_answer": "learning"
+                    "question_text": "The main concept discussed is [BLANK].",
+                    "correct_answer": "learning",
+                    "question_type": "fill_in_the_blank", # Corrected from "fill_blank"
+                    "explanation": "This is a fallback explanation."
                 },
                 {
-                    "question": "Students should _____ the material carefully.",
-                    "correct_answer": "study"
+                    "question_text": "Students should [BLANK] the material carefully.",
+                    "correct_answer": "study",
+                    "question_type": "fill_in_the_blank", # Corrected from "fill_blank"
+                    "explanation": "This is a fallback explanation."
+                }
+            ][:num_questions]
+        else: # short_answer
+            return [
+                {
+                    "question_text": "Explain the main idea of the document in your own words.",
+                    "correct_answer": "Varies",
+                    "question_type": "short_answer",
+                    "explanation": "This is a fallback explanation."
+                },
+                {
+                    "question_text": "Summarize the key takeaways from the content.",
+                    "correct_answer": "Varies",
+                    "question_type": "short_answer",
+                    "explanation": "This is a fallback explanation."
                 }
             ][:num_questions]

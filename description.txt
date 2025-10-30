@@ -1,0 +1,42 @@
+# AI Multimedia Tutor
+
+The AI Multimedia Tutor is an advanced, AI-powered learning platform designed to revolutionize how users interact with educational content. It supports a wide array of multimedia formats, including documents (PDF, DOCX, TXT, MD), images (JPG, PNG, GIF, BMP), audio (MP3, WAV, M4A, OGG), and video (MP4, AVI, MOV, MKV, WEBM), regardless of their size. The core functionality revolves around two specialized AI tutors: Enola, the Explanation Specialist, and Franklin, the Testing Specialist.
+
+## Key Features:
+
+### 1. Comprehensive Content Processing
+The platform can ingest and process diverse multimedia files, extracting key information and concepts to create a rich knowledge base. This allows for in-depth analysis and personalized learning experiences.
+
+### 2. Enola: The Explanation Specialist
+Enola provides detailed explanations and insights strictly within the scope of the uploaded assets. Users can engage in a simple chat interface to ask questions and receive comprehensive answers, making complex topics more accessible and understandable.
+
+### 3. Franklin: The Testing Specialist
+Franklin offers an interactive testing environment designed to assess user comprehension. Users can specify a topic, test type (e.g., multiple-choice, true/false, short answer), desired length, and difficulty. Franklin then generates a quiz based solely on the uploaded content. After completion, it provides immediate results, a grade, and personalized study suggestions, guiding users to review specific areas where they struggled.
+
+### 4. Interactive User Interface
+The frontend features a dynamic interface with:
+- **Drag-and-drop functionality:** Easily attach files from the asset folder or directly from the user's system to the chat.
+- **Asset management:** Select and deselect assets for specific chats, with clear visual indicators.
+- **File preview:** View uploaded documents, images, audio, and video files directly within the application.
+- **User Profile:** A redesigned user profile with a two-column layout to display chat history, uploaded assets, and a comprehensive quiz history with statistics.
+- **Chat Management:** Create, rename, and delete chats, with persistence across sessions and user logins.
+- **Multilingual Support:** UI translations for English, German, and Slovak.
+- **Theme Toggle:** Switch between light and dark themes for a personalized viewing experience.
+
+## Technical Architecture:
+
+The project is built as a full-stack application with a Python FastAPI backend and a JavaScript/HTML/CSS frontend.
+
+- **Backend (`src/`):**
+    - `api/`: FastAPI endpoints for chat, document upload, quiz generation, and user management.
+    - `core/`: Core logic including authentication, database models (User, Chat, Asset, Source, Quiz, Question, Answer, QuizResult, StudySuggestion), and database operations.
+    - `processors/`: Handles document and multimedia processing.
+    - `services/`: Integrates LLM (e.g., GPT4All, OpenAI Whisper) and quiz generation logic.
+- **Frontend (`static/`):**
+    - `app.html`, `app.css`, `app.js` (inline in `app.html`): Provides the interactive user interface, chat functionality, asset management, and quiz display.
+    - `auth.html`: Handles user authentication (login/register).
+- **Database:** SQLite for local development, with a migration script (`migrate_database.py`) to set up tables.
+- **AI Models:** Utilizes large AI models like GPT4All for language understanding and OpenAI Whisper for audio processing, requiring manual download and placement in the `models/` directory.
+- **Deployment:** Supports local development via Python virtual environment or Docker, with options for cloud platforms (Render, Heroku, AWS, Google Cloud, Azure) or self-hosting.
+
+This project aims to provide a robust, interactive, and personalized learning experience by leveraging AI to make educational content more accessible and engaging.

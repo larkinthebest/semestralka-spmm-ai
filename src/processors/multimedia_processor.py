@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from typing import Optional, Dict, Any
-import PyPDF2
+import pypdf # Changed from PyPDF2
 from docx import Document as DocxDocument
 
 # Optional imports with fallbacks
@@ -116,13 +116,21 @@ class MultimediaProcessor:
                         with open(file_path, 'r', encoding=encoding) as f:
                             content = f.read()
                             # Limit content size to prevent memory issues
-                            if len(content) > 200000:  # ~200KB limit
-                                content = content[:200000] + "\n[Content truncated due to size]"
+                            max_text_content_size = 200000 # ~200KB limit
+                            if len(content) > max_text_content_size:
+                                print(f"Warning: Text content from {file_path} truncated. Original size: {len(content)} chars.")
+                                content = content[:max_text_content_size] + "\n[Content truncated due to size]"
                             return content
                     except UnicodeDecodeError:
+                        print(f"DEBUG: Failed to decode {file_path} with encoding {encoding}")
                         continue
+                print(f"Error: Could not decode text file {file_path} with any supported encoding.")
                 return "Could not decode file with any supported encoding"
+            else:
+                print(f"Warning: Attempted to extract text from unsupported extension {file_extension} for file {file_path}.")
+                return ""
         except Exception as e:
+            print(f"Error extracting text from {file_path}: {e}")
             return f"Error extracting text: {str(e)}"
         
         return ""
@@ -132,18 +140,26 @@ class MultimediaProcessor:
         try:
             text = ""
             with open(file_path, 'rb') as file:
-                pdf_reader = PyPDF2.PdfReader(file)
+                pdf_reader = pypdf.PdfReader(file) # Changed from PyPDF2.PdfReader
                 # Limit pages to prevent memory issues
-                max_pages = min(len(pdf_reader.pages), 50)
-                for i in range(max_pages):
+                max_pages_to_process = 50
+                max_text_content_size = 200000 # ~200KB limit
+                
+                num_pages = len(pdf_reader.pages)
+                if num_pages > max_pages_to_process:
+                    print(f"Warning: PDF {file_path} has {num_pages} pages, processing only first {max_pages_to_process}.")
+
+                for i in range(min(num_pages, max_pages_to_process)):
                     page_text = pdf_reader.pages[i].extract_text()
                     text += page_text + "\n"
                     # Stop if content gets too large
-                    if len(text) > 200000:
+                    if len(text) > max_text_content_size:
+                        print(f"Warning: PDF content from {file_path} truncated. Original size: {len(text)} chars.")
                         text += "\n[Content truncated - file too large]"
                         break
             return text.strip()
         except Exception as e:
+            print(f"Error reading PDF {file_path}: {e}")
             return f"Error reading PDF: {str(e)}"
     
     def _extract_from_docx(self, file_path: str) -> str:
@@ -151,10 +167,16 @@ class MultimediaProcessor:
         try:
             doc = DocxDocument(file_path)
             text = ""
+            max_text_content_size = 200000 # ~200KB limit
             for paragraph in doc.paragraphs:
                 text += paragraph.text + "\n"
+                if len(text) > max_text_content_size:
+                    print(f"Warning: DOCX content from {file_path} truncated. Original size: {len(text)} chars.")
+                    text += "\n[Content truncated - file too large]"
+                    break
             return text.strip()
         except Exception as e:
+            print(f"Error reading DOCX {file_path}: {e}")
             return f"Error reading DOCX: {str(e)}"
     
     def _generate_text_description(self, content: str) -> str:
@@ -388,19 +410,28 @@ class MultimediaProcessor:
             if not cap.isOpened():
                 return ""
             
+            cap = cv2.VideoCapture(file_path)
+            if not cap.isOpened():
+                return ""
+            
             fps = cap.get(cv2.CAP_PROP_FPS)
             total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
             duration = total_frames / fps if fps > 0 else 0
             
-            # Extract more frames for better coverage (every 5 seconds or 50 frames total)
-            frame_interval = max(int(fps * 5), 1) if fps > 0 else max(total_frames // 50, 1)
-            max_frames = 50  # Process up to 50 frames
+            # For a 20-minute video (1200 seconds), extracting a frame every 5 seconds
+            # would be 1200/5 = 240 frames. Let's set a reasonable max.
+            # Max frames to process for OCR (e.g., 240 frames for a 20-min video at 5s interval)
+            max_frames_for_ocr = 240 
+            # Extract a frame every 'frame_sample_interval_seconds' seconds
+            frame_sample_interval_seconds = 5 
+            
+            frame_interval = max(int(fps * frame_sample_interval_seconds), 1) if fps > 0 else 1
             
             frame_texts = []
             frame_count = 0
-            processed_frames = 0
+            processed_ocr_frames = 0
             
-            while frame_count < total_frames and processed_frames < max_frames:
+            while frame_count < total_frames and processed_ocr_frames < max_frames_for_ocr:
                 ret, frame = cap.read()
                 if not ret:
                     break
@@ -420,7 +451,7 @@ class MultimediaProcessor:
                         
                         os.unlink(temp_file.name)
                     
-                    processed_frames += 1
+                    processed_ocr_frames += 1
                 
                 frame_count += 1
             
@@ -437,15 +468,18 @@ class MultimediaProcessor:
                     # Use ffmpeg via cv2 to extract audio (if available)
                     import subprocess
                     try:
+                        # Increased timeout for longer videos (e.g., 20 minutes = 1200 seconds)
+                        # Set timeout to 10 minutes (600 seconds)
                         subprocess.run(
                             ['ffmpeg', '-i', file_path, '-vn', '-acodec', 'pcm_s16le', '-ar', '16000', '-ac', '1', audio_path],
                             stdout=subprocess.DEVNULL,
                             stderr=subprocess.DEVNULL,
-                            timeout=60
+                            timeout=600 # Increased timeout to 10 minutes
                         )
                         audio_transcription = self._transcribe_audio(audio_path)
                         os.unlink(audio_path)
-                    except (subprocess.TimeoutExpired, FileNotFoundError, Exception):
+                    except (subprocess.TimeoutExpired, FileNotFoundError, Exception) as e:
+                        print(f"FFmpeg audio extraction failed or timed out: {e}")
                         pass
                 except Exception as e:
                     print(f"Audio extraction from video failed: {e}")

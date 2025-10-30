@@ -8,9 +8,9 @@ To get the AI Multimedia Tutor running on your local machine, we recommend using
 
 ### Prerequisites
 
-*   **Python 3.13** (for local development without Docker)
-*   **Docker Desktop** (for Docker-based setup)
+*   **Python 3.10 or higher** (for local development without Docker)
 *   **Git** (to clone the repository)
+*   **curl** (for downloading GPT4All models via Makefile)
 
 ### Getting Started with the Makefile
 
@@ -25,21 +25,24 @@ make help
 This option sets up the project using a Python virtual environment, which is ideal for local development and debugging.
 
 1.  **Clone the Repository:**
+    To clone the repository into your *current directory* (without creating an extra folder), use:
     ```bash
-    git clone https://github.com/larkinthebest/semestralka-spmm-ai.git
-    cd semestralka-spmm-ai
+    git clone https://github.com/larkinthebest/semestralka-spmm-ai.git .
     ```
+    (Note the `.` at the end of the command.)
 
-2.  **Install Python Dependencies:**
-    Use the `Makefile` to create a virtual environment and install all Python packages:
+2.  **Install Dependencies and Setup:**
+    Use the `Makefile` to perform a complete setup, including virtual environment creation, dependency installation, database migration, and GPT4All model downloads:
     ```bash
     make install
     ```
-    This command will:
+    This single command will:
     *   Create a Python virtual environment (`.venv`).
     *   Install all Python dependencies from `requirements.txt`.
     *   Run the database migration script (`migrate_database.py`) to set up the necessary tables.
-    *   **Note:** The `make run` command automatically uses this virtual environment. If you need to manually activate it for other commands, run `source .venv/bin/activate` (on Windows, use `.\.venv\Scripts\activate`).
+    *   **Automatically download the primary GPT4All model** (`mistral-7b-openorca.gguf2.Q4_0.gguf`, approx. 4.4 GB) into the `models/` directory. If the model is already present, it will not be re-downloaded. This ensures a lightweight setup.
+
+    **Note:** The `make run` command automatically uses this virtual environment. If you need to manually activate it for other commands, run `source .venv/bin/activate` (on Windows, use `.\.venv\Scripts\activate`).
 
 3.  **Install System Dependencies (if not using Docker):**
     Some Python packages (like `pytesseract` and `opencv-python`) require system-level dependencies. These are *not* installed by `make install` and need to be handled manually based on your operating system.
@@ -57,80 +60,72 @@ This option sets up the project using a Python virtual environment, which is ide
         *   Install [Tesseract OCR](https://tesseract-ocr.github.io/tessdoc/Installation.html). Make sure to add it to your system PATH.
         *   OpenCV usually handles its dependencies better on Windows, but if you encounter issues, you might need to install Visual C++ Redistributable.
 
-4.  **Download AI Models (Crucial Step!):**
-    The application relies on large AI models for its functionality (e.g., GPT4All, OpenAI Whisper). These are *not* automatically downloaded with `pip install` or `make install`. You must download them manually.
-
-    *   **GPT4All Models:** Download a compatible model (e.g., `ggml-mpt-7b-chat.bin`) from the [GPT4All website](https://gpt4all.io/index.html) and place it in the `models/` directory at the root of this project.
-        Example download using `curl`:
-        ```bash
-        mkdir -p models
-        curl -L https://gpt4all.io/models/ggml-mpt-7b-chat.bin -o models/ggml-mpt-7b-chat.bin
-        ```
-    *   **OpenAI Whisper Models:** Whisper models are typically downloaded on first use by the `openai-whisper` library. However, if you encounter issues, you might need to manually download a model (e.g., `tiny.en`, `base.en`, `small.en`) and configure the `llm_service.py` to point to its path, or ensure your environment has sufficient internet access and permissions for automatic download.
-
-    **Ensure all required AI model files are present in the `models/` directory before running the application.**
-
-5.  **Run the Application:**
-    After completing the `make install` step and downloading the AI models, you can start the application:
+4.  **Run the Application:**
+    After completing the `make install` step and ensuring system dependencies are met, you can start the application:
     ```bash
     make run
     ```
     This command will clear the terminal and start the FastAPI application, automatically using the virtual environment created by `make install`.
 
-7.  **Access the Application:**
+5.  **Access the Application:**
     Open your web browser and go to:
     ```
     http://localhost:8002
     ```
 
-### Option 2: Using Docker (Containerized Setup)
+### LLM Configuration
 
-This option provides a consistent environment across different machines using Docker.
+The application uses `gpt4all` for its Large Language Model (LLM) capabilities. The `src/services/llm_service.py` file is configured to load the `mistral-7b-openorca.gguf2.Q4_0.gguf` model from the `models/` directory. This model was chosen for its balance of performance and size (approx. 4.4 GB).
 
-1.  **Clone the Repository:**
-    ```bash
-    git clone https://github.com/larkinthebest/semestralka-spmm-ai.git
-    cd semestralka-spmm-ai
-    ```
+If you wish to use a different GPT4All model, download it manually from the [GPT4All website](https://gpt4all.io/index.html) and place it in the `models/` directory. You will also need to update the `model_name` variable in `src/services/llm_service.py` to match your chosen model's filename.
 
-2.  **Download AI Models (Crucial Step!):**
-    Even with Docker, you need to download the large AI models locally first. Place them in the `models/` directory at the project root. The Docker setup will then mount this directory into the container. Refer to step 4 in "Option 1: Using a Python Virtual Environment" for detailed model download instructions.
+### Usage Guide
 
-3.  **Build and Run with Docker Compose:**
-    Navigate to the project root directory in your terminal and run:
-    ```bash
-    docker-compose up --build
-    ```
-    This command will:
-    *   Build the Docker image for the `ai-tutor` service (if not already built or if changes were made to the `Dockerfile`).
-    *   Start the container, mounting your local `models/` directory.
+*   **Explanation Mode (Enola)**: Ask questions about your uploaded documents to get detailed explanations.
+*   **Testing Mode (Franklin)**: Generate quizzes (multiple choice, true/false, fill-in-the-blank, short answer) based on your content.
+*   **Asset Management**: Upload files using the '+' button in the Assets section or by dragging and dropping them into the chat area. Select/deselect assets to include them in the current chat's context.
+*   **Chat Management**: Create new chats, rename existing ones, and delete chats from the left panel.
+*   **User Profile**: Access your chat history, uploaded assets, and quiz statistics from the user profile modal.
+*   **LaTeX Rendering**: Mathematical formulas written in LaTeX format (e.g., `$E=mc^2$` or `\[ \int_a^b f(x) dx \]`) will be rendered beautifully in the chat.
 
-    Alternatively, you can use the `Makefile` for individual steps:
-    ```bash
-    make build-docker
-    make run-docker
-    ```
+## Video Demo
 
-4.  **Initialize the Database:**
-    ```bash
-    docker-compose exec ai-tutor python migrate_database.py
-    ```
-    This command runs the `migrate_database.py` script inside the running Docker container to set up the database.
+A video demonstration of the application's features is available.
 
-5.  **Access the Application:**
-    Once the container is running, the models are downloaded, and the database is initialized, open your web browser and go to:
-    ```
-    http://localhost:8002
-    ```
+<video controls width="100%">
+  <source src="samples/SPMM DEMO.mov" type="video/quicktime">
+  Your browser does not support the video tag.
+</video>
+
+**Note:** Direct video embedding in GitHub `README.md` files has limitations and may not work on GitHub.com due to security policies. For the best experience, you might need to view this `README.md` in a local Markdown viewer (like VS Code's built-in preview) or open the `samples/SPMM DEMO.mov` file directly with a video player. For wider accessibility on GitHub, consider uploading the video to a platform like YouTube and embedding the link.
+
+### Troubleshooting
+
+*   **"GPT4All model not loaded" / LLM errors**:
+    *   Ensure you ran `make install` successfully.
+    *   Verify that the GPT4All model files are present in the `models/` directory. If not, check your internet connection and re-run `make install` or download them manually as described above.
+    *   Check the console output for specific error messages related to model loading.
+*   **"Tesseract not found" / OCR errors**:
+    *   Ensure `pytesseract` is installed (included in `requirements.txt`).
+    *   Verify that Tesseract OCR is installed on your system and its executable is in your system's PATH (see "Install System Dependencies" above).
+*   **"OpenCV errors" / Video processing issues**:
+    *   Ensure `opencv-python` is installed (included in `requirements.txt`).
+    *   Ensure `ffmpeg` is installed on your system, as it's often a dependency for video processing.
+*   **Slow Quiz Generation**:
+    *   Local LLMs can be resource-intensive. Ensure your machine meets the minimum requirements for the chosen GPT4All model.
+    *   Consider using a lighter GPT4All model if performance is critical.
+*   **Database issues**:
+    *   Ensure `make install` completed the `migrate-db` step. If not, run `make migrate-db` manually.
+    *   If you encounter `sqlite3.OperationalError: database is locked`, try restarting the application.
 
 ## Project Structure
 
 *   `src/`: Contains the main application source code.
     *   `api/`: FastAPI endpoints.
     *   `core/`: Core logic, authentication, database models, schemas.
-    *   `processors/`: Document and multimedia processing logic.
+    *   `processors/`: Document and multimedia processing logic (including LaTeX detection).
     *   `services/`: LLM and quiz generation services.
-*   `static/`: Static files (CSS, HTML, images).
+*   `static/`: Static files (CSS, HTML, JavaScript).
 *   `models/`: Directory for GPT4All models.
 *   `data/`: Placeholder for data files.
 *   `samples/`: Sample multimedia files.
@@ -142,11 +137,7 @@ This option provides a consistent environment across different machines using Do
 
 ## Deployment Options
 
-### 1. GitHub Pages (for static frontend)
-
-If your application has a purely static frontend (HTML, CSS, JavaScript) that communicates with a separate backend API, you could potentially deploy the frontend part to GitHub Pages. However, since this project appears to be a full-stack application with a Python backend, GitHub Pages alone would not be sufficient for the entire application.
-
-### 2. Cloud Platforms (e.g., Render, Heroku, AWS, Google Cloud, Azure)
+### 1. Cloud Platforms (e.g., Render, Heroku, AWS, Google Cloud, Azure)
 
 For a full-stack Python application like this, cloud platforms are the most suitable deployment option. They offer various services for deploying web applications, databases, and other necessary components.
 
@@ -164,10 +155,6 @@ For a full-stack Python application like this, cloud platforms are the most suit
 4.  **Environment Variables:** Set up environment variables for sensitive information (e.g., API keys, database credentials).
 5.  **Deployment:** Follow the platform-specific instructions to deploy your Docker image.
 
-### 3. Self-Hosting (e.g., on a VPS)
+### 2. Self-Hosting (e.g., on a VPS)
 
 You can deploy the Dockerized application on a Virtual Private Server (VPS) using tools like `nginx` for a reverse proxy and `systemd` for process management.
-
----
-
-This `README.md` provides comprehensive instructions for both local setup and deployment, addressing the issues your teammates faced and offering solutions for simplified setup and easier access.

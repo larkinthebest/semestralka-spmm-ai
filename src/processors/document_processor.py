@@ -1,8 +1,9 @@
 import os
 from pathlib import Path
 from typing import Optional
-import PyPDF2
+import pypdf # Changed from PyPDF2
 from docx import Document as DocxDocument
+import re # Import regex module
 
 class DocumentProcessor:
     def __init__(self):
@@ -24,7 +25,7 @@ class DocumentProcessor:
         try:
             text = ""
             with open(file_path, 'rb') as file:
-                pdf_reader = PyPDF2.PdfReader(file)
+                pdf_reader = pypdf.PdfReader(file) # Changed from PyPDF2.PdfReader
                 
                 for page_num in range(len(pdf_reader.pages)):
                     page = pdf_reader.pages[page_num]
@@ -71,7 +72,7 @@ class DocumentProcessor:
         if file_extension == '.pdf':
             try:
                 with open(file_path, 'rb') as file:
-                    pdf_reader = PyPDF2.PdfReader(file)
+                    pdf_reader = pypdf.PdfReader(file) # Changed from PyPDF2.PdfReader
                     info["pages"] = len(pdf_reader.pages)
             except:
                 info["pages"] = "Unknown"
@@ -124,3 +125,27 @@ class DocumentProcessor:
         cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
         
         return cleaned_text.strip()
+
+    def detect_and_convert_latex(self, text: str) -> str:
+        """
+        Detects LaTeX formulas in the given text and converts them to a standardized format.
+        This method focuses on identifying common LaTeX patterns and ensuring they are
+        properly delimited for frontend rendering.
+        """
+        # Pattern for inline LaTeX: $...$
+        # Pattern for display LaTeX: $$...$$ or \[...\] or \begin{...}...\end{...}
+        
+        # Convert inline $...$ to \(...\)
+        text = re.sub(r'\$(.*?)\$', r'\\(\1\\)', text)
+        
+        # Convert display $$...$$ to \[...\]
+        text = re.sub(r'\$\$(.*?)\$\$', r'\\[\1\\]', text)
+        
+        # Ensure common environments are properly delimited if not already
+        # This is a more complex task and might require a dedicated LaTeX parser for full robustness.
+        # For now, we'll focus on common delimiters.
+        
+        # Example: \begin{equation} ... \end{equation}
+        # We assume these are already correctly formatted for MathJax/KaTeX.
+        
+        return text

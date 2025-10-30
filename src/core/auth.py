@@ -11,7 +11,9 @@ from .models import User
 import httpx
 import os
 
-SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production") # Reverted to default for simplicity, CHANGE IN PRODUCTION!
+# IMPORTANT: For production, use a strong, randomly generated key stored securely (e.g., environment variable).
+# For development, we'll use a fixed key for consistency.
+SECRET_KEY = "super-secret-dev-key-please-change-in-production-environment" 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 240 # Increased to 4 hours
 
@@ -38,20 +40,31 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    print(f"DEBUG: Received token for verification: {credentials.credentials[:30]}...") # Log token snippet
     try:
         payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
+            print("DEBUG: Token payload missing 'sub' (email).")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Could not validate credentials",
+                detail="Could not validate credentials: Missing email in token",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+        print(f"DEBUG: Token validated for email: {email}")
         return email
-    except InvalidTokenError:
+    except InvalidTokenError as e:
+        print(f"DEBUG: Invalid token error: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
+            detail=f"Could not validate credentials: Invalid token ({e})",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    except Exception as e:
+        print(f"DEBUG: Unexpected error during token verification: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Could not validate credentials: Unexpected error ({e})",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -103,15 +116,24 @@ def create_or_get_google_user(user_info: dict, db: Session) -> User:
 def get_current_user_optional(credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False)), db: Session = Depends(get_db)) -> Optional[User]:
     """Get current user but return None if not authenticated (for guest access)"""
     if not credentials:
+        print("DEBUG: No credentials provided for optional user.")
         return None
     
+    print(f"DEBUG: Received optional token for verification: {credentials.credentials[:30]}...") # Log token snippet
     try:
         payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
+            print("DEBUG: Optional token payload missing 'sub' (email).")
             return None
         
         user = db.query(User).filter(User.email == email).first()
+        if user is None:
+            print(f"DEBUG: User not found for email from optional token: {email}")
         return user
-    except (InvalidTokenError, Exception):
+    except InvalidTokenError as e:
+        print(f"DEBUG: Invalid optional token error: {e}")
+        return None
+    except Exception as e:
+        print(f"DEBUG: Unexpected error during optional token verification: {e}")
         return None
