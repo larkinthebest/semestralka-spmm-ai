@@ -90,14 +90,9 @@ If you wish to use a different GPT4All model, download it manually from the [GPT
 
 ## Video Demo
 
-A video demonstration of the application's features is available.
+Watch a video demonstration of the application's features:
 
-<video controls width="100%">
-  <source src="samples/SPMM DEMO.mov" type="video/quicktime">
-  Your browser does not support the video tag.
-</video>
-
-**Note:** Direct video embedding in GitHub `README.md` files has limitations and may not work on GitHub.com due to security policies. For the best experience, you might need to view this `README.md` in a local Markdown viewer (like VS Code's built-in preview) or open the `samples/SPMM DEMO.mov` file directly with a video player. For wider accessibility on GitHub, consider uploading the video to a platform like YouTube and embedding the link.
+https://www.youtube.com/watch?v=eGbgwIOLzic
 
 ### Troubleshooting
 
