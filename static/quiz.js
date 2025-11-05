@@ -44,6 +44,7 @@ export async function generateQuiz(message, allAvailableFiles) {
   showLoadingMessage(currentTutor);
 
   try {
+    console.log("DEBUG: Sending quiz generation request with attached_files:", allAvailableFiles);
     const data = await generateQuizApi({
       topic: quizTopic,
       quiz_type: quizType,
