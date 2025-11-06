@@ -1,35 +1,77 @@
 // static/app.js - Main application logic and global state
 
 // Global State Variables
+
+/**
+ * Current mode of the application (e.g., "explanation", "testing").
+ * @type {string}
+ */
 export let currentMode = "explanation";
+/**
+ * Sets the current mode of the application.
+ * @param {string} mode - The new mode to set.
+ */
 export function setCurrentMode(mode) { currentMode = mode; }
 
+/**
+ * Current active tutor (e.g., "enola", "franklin").
+ * @type {string}
+ */
 export let currentTutor = "enola";
+/**
+ * Sets the current active tutor.
+ * @param {string} tutor - The new tutor to set.
+ */
 export function setCurrentTutor(tutor) { currentTutor = tutor; }
 
+/**
+ * ID of the currently active chat.
+ * @type {number}
+ */
 export let currentChatId = 1;
+/**
+ * Sets the ID of the currently active chat.
+ * @param {number} id - The new chat ID to set.
+ */
 export function setCurrentChatId(id) { currentChatId = id; }
 
-export let chatCounter = 1; // This might be removed if chat IDs are solely managed by backend
-export function setChatCounter(counter) { chatCounter = counter; }
-
-export let assetCounter = 0; // This might be removed if asset IDs are solely managed by backend
-export function setAssetCounter(counter) { assetCounter = counter; }
-
-export let chatModeHistory = {}; // Stores chat messages per chat_id and mode: { "chatId_mode": [{...message}] }
+/**
+ * Stores chat messages per chat_id and mode.
+ * Format: { "chatId_mode": [{...message}] }
+ * @type {Object.<string, Array<Object>>}
+ */
+export let chatModeHistory = {};
+/**
+ * Sets the entire chat mode history.
+ * @param {Object.<string, Array<Object>>} history - The new chat mode history object.
+ */
 export function setChatModeHistory(history) { chatModeHistory = history; }
+/**
+ * Updates the message history for a specific chat key (chatId_mode).
+ * @param {string} chatKey - The key identifying the chat and mode (e.g., "1_explanation").
+ * @param {Array<Object>} messages - The array of messages for the specified chat key.
+ */
 export function updateChatModeHistory(chatKey, messages) {
   if (!chatModeHistory[chatKey]) {
     chatModeHistory[chatKey] = [];
   }
   chatModeHistory[chatKey] = messages;
 }
+/**
+ * Adds a single message to the history of a specific chat key.
+ * @param {string} chatKey - The key identifying the chat and mode.
+ * @param {Object} message - The message object to add.
+ */
 export function addMessageToChatModeHistory(chatKey, message) {
   if (!chatModeHistory[chatKey]) {
     chatModeHistory[chatKey] = [];
   }
   chatModeHistory[chatKey].push(message);
 }
+/**
+ * Deletes all chat history associated with a given chat ID across all modes.
+ * @param {number} chatId - The ID of the chat to delete history for.
+ */
 export function deleteChatHistory(chatId) {
   for (const key in chatModeHistory) {
     if (key.startsWith(`${chatId}_`)) {
@@ -39,27 +81,98 @@ export function deleteChatHistory(chatId) {
 }
 
 
-export let chatTitles = {}; // Stores chat titles: { chatId: "Title" }
+/**
+ * Stores chat titles.
+ * Format: { chatId: "Title" }
+ * @type {Object.<number, string>}
+ */
+export let chatTitles = {};
+/**
+ * Sets the entire chat titles object.
+ * @param {Object.<number, string>} titles - The new chat titles object.
+ */
 export function setChatTitles(titles) { chatTitles = titles; }
+/**
+ * Updates the title for a specific chat ID.
+ * @param {number} chatId - The ID of the chat to update.
+ * @param {string} title - The new title for the chat.
+ */
 export function updateChatTitle(chatId, title) { chatTitles[chatId] = title; }
+/**
+ * Deletes the title for a specific chat ID.
+ * @param {number} chatId - The ID of the chat to delete the title for.
+ */
 export function deleteChatTitle(chatId) { delete chatTitles[chatId]; }
 
 
-export let chatSources = {}; // Stores sources per chat: { chatId: [{...source}] }
+/**
+ * Stores sources per chat.
+ * Format: { chatId: [{...source}] }
+ * @type {Object.<number, Array<Object>>}
+ */
+export let chatSources = {};
+/**
+ * Sets the entire chat sources object.
+ * @param {Object.<number, Array<Object>>} sources - The new chat sources object.
+ */
 export function setChatSources(sources) { chatSources = sources; }
+/**
+ * Updates the sources for a specific chat ID.
+ * @param {number} chatId - The ID of the chat to update.
+ * @param {Array<Object>} sources - The array of source objects for the specified chat.
+ */
 export function updateChatSources(chatId, sources) { chatSources[chatId] = sources; }
+/**
+ * Adds a single source to a specific chat.
+ * @param {number} chatId - The ID of the chat to add the source to.
+ * @param {Object} source - The source object to add.
+ */
 export function addChatSource(chatId, source) {
   if (!chatSources[chatId]) {
     chatSources[chatId] = [];
   }
   chatSources[chatId].push(source);
 }
+/**
+ * Deletes all sources for a specific chat ID.
+ * @param {number} chatId - The ID of the chat to delete sources for.
+ */
 export function deleteChatSource(chatId) { delete chatSources[chatId]; }
 
 
-export let chatAttachedAssets = {}; // Stores selected assets per chat: { chatId: [filename1, filename2] }
+/**
+ * Stores selected assets per chat.
+ * Format: { chatId: [filename1, filename2] }
+ * @type {Object.<number, Array<string>>}
+ */
+export let chatAttachedAssets = {};
+/**
+ * Sets the entire chat attached assets object.
+ * @param {Object.<number, Array<string>>} assets - The new chat attached assets object.
+ */
 export function setChatAttachedAssets(assets) { chatAttachedAssets = assets; }
+
+/**
+ * Stores the total number of chats.
+ * @type {number}
+ */
+export let chatCounter = 0;
+/**
+ * Sets the total number of chats.
+ * @param {number} count - The new chat count.
+ */
+export function setChatCounter(count) { chatCounter = count; }
+/**
+ * Updates the attached assets for a specific chat ID.
+ * @param {number} chatId - The ID of the chat to update.
+ * @param {Array<string>} assets - The array of filenames for the attached assets.
+ */
 export function updateChatAttachedAssets(chatId, assets) { chatAttachedAssets[chatId] = assets; }
+/**
+ * Adds a filename to the attached assets for a specific chat.
+ * @param {number} chatId - The ID of the chat to add the asset to.
+ * @param {string} filename - The filename of the asset to add.
+ */
 export function addChatAttachedAsset(chatId, filename) {
   if (!chatAttachedAssets[chatId]) {
     chatAttachedAssets[chatId] = [];
@@ -68,6 +181,11 @@ export function addChatAttachedAsset(chatId, filename) {
     chatAttachedAssets[chatId].push(filename);
   }
 }
+/**
+ * Removes a filename from the attached assets for a specific chat.
+ * @param {number} chatId - The ID of the chat to remove the asset from.
+ * @param {string} filename - The filename of the asset to remove.
+ */
 export function removeChatAttachedAsset(chatId, filename) {
   if (chatAttachedAssets[chatId]) {
     const index = chatAttachedAssets[chatId].indexOf(filename);
@@ -76,13 +194,28 @@ export function removeChatAttachedAsset(chatId, filename) {
     }
   }
 }
+/**
+ * Deletes all attached assets for a specific chat ID.
+ * @param {number} chatId - The ID of the chat to delete attached assets for.
+ */
 export function deleteChatAttachedAssets(chatId) { delete chatAttachedAssets[chatId]; }
 
 
+/**
+ * Current language code (e.g., "en", "de", "sk").
+ * @type {string}
+ */
 export let currentLanguage = "en";
+/**
+ * Sets the current language code.
+ * @param {string} language - The new language code to set.
+ */
 export function setCurrentLanguage(language) { currentLanguage = language; }
 
-// UI Translations
+/**
+ * UI Translations object, containing localized strings for different languages.
+ * @type {Object.<string, Object.<string, string>>}
+ */
 export const translations = {
   en: {
     chats: "Chats",
@@ -171,6 +304,7 @@ window.selectLanguage = selectLanguage;
 window.updateUILanguage = updateUILanguage; // Also expose for direct calls if needed
 window.checkAuthStatus = checkAuthStatus;
 window.logout = logout;
+window.setChatCounter = setChatCounter; // Expose setChatCounter
 
 // Functions from ui.js
 window.toggleTheme = toggleTheme;
@@ -216,12 +350,16 @@ window.switchToChatFromProfile = switchToChatFromProfile;
 window.previewQuizResult = previewQuizResult;
 
 
-// Tutor and Mode Management (these functions remain in app.js as they update global state directly)
+/**
+ * Updates the display of the current tutor (avatar, name, description, mode descriptions).
+ */
 export function updateTutorDisplay() {
   const tutorAvatar = document.getElementById("tutorAvatar");
   const tutorName = document.getElementById("tutorName");
   const tutorDescription = document.getElementById("tutorDescription");
   const initialAvatar = document.getElementById("initialAvatar");
+  const enolaModeDescription = document.getElementById("enolaModeDescription");
+  const franklinModeDescription = document.getElementById("franklinModeDescription");
 
   document.querySelectorAll(".tutor-option").forEach((option) => {
     option.classList.remove("active");
@@ -235,6 +373,8 @@ export function updateTutorDisplay() {
     if (tutorName) tutorName.textContent = "Enola";
     if (tutorDescription) tutorDescription.innerHTML =
       translations[currentLanguage].enolaWelcomeShort;
+    if (enolaModeDescription) enolaModeDescription.style.display = "block";
+    if (franklinModeDescription) franklinModeDescription.style.display = "none";
   } else if (currentTutor === "franklin") {
     const tutorFranklin = document.querySelector(".tutor-franklin");
     if (tutorFranklin) tutorFranklin.classList.add("active");
@@ -243,9 +383,14 @@ export function updateTutorDisplay() {
     if (tutorName) tutorName.textContent = "Franklin";
     if (tutorDescription) tutorDescription.innerHTML =
       translations[currentLanguage].franklinWelcomeShort;
+    if (enolaModeDescription) enolaModeDescription.style.display = "none";
+    if (franklinModeDescription) franklinModeDescription.style.display = "block";
   }
 }
 
+/**
+ * Updates the display of the current mode (buttons, input placeholder, quiz settings panel visibility).
+ */
 export function updateModeDisplay() {
   const explanationModeBtn = document.getElementById("explanationModeBtn");
   const testingModeBtn = document.getElementById("testingModeBtn");
@@ -285,19 +430,26 @@ export function updateModeDisplay() {
   }
 }
 
+/**
+ * Selects a tutor and updates the UI accordingly.
+ * @param {string} tutorName - The name of the tutor to select ("enola" or "franklin").
+ */
 export function selectTutor(tutorName) {
   currentTutor = tutorName;
-  if (tutorName === 'enola') {
-    currentMode = 'explanation';
-  } else if (tutorName === 'franklin') {
-    currentMode = 'testing';
-  }
-  updateTutorDisplay();
-  updateModeDisplay();
-  loadModeHistory();
-  saveChatToDatabase();
+    if (tutorName === 'enola') {
+      currentMode = 'explanation';
+    } else if (tutorName === 'franklin') {
+      currentMode = 'testing';
+    }
+    updateTutorDisplay();
+    updateModeDisplay();
+    loadModeHistory();
+    saveChatToDatabase();
 }
 
+/**
+ * Switches the application to explanation mode with Enola as the tutor.
+ */
 export function switchToExplanationMode() {
   currentMode = "explanation";
   currentTutor = "enola";
@@ -307,6 +459,9 @@ export function switchToExplanationMode() {
   saveChatToDatabase();
 }
 
+/**
+ * Switches the application to testing mode with Franklin as the tutor.
+ */
 export function switchToTestingMode() {
   currentMode = "testing";
   currentTutor = "franklin";
@@ -316,12 +471,19 @@ export function switchToTestingMode() {
   saveChatToDatabase();
 }
 
-// Language management (these functions remain in app.js as they update global state directly)
+/**
+ * Toggles the visibility of the language selection dropdown.
+ */
 export function toggleLanguageDropdown() {
   const languageDropdown = document.getElementById("languageDropdown");
   if (languageDropdown) languageDropdown.classList.toggle("show");
 }
 
+/**
+ * Selects a language and updates the UI accordingly.
+ * @param {string} code - The language code (e.g., "en", "de", "sk").
+ * @param {string} display - The display text for the language button (e.g., "EN", "DE", "SK").
+ */
 export function selectLanguage(code, display) {
   currentLanguage = code;
   const languageBtn = document.getElementById("languageBtn");
@@ -337,6 +499,9 @@ export function selectLanguage(code, display) {
   showNotification(`Language changed to ${display}`, "info");
 }
 
+/**
+ * Updates all UI elements with the currently selected language.
+ */
 export function updateUILanguage() {
   const t = translations[currentLanguage];
 
@@ -365,10 +530,26 @@ export function updateUILanguage() {
     noAssetsMsg.textContent = t.noAssets;
   }
 
+  // Re-render the initial message in the chat area when language changes
+  const chatArea = document.getElementById("chatArea");
+  if (chatArea) {
+    const initialMessageDiv = chatArea.querySelector(".message");
+    if (initialMessageDiv && initialMessageDiv.id === "initialWelcomeMessage") {
+      const welcomeMessage =
+        currentTutor === "enola"
+          ? translations[currentLanguage].enolaStart
+          : translations[currentLanguage].franklinStart;
+      initialMessageDiv.querySelector(".message-content").innerHTML = welcomeMessage;
+    }
+  }
+
   loadModeHistory();
 }
 
-// Authentication functions (these functions remain in app.js as they update global state directly)
+/**
+ * Checks the authentication status of the user and updates the UI accordingly.
+ * Displays user info if logged in, otherwise shows sign-in options.
+ */
 export function checkAuthStatus() {
   const token = localStorage.getItem("access_token");
   const user = localStorage.getItem("user");
@@ -399,6 +580,9 @@ export function checkAuthStatus() {
   }
 }
 
+/**
+ * Logs out the current user, clears local storage, and reloads the page.
+ */
 export function logout() {
   document.body.style.transition = "opacity 0.3s ease";
   document.body.style.opacity = "0";
@@ -406,7 +590,6 @@ export function logout() {
   setTimeout(() => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("user");
-    localStorage.removeItem("chatModeHistory");
     localStorage.removeItem("chatTitles"); // Clear chat titles
     localStorage.removeItem("chatSources"); // Clear chat sources
     localStorage.removeItem("chatAttachedAssets"); // Clear attached assets
@@ -415,28 +598,22 @@ export function logout() {
   }, 300);
 }
 
-// Initialize
+/**
+ * Initializes the application when the DOM is fully loaded.
+ * Sets up theme, authentication, loads chats and assets, and updates UI language.
+ */
 document.addEventListener("DOMContentLoaded", async function () {
   try {
     loadTheme();
     // setupDragAndDrop(); // Now called from assets.js
     checkAuthStatus();
 
-    const savedHistory = localStorage.getItem("chatModeHistory");
-    if (savedHistory) {
-      try {
-        chatModeHistory = JSON.parse(savedHistory);
-      } catch (e) {
-        console.error("Error loading chat history from localStorage:", e);
-      }
-    }
-
     currentTutor = "enola";
     currentMode = "explanation";
     updateTutorDisplay();
     updateModeDisplay();
 
-    await loadChatsFromDatabase();
+    await loadChatsFromDatabase(); // This will now be the sole source of truth for chatModeHistory
     await loadAssetsIntoMainframe();
 
     const savedLanguage = localStorage.getItem("selectedLanguage");
@@ -467,7 +644,10 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 });
 
-// Close modals when clicking outside
+/**
+ * Global event listener to close modals when clicking outside their content.
+ * @param {Event} event - The click event.
+ */
 window.onclick = function (event) {
   if (event.target.classList.contains("modal")) {
     event.target.style.display = "none";

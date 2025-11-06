@@ -7,10 +7,18 @@ import { saveChatToDatabase } from "./chat.js"; // Import saveChatToDatabase fro
 
 let attachedFiles = []; // Files attached to the current message input
 
+/**
+ * Returns the array of files currently attached to the message input.
+ * @returns {Array<File>} An array of File objects.
+ */
 export function getAttachedFiles() {
   return attachedFiles;
 }
 
+/**
+ * Sets up drag and drop functionality for attaching files to the chat.
+ * Allows dragging existing assets from the asset list or dropping new files from the system.
+ */
 export function setupDragAndDrop() {
   const middlePanel = document.getElementById("middlePanel");
   const dropOverlay = document.getElementById("dropOverlay");
@@ -113,6 +121,10 @@ export function setupDragAndDrop() {
   });
 }
 
+/**
+ * Updates the checked state of asset checkboxes in the asset list
+ * based on which assets are currently attached to the active chat.
+ */
 export function updateAssetSelectionUI() {
   document.querySelectorAll(".asset-checkbox").forEach((checkbox) => {
     const filename = checkbox.getAttribute("data-filename");
@@ -122,6 +134,11 @@ export function updateAssetSelectionUI() {
   });
 }
 
+/**
+ * Attaches a file to the current message input for sending.
+ * Prevents duplicate files from being attached.
+ * @param {File} file - The File object to attach.
+ */
 export function attachFileToMessage(file) {
   const isDuplicate = attachedFiles.some(existingFile => existingFile.name === file.name);
   if (!isDuplicate) {
@@ -132,6 +149,9 @@ export function attachFileToMessage(file) {
   }
 }
 
+/**
+ * Updates the display of files currently attached to the message input.
+ */
 export function updateAttachedFilesDisplay() {
   const attachedFilesDiv = document.getElementById("attachedFiles");
   if (!attachedFilesDiv) return;
@@ -155,11 +175,21 @@ export function updateAttachedFilesDisplay() {
   });
 }
 
+/**
+ * Removes an attached file from the message input by its index.
+ * @param {number} index - The index of the file to remove from the `attachedFiles` array.
+ */
 export function removeAttachedFile(index) {
   attachedFiles.splice(index, 1);
   updateAttachedFilesDisplay();
 }
 
+/**
+ * Handles file upload events from hidden input fields.
+ * @param {Event} event - The file input change event.
+ * @param {"attach" | "asset"} type - The type of upload ("attach" for message, "asset" for asset list).
+ * @returns {Promise<void>}
+ */
 export async function handleFileUpload(event, type) {
   const files = event.target.files;
 
@@ -174,6 +204,11 @@ export async function handleFileUpload(event, type) {
   event.target.value = "";
 }
 
+/**
+ * Adds new files to the asset list, uploads them to the backend, and updates the UI.
+ * @param {FileList | File[]} files - A FileList or array of File objects to add.
+ * @returns {Promise<void>}
+ */
 export async function addFilesToAssets(files) {
   const assetList = document.getElementById("assetList");
   if (!assetList) return;
@@ -198,7 +233,10 @@ export async function addFilesToAssets(files) {
 
     try {
       const uploadedAssetData = await uploadFileApi(file);
-      if (uploadedAssetData && uploadedAssetData.id) {
+      if (uploadedAssetData && uploadedAssetData.file_type === "existing") {
+        assetItem.remove(); // Remove the temporary loading item
+        showNotification(`File "${uploadedAssetData.filename}" already exists.`, "info");
+      } else if (uploadedAssetData && uploadedAssetData.id) {
         assetItem.classList.remove("loading");
         assetItem.setAttribute("data-asset-id", uploadedAssetData.id);
         assetItem.setAttribute("draggable", "true");
@@ -211,14 +249,14 @@ export async function addFilesToAssets(files) {
         );
         const extension = (uploadedAssetData.filename && typeof uploadedAssetData.filename === 'string') ? uploadedAssetData.filename.split('.').pop().toLowerCase() : '';
         assetItem.innerHTML = `
-          <div style="display: flex; align-items: center; flex: 1; cursor: pointer;" onclick="window.previewFile('${uploadedAssetData.filename}', '${extension}')">
+          <div style="display: flex; align-items: center; flex: 1; cursor: pointer;" onclick="window.previewFile(JSON.stringify('${uploadedAssetData.filename}'), '${extension}')">
             <input type="checkbox" class="asset-checkbox" 
                    id="asset-checkbox-${uploadedAssetData.id}" 
                    data-filename="${uploadedAssetData.filename}" 
                    ${isSelected ? "checked" : ""} 
-                   onclick="event.stopPropagation(); window.toggleChatAssetSelection('${
+                   onclick="event.stopPropagation(); window.toggleChatAssetSelection(JSON.stringify('${
                      uploadedAssetData.filename
-                   }')">
+                   }'))">
             <label for="asset-checkbox-${uploadedAssetData.id}" style="margin-left: 8px; cursor: pointer;">${fileIcon} ${
             uploadedAssetData.filename
           }</label>
@@ -247,12 +285,22 @@ export async function addFilesToAssets(files) {
   updateAssetSelectionUI();
 }
 
+/**
+ * Handles the drag start event for an asset item, setting data for drag and drop.
+ * @param {DragEvent} event - The drag event.
+ * @param {string} filename - The filename of the asset being dragged.
+ */
 export function dragAsset(event, filename) {
   event.dataTransfer.setData("text/plain", filename);
   event.dataTransfer.setData("text/x-asset-filename", filename); // Custom data type for existing assets
   event.dataTransfer.effectAllowed = "copy";
 }
 
+/**
+ * Toggles the selection state of an asset for the current chat.
+ * Adds or removes the asset from `chatAttachedAssets` and updates the UI.
+ * @param {string} filename - The filename of the asset to toggle.
+ */
 export function toggleChatAssetSelection(filename) {
   if (!chatAttachedAssets[currentChatId]) {
     updateChatAttachedAssets(currentChatId, []);
@@ -267,6 +315,12 @@ export function toggleChatAssetSelection(filename) {
   saveChatToDatabase();
 }
 
+/**
+ * Renames an asset after prompting the user for a new filename.
+ * Updates the backend and frontend UI.
+ * @param {number} assetId - The ID of the asset to rename.
+ * @returns {Promise<void>}
+ */
 export async function renameAsset(assetId) {
   const assetItem = document.querySelector(`[data-asset-id="${assetId}"]`);
   if (!assetItem) return;
@@ -294,6 +348,12 @@ export async function renameAsset(assetId) {
   }
 }
 
+/**
+ * Deletes an asset after user confirmation.
+ * Removes the asset from the backend, frontend list, and any associated chats.
+ * @param {number} assetId - The ID of the asset to delete.
+ * @returns {Promise<void>}
+ */
 export async function deleteAsset(assetId) {
   const confirmed = await showDeleteConfirm(
     translations[currentLanguage].deleteConfirm
@@ -337,6 +397,10 @@ export async function deleteAsset(assetId) {
   }
 }
 
+/**
+ * Loads all assets for the current user from the backend and displays them in the asset list.
+ * @returns {Promise<void>}
+ */
 export async function loadAssetsIntoMainframe() {
   const assetList = document.getElementById("assetList");
   if (!assetList) {
@@ -365,14 +429,14 @@ export async function loadAssetsIntoMainframe() {
         );
         const extension = (asset.filename && typeof asset.filename === 'string') ? asset.filename.split('.').pop().toLowerCase() : '';
         assetItem.innerHTML = `
-          <div style="display: flex; align-items: center; flex: 1; cursor: pointer;" onclick="window.previewFile('${asset.filename}', '${extension}')">
+          <div style="display: flex; align-items: center; flex: 1; cursor: pointer;" onclick="window.previewFile(JSON.stringify('${asset.filename}'), '${extension}')">
             <input type="checkbox" class="asset-checkbox" 
                    id="asset-checkbox-${asset.id}" 
                    data-filename="${asset.filename}" 
                    ${isSelected ? "checked" : ""} 
-                   onclick="event.stopPropagation(); window.toggleChatAssetSelection('${
+                   onclick="event.stopPropagation(); window.toggleChatAssetSelection(JSON.stringify('${
                      asset.filename
-                   }')">
+                   }'))">
             <label for="asset-checkbox-${asset.id}" style="margin-left: 8px; cursor: pointer;">${fileIcon} ${
             asset.filename
           }</label>
@@ -395,11 +459,17 @@ export async function loadAssetsIntoMainframe() {
   }
 }
 
+/**
+ * Triggers the hidden file input to open the file selection dialog for adding new assets.
+ */
 export function addAsset() {
   const fileInput = document.getElementById("fileInput");
   if (fileInput) fileInput.click();
 }
 
+/**
+ * Triggers the hidden file input to open the file selection dialog for attaching files to the current message.
+ */
 export function attachFile() {
   const attachInput = document.getElementById("attachInput");
   if (attachInput) attachInput.click();

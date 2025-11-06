@@ -234,6 +234,10 @@ body {
 .assets-section {
   padding: 20px;
   border-top: 1px solid var(--border-color);
+  max-height: 150px; /* Set a smaller maximum height */
+  overflow-y: auto; /* Enable vertical scrolling */
+  flex-shrink: 0; /* Prevent it from shrinking below its content size */
+  flex-grow: 0; /* Prevent it from growing */
 }
 
 .no-assets-message {
@@ -241,6 +245,12 @@ body {
   font-size: 14px;
   text-align: center;
   padding: 20px;
+}
+
+#assetList {
+  flex: 1; /* Allow it to take available space within assets-section */
+  overflow-y: auto; /* Enable scrolling */
+  max-height: calc(100% - 40px); /* Adjust based on padding/header in assets-section */
 }
 
 /* Middle Panel */

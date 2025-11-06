@@ -467,20 +467,42 @@ class MultimediaProcessor:
                     
                     # Use ffmpeg via cv2 to extract audio (if available)
                     import subprocess
+                    ffmpeg_command = ['ffmpeg', '-i', file_path, '-vn', '-acodec', 'pcm_s16le', '-ar', '16000', '-ac', '1', audio_path]
+                    print(f"DEBUG: Running FFmpeg command: {' '.join(ffmpeg_command)}")
                     try:
-                        # Increased timeout for longer videos (e.g., 20 minutes = 1200 seconds)
-                        # Set timeout to 10 minutes (600 seconds)
-                        subprocess.run(
-                            ['ffmpeg', '-i', file_path, '-vn', '-acodec', 'pcm_s16le', '-ar', '16000', '-ac', '1', audio_path],
-                            stdout=subprocess.DEVNULL,
-                            stderr=subprocess.DEVNULL,
-                            timeout=600 # Increased timeout to 10 minutes
+                        process = subprocess.run(
+                            ffmpeg_command,
+                            stdout=subprocess.PIPE, # Capture stdout
+                            stderr=subprocess.PIPE, # Capture stderr
+                            timeout=600, # Increased timeout to 10 minutes
+                            text=True # Decode stdout/stderr as text
                         )
-                        audio_transcription = self._transcribe_audio(audio_path)
+                        
+                        print(f"DEBUG: FFmpeg process finished. Return code: {process.returncode}")
+                        print(f"DEBUG: FFmpeg stdout:\n{process.stdout}")
+                        print(f"DEBUG: FFmpeg stderr:\n{process.stderr}")
+
+                        if process.returncode != 0:
+                            print(f"FFmpeg audio extraction failed with error (return code {process.returncode}):\n{process.stderr}")
+                            audio_transcription = f"FFmpeg audio extraction failed: {process.stderr.strip()}"
+                        else:
+                            # Check if audio_path exists and has content
+                            if os.path.exists(audio_path) and os.path.getsize(audio_path) > 0:
+                                print(f"DEBUG: Temporary audio file created: {audio_path}, size: {os.path.getsize(audio_path)} bytes")
+                                audio_transcription = self._transcribe_audio(audio_path)
+                            else:
+                                print(f"ERROR: Temporary audio file {audio_path} was not created or is empty.")
+                                audio_transcription = "FFmpeg audio extraction failed: Temporary audio file not created or is empty."
                         os.unlink(audio_path)
-                    except (subprocess.TimeoutExpired, FileNotFoundError, Exception) as e:
-                        print(f"FFmpeg audio extraction failed or timed out: {e}")
-                        pass
+                    except subprocess.TimeoutExpired:
+                        print(f"FFmpeg audio extraction timed out after 600 seconds for {file_path}")
+                        audio_transcription = "FFmpeg audio extraction timed out."
+                    except FileNotFoundError:
+                        print("FFmpeg command not found. Please ensure FFmpeg is installed and in your PATH.")
+                        audio_transcription = "FFmpeg not found. Cannot extract audio."
+                    except Exception as e:
+                        print(f"FFmpeg audio extraction failed: {e}")
+                        audio_transcription = f"FFmpeg audio extraction failed: {str(e)}"
                 except Exception as e:
                     print(f"Audio extraction from video failed: {e}")
             

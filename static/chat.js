@@ -24,8 +24,12 @@ import {
 } from "./ui.js";
 import { updateAssetSelectionUI, updateAttachedFilesDisplay, removeAttachedFile, addFilesToAssets, dragAsset, toggleChatAssetSelection, getAttachedFiles, setupDragAndDrop, loadAssetsIntoMainframe } from "./assets.js"; // Import setupDragAndDrop and loadAssetsIntoMainframe
 import { displayQuiz, hideQuiz, generateQuiz } from "./quiz.js";
-import { updateTutorDisplay, updateModeDisplay, translations, currentLanguage, currentTutor, currentMode, currentChatId, chatModeHistory, chatTitles, chatSources, chatAttachedAssets, setCurrentMode, setCurrentTutor, setCurrentChatId, setChatCounter, setAssetCounter, setChatModeHistory, updateChatModeHistory, addMessageToChatModeHistory, deleteChatHistory, setChatTitles, updateChatTitle, deleteChatTitle, setChatSources, updateChatSources, addChatSource, deleteChatSource, setChatAttachedAssets, updateChatAttachedAssets, addChatAttachedAsset, removeChatAttachedAsset, deleteChatAttachedAssets, setCurrentLanguage } from "./app.js"; // Import necessary globals from app.js
+import { updateTutorDisplay, updateModeDisplay, translations, currentLanguage, currentTutor, currentMode, currentChatId, chatModeHistory, chatTitles, chatSources, chatAttachedAssets, setCurrentMode, setCurrentTutor, setCurrentChatId, setChatModeHistory, updateChatModeHistory, addMessageToChatModeHistory, deleteChatHistory, setChatTitles, updateChatTitle, deleteChatTitle, setChatSources, updateChatSources, addChatSource, deleteChatSource, setChatAttachedAssets, updateChatAttachedAssets, addChatAttachedAsset, removeChatAttachedAsset, deleteChatAttachedAssets, setCurrentLanguage } from "./app.js"; // Import necessary globals from app.js
 
+/**
+ * Creates a new chat session, updates the UI, and saves the new chat to the database.
+ * @returns {Promise<void>}
+ */
 export async function addNewChat() {
   try {
     const newChatData = await addNewChatApi();
@@ -75,6 +79,11 @@ export async function addNewChat() {
   }
 }
 
+/**
+ * Opens a modal to rename an existing chat.
+ * @param {number} chatId - The ID of the chat to rename.
+ * @returns {Promise<void>}
+ */
 export async function renameChat(chatId) {
   const modal = document.getElementById("renameModal");
   const input = document.getElementById("renameInput");
@@ -89,6 +98,10 @@ export async function renameChat(chatId) {
   }
 }
 
+/**
+ * Confirms the chat rename operation and sends the new title to the backend.
+ * @returns {Promise<void>}
+ */
 export async function confirmRename() {
   const modal = document.getElementById("renameModal");
   const chatId = modal ? parseInt(modal.getAttribute("data-chat-id")) : null;
@@ -113,6 +126,11 @@ export async function confirmRename() {
   closeModal("renameModal");
 }
 
+/**
+ * Deletes a chat after user confirmation.
+ * @param {number} chatId - The ID of the chat to delete.
+ * @returns {Promise<void>}
+ */
 export async function deleteChat(chatId) {
   const confirmed = await showDeleteConfirm(
     translations[currentLanguage].deleteConfirm
@@ -145,6 +163,12 @@ export async function deleteChat(chatId) {
   }
 }
 
+/**
+ * Switches the current view to a specified chat.
+ * Saves the current chat's state before switching.
+ * @param {number} chatId - The ID of the chat to switch to.
+ * @returns {Promise<void>}
+ */
 export async function switchToChat(chatId) {
   await saveChatToDatabase();
 
@@ -175,6 +199,10 @@ export async function switchToChat(chatId) {
   hideQuiz(); // Hide quiz panel when switching chats
 }
 
+/**
+ * Loads and displays the chat history for the current chat ID and mode.
+ * If no history exists, displays a welcome message.
+ */
 export function loadModeHistory() {
   const chatArea = document.getElementById("chatArea");
   if (!chatArea) {
@@ -202,24 +230,36 @@ export function loadModeHistory() {
         ? translations[currentLanguage].enolaStart
         : translations[currentLanguage].franklinStart;
     addMessage(welcomeMessage, "bot", currentTutor);
-    if (!chatModeHistory[chatKey]) {
-      updateChatModeHistory(chatKey, []);
+    // Only add the welcome message to history if it's a new chat session
+    // and not just a mode switch within an existing empty chat.
+    // The backend will handle persisting the initial message for new chats.
+    // For existing chats, if history is empty, it means it's a mode switch
+    // and the welcome message is purely for display.
+    if (!chatModeHistory[chatKey] || chatModeHistory[chatKey].length === 0) {
+      updateChatModeHistory(chatKey, [{
+        type: "bot",
+        content: welcomeMessage,
+        attachments: "",
+      }]);
     }
-    addMessageToChatModeHistory(chatKey, {
-      type: "bot",
-      content: welcomeMessage,
-      attachments: "",
-    });
   }
   loadChatSources(currentChatId);
   updateAssetSelectionUI();
 }
 
+/**
+ * Loads and updates the display of sources for a given chat ID.
+ * @param {number} chatId - The ID of the chat to load sources for.
+ */
 export function loadChatSources(chatId) {
   const sources = chatSources[chatId] || [];
   updateSources(sources);
 }
 
+/**
+ * Handles key press events in the message input, specifically for sending messages on Enter.
+ * @param {KeyboardEvent} event - The keyboard event.
+ */
 export function handleKeyPress(event) {
   if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault(); // Prevent default to avoid adding a newline in the input field
@@ -228,6 +268,10 @@ export function handleKeyPress(event) {
   // If Shift + Enter, allow default behavior (which is usually a newline)
 }
 
+/**
+ * Sends a message to the backend, handling file uploads, chat modes, and displaying responses.
+ * @returns {Promise<void>}
+ */
 export async function sendMessage() {
   const input = document.getElementById("messageInput");
   const message = input ? input.value.trim() : "";
@@ -245,6 +289,8 @@ export async function sendMessage() {
   const chatSourceFiles = (chatSources[currentChatId] || []).map(
     (s) => s.title
   );
+
+  const isEnolaFindRequest = currentTutor === "enola" && currentMode === "explanation" && message.toLowerCase().includes("find what i need");
 
   const existingAssetLabels = document.querySelectorAll(".asset-item label");
   const existingAssetFilenames = Array.from(existingAssetLabels).map((label) => label.textContent.trim().substring(2).trim());
@@ -337,7 +383,33 @@ export async function sendMessage() {
       // Clear attached files after quiz generation
       getAttachedFiles().length = 0;
       updateAttachedFilesDisplay();
-    } else {
+    } else if (isEnolaFindRequest) {
+      // Handle "Enola, find what I need" request
+      const data = await simpleChatApi({
+        message: message,
+        mode: currentMode,
+        tutor: currentTutor,
+        chat_id: currentChatId,
+        attached_files: allAvailableFiles,
+        language: currentLanguage,
+        find_what_i_need: true, // Indicate this is a "find what I need" request
+      });
+
+      if (data.requires_files) {
+        showNotification("Please upload files first!", "warning");
+        removeLoadingMessage();
+        return;
+      }
+
+      botResponseContent = data.response;
+      if (data.suggested_title) {
+        suggestedTitle = data.suggested_title;
+      }
+      if (data.sources) {
+        sourcesData = data.sources;
+      }
+    }
+    else {
       const data = await simpleChatApi({
         message: message,
         mode: currentMode,
@@ -408,6 +480,10 @@ export async function sendMessage() {
   }
 }
 
+/**
+ * Loads all chats for the current user from the database and updates the chat list UI.
+ * @returns {Promise<void>}
+ */
 export async function loadChatsFromDatabase() {
   try {
     const data = await loadChatsFromDatabaseApi();
@@ -467,6 +543,10 @@ export async function loadChatsFromDatabase() {
   }
 }
 
+/**
+ * Saves the current chat's state (messages, title, mode, attached assets) to the database.
+ * @returns {Promise<void>}
+ */
 export async function saveChatToDatabase() {
   if (!currentChatId) return;
 

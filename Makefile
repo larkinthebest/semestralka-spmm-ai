@@ -7,9 +7,9 @@ VENV_DIR := .venv
 # Default target
 all: help
 
-# Install Python dependencies in a virtual environment and set up the database
-install: setup migrate-db download-gpt4all-models
-	@echo "Setup complete. AI models downloaded (if not present)."
+# Install Python dependencies in a virtual environment, set up the database, and configure API key
+install: setup migrate-db configure-api-key
+	@echo "Setup complete. Gemini API key configured."
 
 # Internal target for setting up virtual environment and installing dependencies
 setup:
@@ -24,15 +24,16 @@ migrate-db:
 	@echo "Migrating database..."
 	./$(VENV_DIR)/bin/$(PYTHON) migrate_database.py
 
-# Internal target for downloading GPT4All models
-download-gpt4all-models:
-	@echo "Checking for GPT4All models..."
-	@mkdir -p models
-	@if [ ! -f models/mistral-7b-openorca.gguf2.Q4_0.gguf ]; then \
-		echo "Downloading mistral-7b-openorca.gguf2.Q4_0.gguf (approx. 4.4 GB)..."; \
-		curl -L https://gpt4all.io/models/gguf/mistral-7b-openorca.gguf2.Q4_0.gguf -o models/mistral-7b-openorca.gguf2.Q4_0.gguf; \
+# Internal target for configuring Gemini API key
+configure-api-key:
+	@if [ ! -f .env ]; then \
+		echo "Creating .env file for Gemini API key..."; \
+		read -p "Enter your Google Gemini API Key: " GEMINI_API_KEY_INPUT; \
+		echo "GEMINI_API_KEY=\"$$GEMINI_API_KEY_INPUT\"" > .env; \
+		echo ".env file created. Remember to keep this file out of version control."; \
+	else \
+		echo ".env file already exists. Skipping API key configuration."; \
 	fi
-	@echo "GPT4All model check complete. Only 'mistral-7b-openorca.gguf2.Q4_0.gguf' is downloaded to preserve space."
 
 # Run the FastAPI application
 run:
@@ -65,14 +66,11 @@ clean:
 help:
 	@echo "AI Multimedia Tutor - Makefile Commands"
 	@echo "-------------------------------------"
-	@echo "  make install        - Set up virtual environment, install Python dependencies, and migrate database."
+	@echo "  make install        - Set up virtual environment, install Python dependencies, migrate database, and configure Gemini API key."
 	@echo "  make run            - Run the FastAPI application locally (automatically uses virtual environment)."
 	@echo "  make build-docker   - Build the Docker image for the application."
 	@echo "  make run-docker     - Run the application in a Docker container."
 	@echo "  make clean          - Remove virtual environment and Python cache files."
 	@echo "  make help           - Display this help message."
 	@echo ""
-	@echo "Note: For AI models (e.g., GPT4All, Whisper), you will need to download them manually"
-	@echo "      and place them in the 'models/' directory. Refer to the project's README or"
-	@echo "      specific library documentation for details on model downloads."
-	@echo "      To manually activate the virtual environment for other commands, run: source $(VENV_DIR)/bin/activate"
+	@echo "Note: To manually activate the virtual environment for other commands, run: source $(VENV_DIR)/bin/activate"

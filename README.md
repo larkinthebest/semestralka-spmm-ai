@@ -10,7 +10,6 @@ To get the AI Multimedia Tutor running on your local machine, we recommend using
 
 *   **Python 3.10 or higher** (for local development without Docker)
 *   **Git** (to clone the repository)
-*   **curl** (for downloading GPT4All models via Makefile)
 
 ### Getting Started with the Makefile
 
@@ -32,7 +31,7 @@ This option sets up the project using a Python virtual environment, which is ide
     (Note the `.` at the end of the command.)
 
 2.  **Install Dependencies and Setup:**
-    Use the `Makefile` to perform a complete setup, including virtual environment creation, dependency installation, database migration, and GPT4All model downloads:
+    Use the `Makefile` to perform a complete setup, including virtual environment creation, dependency installation, and database migration:
     ```bash
     make install
     ```
@@ -40,24 +39,24 @@ This option sets up the project using a Python virtual environment, which is ide
     *   Create a Python virtual environment (`.venv`).
     *   Install all Python dependencies from `requirements.txt`.
     *   Run the database migration script (`migrate_database.py`) to set up the necessary tables.
-    *   **Automatically download the primary GPT4All model** (`mistral-7b-openorca.gguf2.Q4_0.gguf`, approx. 4.4 GB) into the `models/` directory. If the model is already present, it will not be re-downloaded. This ensures a lightweight setup.
 
     **Note:** The `make run` command automatically uses this virtual environment. If you need to manually activate it for other commands, run `source .venv/bin/activate` (on Windows, use `.\.venv\Scripts\activate`).
 
 3.  **Install System Dependencies (if not using Docker):**
-    Some Python packages (like `pytesseract` and `opencv-python`) require system-level dependencies. These are *not* installed by `make install` and need to be handled manually based on your operating system.
+    Some Python packages (like `pytesseract`, `opencv-python`, and `whisper`) require system-level dependencies. These are *not* installed by `make install` and need to be handled manually based on your operating system.
 
     *   **For Debian/Ubuntu-based systems:**
         ```bash
         sudo apt-get update
-        sudo apt-get install -y tesseract-ocr tesseract-ocr-eng libgl1-mesa-glx libsm6 libxext6
+        sudo apt-get install -y tesseract-ocr tesseract-ocr-eng libgl1-mesa-glx libsm6 libxext6 ffmpeg
         ```
     *   **For macOS (using Homebrew):**
         ```bash
-        brew install tesseract
+        brew install tesseract ffmpeg
         ```
     *   **For Windows:**
         *   Install [Tesseract OCR](https://tesseract-ocr.github.io/tessdoc/Installation.html). Make sure to add it to your system PATH.
+        *   Install [FFmpeg](https://ffmpeg.org/download.html). Make sure to add it to your system PATH.
         *   OpenCV usually handles its dependencies better on Windows, but if you encounter issues, you might need to install Visual C++ Redistributable.
 
 4.  **Run the Application:**
@@ -73,11 +72,36 @@ This option sets up the project using a Python virtual environment, which is ide
     http://localhost:8002
     ```
 
-### LLM Configuration
+### LLM Configuration (Google Gemini)
 
-The application uses `gpt4all` for its Large Language Model (LLM) capabilities. The `src/services/llm_service.py` file is configured to load the `mistral-7b-openorca.gguf2.Q4_0.gguf` model from the `models/` directory. This model was chosen for its balance of performance and size (approx. 4.4 GB).
+The application now uses Google Gemini for its Large Language Model (LLM) capabilities. To use Gemini, you need to obtain an API key from Google AI Studio.
 
-If you wish to use a different GPT4All model, download it manually from the [GPT4All website](https://gpt4all.io/index.html) and place it in the `models/` directory. You will also need to update the `model_name` variable in `src/services/llm_service.py` to match your chosen model's filename.
+1.  **Get a Gemini API Key:**
+    *   Go to [Google AI Studio](https://aistudio.google.com/app/apikey).
+    *   Create a new API key or use an existing one.
+
+2.  **Set the API Key:**
+    The application expects the API key to be provided via an environment variable named `GEMINI_API_KEY`.
+
+    **Recommended for Local Development (.env file):**
+    *   Create a file named `.env` in the root directory of the project.
+    *   Add your API key to this file in the format:
+        ```
+        GEMINI_API_KEY="YOUR_GEMINI_API_KEY_HERE"
+        ```
+        (Replace `YOUR_GEMINI_API_KEY_HERE` with your actual key).
+    *   The application is configured to automatically load this `.env` file.
+    *   **Important:** The `.env` file is already included in `.gitignore`, so it will not be committed to your repository.
+
+    **Alternatively (for temporary use or deployment environments):**
+    *   You can set the environment variable directly in your terminal session:
+        ```bash
+        export GEMINI_API_KEY="YOUR_GEMINI_API_KEY_HERE"
+        ```
+    *   For deployment to cloud platforms, you would configure `GEMINI_API_KEY` as a secret environment variable in your deployment settings.
+
+3.  **Restart the Application:**
+    After setting the `GEMINI_API_KEY`, restart the application (e.g., `make run`) to ensure the new environment variable is loaded.
 
 ### Usage Guide
 
@@ -96,19 +120,19 @@ https://www.youtube.com/watch?v=eGbgwIOLzic
 
 ### Troubleshooting
 
-*   **"GPT4All model not loaded" / LLM errors**:
-    *   Ensure you ran `make install` successfully.
-    *   Verify that the GPT4All model files are present in the `models/` directory. If not, check your internet connection and re-run `make install` or download them manually as described above.
-    *   Check the console output for specific error messages related to model loading.
 *   **"Tesseract not found" / OCR errors**:
     *   Ensure `pytesseract` is installed (included in `requirements.txt`).
     *   Verify that Tesseract OCR is installed on your system and its executable is in your system's PATH (see "Install System Dependencies" above).
 *   **"OpenCV errors" / Video processing issues**:
     *   Ensure `opencv-python` is installed (included in `requirements.txt`).
     *   Ensure `ffmpeg` is installed on your system, as it's often a dependency for video processing.
-*   **Slow Quiz Generation**:
-    *   Local LLMs can be resource-intensive. Ensure your machine meets the minimum requirements for the chosen GPT4All model.
-    *   Consider using a lighter GPT4All model if performance is critical.
+*   **"Whisper errors" / Audio transcription issues**:
+    *   Ensure `whisper` is installed (included in `requirements.txt`).
+    *   Ensure `ffmpeg` is installed on your system, as it's often a dependency for audio processing.
+*   **LLM Quota Exceeded (429 Error)**:
+    *   If you encounter a `429 Quota Exceeded` error from Google Gemini, it means you have hit the rate limits for your API key.
+    *   Check your usage and quotas on [Google AI Studio Usage](https://ai.dev/usage?tab=rate-limit).
+    *   You may need to wait for your quota to reset or upgrade your plan if you require higher usage.
 *   **Database issues**:
     *   Ensure `make install` completed the `migrate-db` step. If not, run `make migrate-db` manually.
     *   If you encounter `sqlite3.OperationalError: database is locked`, try restarting the application.
@@ -121,7 +145,7 @@ https://www.youtube.com/watch?v=eGbgwIOLzic
     *   `processors/`: Document and multimedia processing logic (including LaTeX detection).
     *   `services/`: LLM and quiz generation services.
 *   `static/`: Static files (CSS, HTML, JavaScript).
-*   `models/`: Directory for GPT4All models.
+*   `models/`: (No longer used for GPT4All models, but kept for potential future local LLMs)
 *   `data/`: Placeholder for data files.
 *   `samples/`: Sample multimedia files.
 *   `tests/`: Unit and integration tests.

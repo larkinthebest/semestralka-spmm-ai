@@ -1,3 +1,6 @@
+from dotenv import load_dotenv # Import load_dotenv
+load_dotenv() # Load environment variables from .env file
+
 from fastapi import FastAPI, File, UploadFile, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -68,6 +71,7 @@ app.add_middleware(
 
 # Initialize services
 llm_service = LLMService()
+print(f"DEBUG: Global LLMService instance created in main.py: {id(llm_service)}, model_name: {llm_service.full_model_name}")
 multimedia_processor = MultimediaProcessor()
 quiz_gen = QuizGenerator(llm_service)
 
@@ -169,7 +173,11 @@ async def upload_asset(
     current_user: User = Depends(get_current_user)
 ):
     user_id = current_user.id
-    allowed_extensions = ['.pdf', '.docx', '.txt', '.md', '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.mp3', '.wav', '.m4a', '.ogg', '.mp4', '.avi', '.mov', '.mkv', '.webm', '.pptx', '.ppt']
+    allowed_extensions = [
+        '.pdf', '.docx', '.txt', '.md', '.jpg', '.jpeg', '.png', '.gif', '.bmp',
+        '.mp3', '.wav', '.m4a', '.ogg', '.mp4', '.avi', '.mov', '.mkv', '.webm',
+        '.pptx', '.ppt', '.js', '.css', '.html', '.py', '.c', '.cpp', '.java', '.go', '.rb', '.php', '.ts', '.tsx', '.jsx', '.json', '.xml', '.yaml', '.yml'
+    ]
     file_extension = Path(file.filename).suffix.lower()
 
     print(f"DEBUG: Received file for upload: {file.filename}, content_type: {file.content_type}")
@@ -886,7 +894,7 @@ def _build_file_context(assets: list, multimedia_processor: MultimediaProcessor)
             continue
     return file_context, sources
 
-def _get_system_prompt(tutor: str, mode: str, language: str) -> str:
+def _get_system_prompt(tutor: str, mode: str, language: str, find_what_i_need: bool = False) -> str:
     """Generates the system prompt based on tutor, mode, and language."""
     language_instruction = ""
     if language == "de":
@@ -897,7 +905,44 @@ def _get_system_prompt(tutor: str, mode: str, language: str) -> str:
         language_instruction = "\n\n**IMPORTANT: Respond in English.**"
     
     if tutor == "enola" and mode == "explanation":
-        return f"""You are Enola, a friendly and enthusiastic AI tutor who specializes in explanations.{language_instruction}
+        if find_what_i_need:
+            return f"""You are Enola, a friendly and enthusiastic AI tutor who specializes in finding specific information within provided documents.{language_instruction}
+
+**Your role:**
+• Directly address the user's request to "find what I need"
+• Search through the attached files for the specific information requested in the user's message.
+• Clearly outline where the information was found (e.g., "In file 'document.pdf', on page 3, it states...")
+• Provide the relevant information concisely.
+• If the information is not found, state that clearly.
+• Be helpful and precise.
+
+**CRITICAL FORMATTING REQUIREMENTS (Format like Amazon Q):**
+• Start with a clear ## heading for the main topic
+• Use **bold** for important terms and key concepts
+• Use bullet points (•) for lists with proper spacing
+• Add emojis occasionally to make content engaging (📚 🎯 💡 ✨)
+• Use short paragraphs (2-3 sentences) with blank lines between them
+• Use ### subheadings to break content into sections
+• Add line breaks generously - never create walls of text
+• Use numbered lists for sequential steps
+• Use > blockquotes for important notes or tips
+• Structure: Heading → Brief intro → Sections with subheadings → Lists → Examples
+
+**Example format:**
+## Information Found on [Topic]
+
+I found the following information regarding [topic] in your attached files:
+
+### From [Filename 1]
+• On page [X], it states: "[Relevant quote/summary]"
+• [Another point]
+
+### From [Filename 2]
+• [Relevant information]
+
+Would you like me to elaborate on any of these points or search for something else? 😊"""
+        else:
+            return f"""You are Enola, a friendly and enthusiastic AI tutor who specializes in explanations.{language_instruction}
 
 **Your role:**
 • START with concepts from the uploaded files as your foundation
@@ -1094,6 +1139,7 @@ async def simple_chat(
     chat_id = request.get("chat_id", 1)
     attached_files = request.get("attached_files", []) # Now expects filenames
     language = request.get("language", "en")
+    find_what_i_need = request.get("find_what_i_need", False) # New parameter
     
     if not message:
         raise HTTPException(status_code=400, detail="Message is required")
@@ -1106,7 +1152,7 @@ async def simple_chat(
     
     file_context, sources = _build_file_context(user_assets, multimedia_processor)
     
-    system_prompt = _get_system_prompt(tutor, mode, language)
+    system_prompt = _get_system_prompt(tutor, mode, language, find_what_i_need)
     context_instruction = f"\n\n**TASK:** Answer '{message}' using the provided materials. Be comprehensive but concise."
     
     base_prompt = f"{system_prompt}\n{file_context}{context_instruction}\n\nQ: {message}\nA:"
@@ -1115,6 +1161,7 @@ async def simple_chat(
         truncated_context = file_context[:50000] + "\n[Content truncated for processing]\n"
         base_prompt = f"{system_prompt}\n{truncated_context}{context_instruction}\n\nQ: {message}\nA:"
     
+    print(f"DEBUG: Calling llm_service.generate_response from simple_chat. LLMService instance: {id(llm_service)}, initialized: {llm_service.initialized}, model_name: {llm_service.full_model_name}")
     try:
         response = await llm_service.generate_response(base_prompt)
     except Exception as e:

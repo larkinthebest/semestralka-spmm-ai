@@ -2,6 +2,11 @@
 
 import { translations, currentLanguage } from './app.js'; // Assuming app.js will export these
 
+/**
+ * Displays a notification message to the user.
+ * @param {string} message - The message to display.
+ * @param {"info" | "success" | "warning" | "error"} [type="info"] - The type of notification, affecting its styling.
+ */
 export function showNotification(message, type = "info") {
   const notificationContainer =
     document.getElementById("notificationContainer");
@@ -48,6 +53,9 @@ function getNotificationIcon(type) {
   }
 }
 
+/**
+ * Updates the icon of the theme toggle button based on the current theme.
+ */
 export function updateThemeToggleIcon() {
   const themeToggleBtn = document.getElementById("themeToggle");
   if (themeToggleBtn) {
@@ -59,6 +67,9 @@ export function updateThemeToggleIcon() {
   }
 }
 
+/**
+ * Loads the user's preferred theme from local storage or sets a default, then updates the UI.
+ */
 export function loadTheme() {
   const savedTheme = localStorage.getItem("theme");
   if (savedTheme) {
@@ -69,6 +80,9 @@ export function loadTheme() {
   updateThemeToggleIcon();
 }
 
+/**
+ * Toggles the application's theme between 'light' and 'dark'.
+ */
 export function toggleTheme() {
   const currentTheme = document.documentElement.getAttribute("data-theme");
   const newTheme = currentTheme === "dark" ? "light" : "dark";
@@ -77,11 +91,20 @@ export function toggleTheme() {
   updateThemeToggleIcon();
 }
 
+/**
+ * Closes a modal by setting its display style to 'none'.
+ * @param {string} modalId - The ID of the modal element to close.
+ */
 export function closeModal(modalId) {
   const modal = document.getElementById(modalId);
   if (modal) modal.style.display = "none";
 }
 
+/**
+ * Returns a Unicode emoji icon based on the file's extension.
+ * @param {string} filename - The name of the file.
+ * @returns {string} An emoji representing the file type.
+ */
 export function getFileIcon(filename) {
   if (!filename || typeof filename !== 'string' || filename.trim() === '') {
     return "📎"; // Default icon if filename is undefined, not a string, or empty
@@ -110,6 +133,10 @@ export function getFileIcon(filename) {
   }
 }
 
+/**
+ * Displays a loading message with a spinner in the chat area.
+ * @param {string} currentTutor - The name of the current tutor ("enola" or "franklin") to determine the avatar.
+ */
 export function showLoadingMessage(currentTutor) {
   const chatArea = document.getElementById("chatArea");
   if (!chatArea) return;
@@ -132,6 +159,9 @@ export function showLoadingMessage(currentTutor) {
   chatArea.scrollTop = chatArea.scrollHeight;
 }
 
+/**
+ * Removes the loading message from the chat area.
+ */
 export function removeLoadingMessage() {
   const loadingMsg = document.getElementById("loadingMessage");
   if (loadingMsg) {
@@ -139,6 +169,11 @@ export function removeLoadingMessage() {
   }
 }
 
+/**
+ * Formats raw markdown text into HTML with custom styling (Amazon Q-style spacing, LaTeX rendering).
+ * @param {string} text - The raw markdown text to format.
+ * @returns {string} The formatted HTML string.
+ */
 export function formatMessageText(text) {
   // Convert comprehensive markdown formatting to HTML with Amazon Q-style spacing
   let formatted = text;
@@ -307,6 +342,13 @@ export function formatMessageText(text) {
   return formatted;
 }
 
+/**
+ * Adds a new message to the chat area, animating its appearance.
+ * @param {string} text - The content of the message (markdown supported).
+ * @param {"user" | "bot"} sender - The sender of the message.
+ * @param {string} currentTutor - The current active tutor ("enola" or "franklin") to determine bot avatar.
+ * @param {string} [attachmentsHtml=""] - Optional HTML string for message attachments.
+ */
 export function addMessage(text, sender, currentTutor, attachmentsHtml = "") {
   const chatArea = document.getElementById("chatArea");
   if (!chatArea) return;
@@ -342,6 +384,10 @@ export function addMessage(text, sender, currentTutor, attachmentsHtml = "") {
   chatArea.scrollTop = chatArea.scrollHeight;
 }
 
+/**
+ * Updates the display of source files in the source panel.
+ * @param {Array<Object>} sources - An array of source objects, each with a `title` and `created_at`.
+ */
 export function updateSources(sources) {
   const sourceList = document.getElementById("sourceList");
   if (!sourceList) return;
@@ -387,13 +433,13 @@ export function updateSources(sources) {
         <div class="source-thumbnail">
           <img src="/uploads/${encodedFilename}" alt="${source.title}" 
                style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px; margin-right: 8px;" 
-               onerror="this.style.display='none'">
+               loading="lazy" onerror="this.style.display='none'">
         </div>`;
     } else if (["mp4", "avi", "mov", "mkv", "webm"].includes(extension)) {
       thumbnailHtml = `
         <div class="source-thumbnail">
           <video style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px; margin-right: 8px;" 
-                 muted>
+                 muted loop playsinline preload="none" poster="/static/tutor.png" loading="lazy">
             <source src="/uploads/${encodedFilename}" type="video/${extension}">
           </video>
         </div>`;
@@ -415,6 +461,11 @@ export function updateSources(sources) {
   });
 }
 
+/**
+ * Displays a file preview in a modal. Supports images, videos, audio, PDFs, DOCX, PPTX, MD, and TXT.
+ * @param {string} encodedFilename - The URL-encoded filename of the file to preview.
+ * @param {string} extension - The file extension (e.g., "pdf", "mp4").
+ */
 export function previewFile(encodedFilename, extension) {
   if (!encodedFilename || typeof encodedFilename !== 'string' || encodedFilename.trim() === '') {
     console.error("Invalid filename provided for previewFile:", encodedFilename);
@@ -459,22 +510,28 @@ export function previewFile(encodedFilename, extension) {
   body.style.cssText = "max-height: 60vh; overflow-y: auto;"; // Add scroll for content
 
   if (["jpg", "jpeg", "png", "gif", "bmp"].includes(fileExtension)) {
-    body.innerHTML = `<img src="/uploads/${encodedFilename}" style="max-width: 100%; height: auto;" alt="${filename}">`;
+    body.innerHTML = `<img src="/uploads/${encodedFilename}" style="max-width: 100%; height: auto;" alt="${filename}" loading="lazy">`;
   } else if (["mp4", "avi", "mov", "mkv", "webm"].includes(fileExtension)) {
-    body.innerHTML = `<video controls style="max-width: 100%; height: auto;"><source src="/uploads/${encodedFilename}" type="video/${fileExtension}"></video>`;
+    body.innerHTML = `<video controls style="max-width: 100%; height: auto;" preload="metadata" poster="/static/tutor.png" loading="lazy"><source src="/uploads/${encodedFilename}" type="video/${fileExtension}"></video>`;
   } else if (["mp3", "wav", "m4a", "ogg"].includes(fileExtension)) {
-    body.innerHTML = `<audio controls style="width: 100%;"><source src="/uploads/${encodedFilename}" type="audio/${fileExtension}"></audio>`;
+    body.innerHTML = `<audio controls style="width: 100%;" preload="metadata" loading="lazy"><source src="/uploads/${encodedFilename}" type="audio/${fileExtension}"></audio>`;
   } else if (["pdf", "docx", "doc", "ppt", "pptx"].includes(fileExtension)) {
-    body.innerHTML = `<iframe src="/uploads/${encodedFilename}" style="width: 100%; height: 500px; border: none;"></iframe>`;
-  } else if (["md", "txt"].includes(fileExtension)) {
+    body.innerHTML = `<iframe src="/uploads/${encodedFilename}" style="width: 100%; height: 500px; border: none;" loading="lazy"></iframe>`;
+  } else if (["md", "txt", "js", "css", "py", "html", "json", "xml", "yaml", "yml", "c", "cpp", "java", "go", "rb", "php", "ts", "tsx", "jsx"].includes(fileExtension)) {
     body.innerHTML = "<div>Loading...</div>";
     fetch(`/uploads/${encodedFilename}`)
-      .then((response) => response.text())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+      })
       .then((text) => {
         body.innerHTML = `<pre style="white-space: pre-wrap; font-family: monospace; font-size: 14px;">${text}</pre>`;
       })
-      .catch(() => {
-        body.innerHTML = "<div>Error loading file</div>";
+      .catch((error) => {
+        console.error("Error loading file for preview:", error);
+        body.innerHTML = `<div>Error loading file: ${error.message}</div>`;
       });
   } else {
     body.innerHTML = "<div>Unsupported file type for preview.</div>";
@@ -490,6 +547,11 @@ export function previewFile(encodedFilename, extension) {
   });
 }
 
+/**
+ * Displays a custom confirmation modal for delete operations.
+ * @param {string} message - The confirmation message to display.
+ * @returns {Promise<boolean>} A promise that resolves to `true` if confirmed, `false` if canceled.
+ */
 export function showDeleteConfirm(message) {
   return new Promise((resolve) => {
     const t = translations[currentLanguage];

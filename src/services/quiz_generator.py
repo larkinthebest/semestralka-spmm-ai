@@ -58,8 +58,13 @@ class QuizGenerator:
                 print(f"Warning: After {max_retries} retries, LLM generated {len(parsed_quiz_data)} questions, but {num_questions} were requested.")
             
             return {"questions": parsed_quiz_data}
+        except ValueError as e:
+            print(f"Error parsing LLM response for quiz generation: {e}")
+            # If parsing fails, return an empty list of questions or a specific error message
+            return {"questions": [], "error": f"Failed to generate quiz due to LLM response parsing error: {e}"}
         except Exception as e:
             print(f"Error generating quiz with LLM: {e}")
+            # Re-raise other unexpected exceptions
             raise
 
     def _build_quiz_generation_prompt(
@@ -279,7 +284,7 @@ Generate the {quiz_type} quiz questions in JSON format. Your response MUST conta
         except Exception as e:
             print(f"Unexpected error parsing LLM response: {e}")
             print(f"Problematic LLM response: {llm_response}")
-            raise ValueError(f"An unexpected error occurred during parsing: {e}")
+            raise ValueError(f"An unexpected error occurred during parsing: {e}. LLM response: {llm_response}")
 
     async def generate_study_suggestions(
         self,

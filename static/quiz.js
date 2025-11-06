@@ -5,16 +5,53 @@ import { generateQuizApi, submitQuizApi, fetchQuizStatsApi } from "./api.js";
 import { currentChatId, currentMode, currentTutor, chatModeHistory, currentLanguage, translations, setCurrentChatId, setCurrentMode, setCurrentTutor, setChatModeHistory, updateChatModeHistory, addMessageToChatModeHistory, deleteChatHistory, setCurrentLanguage } from "./app.js"; // Import necessary globals from app.js
 import { loadProfileQuizHistory } from "./profile.js"; // Import from profile.js
 
+/**
+ * Stores the currently active quiz data.
+ * @type {Object | null}
+ */
 export let currentQuiz = null;
+/**
+ * Sets the currently active quiz data.
+ * @param {Object | null} quiz - The quiz data object.
+ */
 export function setCurrentQuiz(quiz) { currentQuiz = quiz; }
 
+/**
+ * Stores user's answers for the current quiz.
+ * Format: { questionIndex: "userAnswer" }
+ * @type {Object.<number, string>}
+ */
 export let quizAnswers = {};
+/**
+ * Sets the entire quiz answers object.
+ * @param {Object.<number, string>} answers - The new quiz answers object.
+ */
 export function setQuizAnswers(answers) { quizAnswers = answers; }
+/**
+ * Updates a specific quiz answer.
+ * @param {number} questionIndex - The index of the question.
+ * @param {string} answer - The user's answer for that question.
+ */
 export function updateQuizAnswer(questionIndex, answer) { quizAnswers[questionIndex] = answer; }
 
+/**
+ * Current index of the question being displayed in the quiz.
+ * @type {number}
+ */
 export let currentQuestionIndex = 0;
+/**
+ * Sets the current question index.
+ * @param {number} index - The new question index.
+ */
 export function setCurrentQuestionIndex(index) { currentQuestionIndex = index; }
 
+/**
+ * Generates a quiz based on user input and attached files.
+ * Displays the quiz in the UI and stores it in chat history.
+ * @param {string} message - The user's message/topic for the quiz.
+ * @param {Array<string>} allAvailableFiles - List of filenames to generate the quiz from.
+ * @returns {Promise<Object | undefined>} The generated quiz data, or undefined if an error occurs.
+ */
 export async function generateQuiz(message, allAvailableFiles) {
   const quizNumQuestionsInput = document.getElementById("quizNumQuestions");
   const quizTypeInput = document.getElementById("quizType");
@@ -44,7 +81,6 @@ export async function generateQuiz(message, allAvailableFiles) {
   showLoadingMessage(currentTutor);
 
   try {
-    console.log("DEBUG: Sending quiz generation request with attached_files:", allAvailableFiles);
     const data = await generateQuizApi({
       topic: quizTopic,
       quiz_type: quizType,
@@ -79,6 +115,10 @@ export async function generateQuiz(message, allAvailableFiles) {
   }
 }
 
+/**
+ * Displays the generated quiz in the quiz panel.
+ * @param {Object} quizData - The quiz data object containing questions, title, etc.
+ */
 export function displayQuiz(quizData) {
   const quizPanel = document.getElementById("quizPanel");
   const quizContainer = document.getElementById("quizContainer");
@@ -192,6 +232,9 @@ export function displayQuiz(quizData) {
   updateQuizNavigationButtons();
 }
 
+/**
+ * Updates the visibility and state of quiz navigation buttons (Previous, Next, Submit).
+ */
 export function updateQuizNavigationButtons() {
   const questions = document.querySelectorAll(".quiz-question");
   const prevBtn = document.getElementById("prevBtn");
@@ -213,6 +256,12 @@ export function updateQuizNavigationButtons() {
   if (quizProgress) quizProgress.textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
 }
 
+/**
+ * Selects a quiz option for a given question and updates the UI.
+ * @param {number} questionIndex - The index of the question.
+ * @param {string} answer - The selected answer text.
+ * @param {HTMLElement} element - The HTML element of the selected option.
+ */
 export function selectQuizOption(questionIndex, answer, element) {
   element.parentNode.querySelectorAll(".quiz-option").forEach((opt) => {
     opt.classList.remove("selected");
@@ -221,6 +270,9 @@ export function selectQuizOption(questionIndex, answer, element) {
   updateQuizAnswer(questionIndex, answer);
 }
 
+/**
+ * Navigates to the next question in the quiz.
+ */
 export function nextQuestion() {
   const questions = document.querySelectorAll(".quiz-question");
   if (currentQuestionIndex < questions.length - 1) {
@@ -245,6 +297,9 @@ export function nextQuestion() {
   }
 }
 
+/**
+ * Navigates to the previous question in the quiz.
+ */
 export function previousQuestion() {
   const questions = document.querySelectorAll(".quiz-question");
   if (currentQuestionIndex > 0) {
@@ -269,6 +324,10 @@ export function previousQuestion() {
   }
 }
 
+/**
+ * Submits the current quiz to the backend for scoring and displays results.
+ * @returns {Promise<void>}
+ */
 export async function submitQuiz() {
   if (!currentQuiz) return;
 
@@ -317,8 +376,10 @@ export async function submitQuiz() {
     // Display results in chat
     displayQuizResultsInChat(data);
 
-    // Hide quiz panel after displaying results
+    // Hide quiz panel after displaying results and show source panel
     hideQuiz();
+    const sourcePanel = document.querySelector(".source-panel");
+    if (sourcePanel) sourcePanel.style.display = "block";
 
   } catch (error) {
     console.error("Error submitting quiz:", error);
@@ -332,6 +393,10 @@ export async function submitQuiz() {
   }
 }
 
+/**
+ * Hides the quiz panel and resets the current quiz state.
+ * Shows the source panel.
+ */
 export function hideQuiz() {
   const quizPanel = document.getElementById("quizPanel");
   if (quizPanel) quizPanel.style.display = "none";
@@ -342,12 +407,20 @@ export function hideQuiz() {
   setCurrentQuestionIndex(0);
 }
 
+/**
+ * Applies the current quiz settings (though settings are now auto-applied on quiz generation).
+ * This function primarily serves as a placeholder or for future explicit "apply" actions.
+ */
 export function applyQuizSettings() {
   showNotification("Quiz settings applied!", "info");
 }
 
 import { addMessage } from "./ui.js"; // Import addMessage
 
+/**
+ * Displays the results of a submitted quiz directly in the chat area.
+ * @param {Object} quizResult - The quiz result object from the backend.
+ */
 export function displayQuizResultsInChat(quizResult) {
   const { quiz_title, score, total_questions, percentage, questions, study_suggestions } = quizResult;
 

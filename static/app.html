@@ -149,7 +149,7 @@
         </div>
 
         <div class="chat-area" id="chatArea">
-          <div class="message">
+          <div class="message" id="initialWelcomeMessage">
             <div class="message-avatar" id="initialAvatar"></div>
             <div class="message-content">
               Hello! I'm your AI tutor. Upload some files and I'll help you
@@ -169,7 +169,13 @@
           <div class="quiz-settings-inline">
             <div class="setting-item">
               <label for="quizNumQuestions">Questions:</label>
-              <input type="number" id="quizNumQuestions" value="5" min="1" max="20" />
+              <input
+                type="number"
+                id="quizNumQuestions"
+                value="5"
+                min="1"
+                max="20"
+              />
             </div>
             <div class="setting-item">
               <label for="quizType">Type:</label>
@@ -299,8 +305,13 @@
             <h4 class="profile-section-title">💬 All Chats</h4>
             <div id="profileChatList" class="profile-list-container"></div>
 
-            <h4 class="profile-section-title profile-section-title-margin-top">📚 Assets</h4>
-            <div id="profileAssetList" class="profile-list-container profile-asset-list"></div>
+            <h4 class="profile-section-title profile-section-title-margin-top">
+              📚 Assets
+            </h4>
+            <div
+              id="profileAssetList"
+              class="profile-list-container profile-asset-list"
+            ></div>
           </div>
 
           <!-- Right Column: Quiz History & Stats -->

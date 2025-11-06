@@ -5,6 +5,10 @@ import { fetchChatDetailsApi, loadChatsFromDatabaseApi, fetchAssetsApi, fetchQui
 import { deleteChat, switchToChat } from "./chat.js";
 import { currentLanguage, translations, chatTitles, chatModeHistory, chatAttachedAssets, chatSources, setCurrentLanguage, setChatTitles, updateChatTitle, deleteChatTitle, setChatModeHistory, updateChatModeHistory, addMessageToChatModeHistory, deleteChatHistory, setChatAttachedAssets, updateChatAttachedAssets, addChatAttachedAsset, removeChatAttachedAsset, deleteChatAttachedAssets, setChatSources, updateChatSources, addChatSource, deleteChatSource } from "./app.js"; // Import necessary globals from app.js
 
+/**
+ * Opens the user profile modal and loads all user-specific data (chats, assets, quiz history).
+ * @returns {Promise<void>}
+ */
 export async function openUserProfile() {
   const modal = document.getElementById("userProfileModal");
   if (modal) modal.style.display = "block";
@@ -14,6 +18,10 @@ export async function openUserProfile() {
   await loadProfileQuizHistory();
 }
 
+/**
+ * Loads and displays the user's chat list in the profile modal.
+ * @returns {Promise<void>}
+ */
 export async function loadProfileChats() {
   const container = document.getElementById("profileChatList");
   if (!container) {
@@ -69,6 +77,10 @@ export async function loadProfileChats() {
   }
 }
 
+/**
+ * Loads and displays the user's uploaded assets in the profile modal.
+ * @returns {Promise<void>}
+ */
 export async function loadProfileAssets() {
   const container = document.getElementById("profileAssetList");
   if (!container) {
@@ -118,6 +130,10 @@ export async function loadProfileAssets() {
   }
 }
 
+/**
+ * Loads and displays the user's quiz history and statistics in the profile modal.
+ * @returns {Promise<void>}
+ */
 export async function loadProfileQuizHistory() {
   const container = document.getElementById("profileQuizHistory");
   if (!container) {
@@ -206,12 +222,21 @@ export async function loadProfileQuizHistory() {
   }
 }
 
+/**
+ * Closes the user profile modal and switches to a specified chat.
+ * @param {number} chatId - The ID of the chat to switch to.
+ * @returns {Promise<void>}
+ */
 export async function switchToChatFromProfile(chatId) {
   const userProfileModal = document.getElementById("userProfileModal");
   if (userProfileModal) userProfileModal.style.display = "none";
   await switchToChat(chatId);
 }
 
+/**
+ * Displays a detailed preview of a specific quiz result in a modal.
+ * @param {Object} quizResult - The quiz result object to display.
+ */
 export function previewQuizResult(quizResult) {
   const modal = document.createElement("div");
   modal.className = "modal";

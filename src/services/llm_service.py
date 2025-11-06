@@ -1,71 +1,91 @@
 import asyncio
 from typing import Optional, List, Dict, Any
 import json
+import os
+import google.generativeai as genai
 
 class LLMService:
     def __init__(self):
         self.model = None
         self.initialized = False
+        self.api_key = os.getenv("GEMINI_API_KEY") # Get API key from environment variable
+        self.model_name = "gemini-pro-latest" # Using gemini-pro-latest for text generation
+        self.full_model_name = f"models/{self.model_name}" # Explicitly use the full model name
+        print(f"DEBUG: LLMService instance created: {id(self)}, model_name: {self.full_model_name}")
     
     async def initialize(self):
-        """Initialize the local LLM model (GPT4All)"""
+        """Initialize the Gemini LLM model"""
+        print(f"DEBUG: Initializing LLMService instance: {id(self)}")
+        if not self.api_key:
+            print("❌ GEMINI_API_KEY environment variable not set.")
+            print("📝 Using fallback responses for demo purposes")
+            self.initialized = False
+            return
+
         try:
-            from gpt4all import GPT4All
-            # Use a current model that exists (will auto-download on first use)
-            # Use a single model as specified in Makefile for space preservation
-            # The Makefile now downloads only 'mistral-7b-openorca.gguf2.Q4_0.gguf'
-            model_name = "mistral-7b-openorca.gguf2.Q4_0.gguf"
+            genai.configure(api_key=self.api_key)
             
-            try:
-                print(f"🔄 Trying to load model: {model_name}")
-                self.model = GPT4All(model_name)
-                self.initialized = True
-                print(f"✅ GPT4All model loaded successfully: {model_name}")
-            except Exception as model_error:
-                print(f"❌ Failed to load {model_name}: {model_error}")
-                raise Exception(f"Failed to load the specified GPT4All model: {model_name}")
-                
+            # List available models to find the correct one
+            print("DEBUG: Listing available Gemini models...")
+            available_models = [m.name for m in genai.list_models()]
+            print(f"DEBUG: Available Gemini models: {available_models}")
+
+            # Choose a model that supports generateContent
+            if self.full_model_name in available_models:
+                model_info = genai.get_model(self.full_model_name)
+                if "generateContent" in model_info.supported_generation_methods:
+                    self.model = genai.GenerativeModel(self.full_model_name)
+                    self.initialized = True
+                    print(f"✅ Gemini model '{self.full_model_name}' initialized successfully for instance: {id(self)}")
+                else:
+                    print(f"❌ Gemini model '{self.full_model_name}' does not support 'generateContent' for instance: {id(self)}.")
+                    self.initialized = False
+            else:
+                print(f"❌ Gemini model '{self.full_model_name}' not found in available models for instance: {id(self)}.")
+                self.initialized = False
+
+            if not self.initialized:
+                print(f"📝 Using fallback responses for demo purposes due to Gemini initialization failure for instance: {id(self)}.")
+
         except Exception as e:
-            print(f"❌ Failed to initialize GPT4All model: {e}")
+            print(f"❌ Failed to initialize Gemini model for instance: {id(self)}: {e}")
             print("📝 Using fallback responses for demo purposes")
             self.initialized = False
     
     async def generate_response(self, prompt: str, context: str = "") -> str:
-        """Generate a response using the local LLM"""
+        """Generate a response using the Gemini LLM"""
+        print(f"DEBUG: generate_response called for instance: {id(self)}, initialized: {self.initialized}, model: {self.full_model_name}")
         if not self.initialized:
             return self._fallback_response(prompt, context)
         
         try:
-            # Prepare the full prompt with context and token management
             full_prompt = self._prepare_prompt(prompt, context)
             
-            # Ensure prompt fits in 16K context window
-            max_prompt_chars = 60000  # 16K tokens = ~60K characters
+            # Gemini models have a context window, typically around 30K tokens for gemini-pro
+            # We'll use a conservative character limit for now.
+            max_prompt_chars = 100000 # Roughly 30K tokens
             if len(full_prompt) > max_prompt_chars:
-                # Truncate context while keeping system prompt and user message
-                system_part = full_prompt.split("Context from document:")[0]
-                user_part = full_prompt.split("Student:")[-1] if "Student:" in full_prompt else prompt
-                
-                available_chars = max_prompt_chars - len(system_part) - len(user_part) - 200
-                if available_chars > 0 and context:
-                    truncated_context = context[:available_chars] + "...[truncated]"
-                    full_prompt = f"{system_part}Context from document:\n{truncated_context}\n\nStudent:{user_part}"
-                else:
-                    full_prompt = f"{system_part}Student:{user_part}"
-            
-            # Generate response using GPT4All
-            response = self.model.generate(
+                # Simple truncation for now, more sophisticated methods can be added
+                full_prompt = full_prompt[:max_prompt_chars] + "\n...[content truncated]"
+
+            print(f"DEBUG: Calling Gemini generate_content_async with model: {self.full_model_name} for instance: {id(self)}")
+            response = await self.model.generate_content_async(
                 full_prompt,
-                max_tokens=4096,  # Increased for 16K context
-                temp=0.7,
-                top_p=0.9,
-                repeat_penalty=1.1
+                generation_config=genai.GenerationConfig(
+                    temperature=0.7,
+                    top_p=0.9,
+                    max_output_tokens=4096,
+                )
             )
             
-            return response.strip() if response else self._fallback_response(prompt, context)
+            try:
+                return response.text.strip()
+            except ValueError: # response.text might be empty if generation failed
+                print(f"DEBUG: Gemini generate_content_async returned no text for instance: {id(self)}.")
+                return self._fallback_response(prompt, context)
             
         except Exception as e:
-            print(f"Error generating response: {e}")
+            print(f"Error generating response with Gemini for instance: {id(self)}: {e}")
             return self._fallback_response(prompt, context)
     
     def _prepare_prompt(self, user_message: str, context: str = "") -> str:
@@ -76,7 +96,7 @@ class LLMService:
         
         if context:
             # Limit context size to prevent token overflow
-            max_context_chars = 4000
+            max_context_chars = 20000 # Adjusted for Gemini's larger context
             if len(context) > max_context_chars:
                 context = context[:max_context_chars] + "...[content truncated]"
             system_prompt += f"Study Material:\n{context}\n\n"
@@ -85,6 +105,7 @@ class LLMService:
     
     def _fallback_response(self, prompt: str, context: str = "") -> str:
         """Fallback responses when LLM is not available"""
+        print(f"DEBUG: Using fallback response for instance: {id(self)}.")
         responses = {
             "hello": "Hello! I'm your AI tutor. How can I help you learn today?",
             "help": "I can help you with:\n• Understanding your study materials\n• Creating quizzes\n• Explaining concepts\n• Answering questions",
@@ -95,37 +116,54 @@ class LLMService:
         prompt_lower = prompt.lower()
         for key, response in responses.items():
             if key in prompt_lower:
-                return response
+                return f"FALLBACK: {response}"
         
         if context:
-            return f"Based on your document, I can see it contains information about the topic. What specific aspect would you like me to explain?"
+            return f"FALLBACK: Based on your document, I can see it contains information about the topic. What specific aspect would you like me to explain?"
         
-        return responses["default"]
+        return f"FALLBACK: {responses['default']}"
 
     async def generate_quiz_questions(self, content: str, quiz_type: str, num_questions: int, topic: str = None, difficulty: str = None, language: str = "en") -> Dict[str, Any]:
-        """Generate quiz questions from content"""
+        """Generate quiz questions from content using Gemini"""
+        print(f"DEBUG: generate_quiz_questions called for instance: {id(self)}, initialized: {self.initialized}, model: {self.full_model_name}")
         if not self.initialized:
             return {"questions": self._fallback_quiz_questions(content, quiz_type, num_questions)}
         
         try:
             prompt = self._prepare_quiz_prompt(content, quiz_type, num_questions, topic, difficulty, language)
-            response = self.model.generate(
+            
+            # Gemini models have a context window, typically around 30K tokens for gemini-pro
+            max_prompt_chars = 100000 # Roughly 30K tokens
+            if len(prompt) > max_prompt_chars:
+                prompt = prompt[:max_prompt_chars] + "\n...[content truncated]"
+
+            print(f"DEBUG: Calling Gemini generate_content_async for quiz with model: {self.full_model_name} for instance: {id(self)}")
+            response = await self.model.generate_content_async(
                 prompt,
-                max_tokens=2048,  # Increased for detailed quiz generation
-                temp=0.8,
-                top_p=0.9
+                generation_config=genai.GenerationConfig(
+                    temperature=0.8,
+                    top_p=0.9,
+                    max_output_tokens=2048,
+                )
             )
-            print(f"DEBUG: Raw LLM quiz response: {response}") # Added debug print
-            # Parse the response to extract questions and wrap in a dictionary
-            parsed_questions = self._parse_quiz_response(response, quiz_type, num_questions)
-            return {"questions": parsed_questions}
+            
+            try:
+                raw_response_text = response.text.strip()
+                print(f"DEBUG: Raw LLM quiz response: {raw_response_text}") # Added debug print
+                # Parse the response to extract questions and wrap in a dictionary
+                parsed_questions = self._parse_quiz_response(raw_response_text, quiz_type, num_questions)
+                return {"questions": parsed_questions}
+            except ValueError: # response.text might be empty if generation failed
+                print(f"DEBUG: Gemini generate_content_async returned no text for quiz for instance: {id(self)}.")
+                return {"questions": self._fallback_quiz_questions(content, quiz_type, num_questions)}
+            
         except Exception as e:
-            print(f"Error generating quiz: {e}")
+            print(f"Error generating quiz with Gemini for instance: {id(self)}: {e}")
             return {"questions": self._fallback_quiz_questions(content, quiz_type, num_questions)}
     
     def _prepare_quiz_prompt(self, content: str, quiz_type: str, num_questions: int, topic: str = None, difficulty: str = None, language: str = "en") -> str:
         """Prepare prompt for quiz generation"""
-        content_snippet = content[:15000]  # Much larger content for comprehensive quiz generation
+        content_snippet = content[:25000]  # Adjusted for Gemini's larger context
         
         language_instruction = ""
         if language == "de":
@@ -320,17 +358,18 @@ Generate the {quiz_type} quiz questions in JSON format:
     
     def _fallback_quiz_questions(self, content: str, quiz_type: str, num_questions: int) -> List[Dict[str, Any]]:
         """Generate fallback quiz questions"""
+        print("DEBUG: Using fallback quiz questions.")
         if quiz_type == "multiple_choice":
             return [
                 {
-                    "question_text": "What is the main topic of this document?",
+                    "question_text": "FALLBACK: What is the main topic of this document?",
                     "options": ["Topic A", "Topic B", "Topic C", "Topic D"],
                     "correct_answer": "A",
                     "question_type": "multiple_choice",
                     "explanation": "This is a fallback explanation."
                 },
                 {
-                    "question_text": "Which concept is most important?",
+                    "question_text": "FALLBACK: Which concept is most important?",
                     "options": ["Concept 1", "Concept 2", "Concept 3", "Concept 4"],
                     "correct_answer": "B",
                     "question_type": "multiple_choice",
@@ -341,14 +380,14 @@ Generate the {quiz_type} quiz questions in JSON format:
         elif quiz_type == "true_false":
             return [
                 {
-                    "question_text": "The document contains important information.",
+                    "question_text": "FALLBACK: The document contains important information.",
                     "options": ["True", "False"],
                     "correct_answer": "True",
                     "question_type": "true_false",
                     "explanation": "This is a fallback explanation."
                 },
                 {
-                    "question_text": "This is a complex topic that requires study.",
+                    "question_text": "FALLBACK: This is a complex topic that requires study.",
                     "options": ["True", "False"],
                     "correct_answer": "True",
                     "question_type": "true_false",
@@ -359,13 +398,13 @@ Generate the {quiz_type} quiz questions in JSON format:
         elif quiz_type == "fill_in_the_blank": # Corrected from "fill_blank"
             return [
                 {
-                    "question_text": "The main concept discussed is [BLANK].",
+                    "question_text": "FALLBACK: The main concept discussed is [BLANK].",
                     "correct_answer": "learning",
                     "question_type": "fill_in_the_blank", # Corrected from "fill_blank"
                     "explanation": "This is a fallback explanation."
                 },
                 {
-                    "question_text": "Students should [BLANK] the material carefully.",
+                    "question_text": "FALLBACK: Students should [BLANK] the material carefully.",
                     "correct_answer": "study",
                     "question_type": "fill_in_the_blank", # Corrected from "fill_blank"
                     "explanation": "This is a fallback explanation."
@@ -374,13 +413,13 @@ Generate the {quiz_type} quiz questions in JSON format:
         else: # short_answer
             return [
                 {
-                    "question_text": "Explain the main idea of the document in your own words.",
+                    "question_text": "FALLBACK: Explain the main idea of the document in your own words.",
                     "correct_answer": "Varies",
                     "question_type": "short_answer",
                     "explanation": "This is a fallback explanation."
                 },
                 {
-                    "question_text": "Summarize the key takeaways from the content.",
+                    "question_text": "FALLBACK: Summarize the key takeaways from the content.",
                     "correct_answer": "Varies",
                     "question_type": "short_answer",
                     "explanation": "This is a fallback explanation."
