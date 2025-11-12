@@ -24,3 +24,5 @@ pytest
 httpx==0.27.0
 google-generativeai
 python-dotenv
+openai # Added for OpenAI API integration (can also be used for OpenRouter)
+ollama # Added for Ollama integration

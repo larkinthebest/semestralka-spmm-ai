@@ -1,3 +1,451 @@
+(index):1  Tracking Prevention blocked access to storage for https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js.
+(index):1  Tracking Prevention blocked access to storage for https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js.
+(index):1  Tracking Prevention blocked access to storage for https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js.
+(index):1  Tracking Prevention blocked access to storage for https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js.
+index.iife.js:1  Uncaught TypeError: Cannot read properties of undefined (reading 'local')
+    at y (index.iife.js:1:1497)
+    at index.iife.js:1:1574
+    at index.iife.js:1:1863
+y @ index.iife.js:1
+(anonymous) @ index.iife.js:1
+(anonymous) @ index.iife.js:1
+index.iife.js:1  Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'local')
+    at C (index.iife.js:1:431)
+    at S (index.iife.js:1:1088)
+    at y (index.iife.js:1:1347)
+    at index.iife.js:1:1574
+    at index.iife.js:1:1863
+C @ index.iife.js:1
+S @ index.iife.js:1
+y @ index.iife.js:1
+(anonymous) @ index.iife.js:1
+(anonymous) @ index.iife.js:1
+assets.js:33 DEBUG: setupDragAndDrop called.
+assets.js:33 DEBUG: setupDragAndDrop called.
+assets.js:33 DEBUG: setupDragAndDrop called.
+Grammarly.js:2  grm ERROR [lib.tracking.telemetry] ░░ cs.unhandled Error: crypto.randomUUID is not a function
+    at w.csUnhandled (Grammarly.js:2:1606339)
+    at Object.next (Grammarly.js:2:510833)
+    at e.next (Grammarly.js:2:1992398)
+    at t._next (Grammarly.js:2:1992002)
+    at t.next (Grammarly.js:2:1991621)
+    at Grammarly.js:2:2034662
+    at a._next (Grammarly.js:2:2005928)
+    at t.next (Grammarly.js:2:1991621)
+    at Grammarly.js:2:2032123
+    at a._next (Grammarly.js:2:2005928)
+write @ Grammarly.js:2
+handleEvent @ Grammarly.js:2
+_logMessage @ Grammarly.js:2
+error @ Grammarly.js:2
+error @ Grammarly.js:2
+csUnhandled @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+e.next @ Grammarly.js:2
+t._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+t @ Grammarly.js:2
+867.vendors.chunk.js:1  Uncaught (in promise) TypeError: crypto.randomUUID is not a function
+    at n (867.vendors.chunk.js:1:21501)
+    at new ne (Agents-MessageBusClient.common.chunk.js:1:2553)
+    at new n (Agents-MessageBusClient.common.chunk.js:1:1144)
+    at new m (Agents-MessageBusClient.common.chunk.js:1:12263)
+    at new l (Agents-MessageBusClient.common.chunk.js:1:11155)
+    at Agents-getDocumentIntegrationsObservable.common.chunk.js:1:2866
+n @ 867.vendors.chunk.js:1
+ne @ Agents-MessageBusClient.common.chunk.js:1
+n @ Agents-MessageBusClient.common.chunk.js:1
+m @ Agents-MessageBusClient.common.chunk.js:1
+l @ Agents-MessageBusClient.common.chunk.js:1
+(anonymous) @ Agents-getDocumentIntegrationsObservable.common.chunk.js:1
+Promise.then
+_loadMessageBusClient @ Agents-getDocumentIntegrationsObservable.common.chunk.js:1
+loadContentScriptIntegrationSingleton @ Agents-getDocumentIntegrationsObservable.common.chunk.js:1
+B @ Agents-getDocumentIntegrationsObservable.common.chunk.js:1
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+Promise.then
+(anonymous) @ Grammarly.js:2
+e._trySubscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+then.a.documentId @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+Promise.then
+rs @ Grammarly.js:2
+S @ Grammarly.js:2
+createFieldIntegration @ Grammarly.js:2
+_setFieldIntegration @ Grammarly.js:2
+_initInitialFieldIntegration @ Grammarly.js:2
+h @ Grammarly.js:2
+y @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+e.next @ Grammarly.js:2
+t._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+t._subscribe @ Grammarly.js:2
+e._trySubscribe @ Grammarly.js:2
+t._trySubscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+e._subscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+t @ Grammarly.js:2
+e.decorate @ Grammarly.js:2
+M @ Grammarly.js:2
+execute @ Grammarly.js:2
+_executeIntegrationRuleMatch @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+v @ Grammarly.js:2
+H._initializeOnNewField @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+e._trySubscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+t._execute @ Grammarly.js:2
+t.execute @ Grammarly.js:2
+t.flush @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+Promise.then
+setImmediate @ Grammarly.js:2
+setImmediate @ Grammarly.js:2
+t.requestAsyncId @ Grammarly.js:2
+t.schedule @ Grammarly.js:2
+e.schedule @ Grammarly.js:2
+i @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+e._trySubscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+e._trySubscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+v @ Grammarly.js:2
+m @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+e._trySubscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+s @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+v @ Grammarly.js:2
+m @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+e._trySubscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+v @ Grammarly.js:2
+m @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+e._trySubscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+s @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+s @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+v @ Grammarly.js:2
+m @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+e._trySubscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+s @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+H @ Grammarly.js:2
+execute @ Grammarly.js:2
+_tryCreateIntegrationRule @ Grammarly.js:2
+gt @ Grammarly.js:2
+_createOrUpdateTextCheckingPageIntegration @ Grammarly.js:2
+await in _createOrUpdateTextCheckingPageIntegration
+Kn._onUpdate @ Grammarly.js:2
+await in Kn._onUpdate
+(anonymous) @ Grammarly.js:2
+e.next @ Grammarly.js:2
+t._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+t.next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+set @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+Promise.then
+g @ Grammarly.js:2
+_getPersistentStore @ Grammarly.js:2
+start @ Grammarly.js:2
+ci @ Grammarly.js:2
+load @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+90465 @ Grammarly.js:2
+__webpack_require__ @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+__webpack_require__.O @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+Grammarly.js:2  grm ERROR [iterable] ░░ Not supported: in app messages from Iterable
+write @ Grammarly.js:2
+handleEvent @ Grammarly.js:2
+_logMessage @ Grammarly.js:2
+error @ Grammarly.js:2
+error @ Grammarly.js:2
+onTrigger @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+e.next @ Grammarly.js:2
+t._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+t._execute @ Grammarly.js:2
+t.execute @ Grammarly.js:2
+t.flush @ Grammarly.js:2
+setInterval
+setInterval @ Grammarly.js:2
+t.requestAsyncId @ Grammarly.js:2
+t.schedule @ Grammarly.js:2
+e.schedule @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+e._trySubscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+e.subscribe @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+e.next @ Grammarly.js:2
+t._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+t.next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+set @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+e.next @ Grammarly.js:2
+t._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+o @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+e.next @ Grammarly.js:2
+t._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+_processObservableMessage @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+e.next @ Grammarly.js:2
+t._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+a._next @ Grammarly.js:2
+t.next @ Grammarly.js:2
+t @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+(anonymous) @ Grammarly.js:2
+fire @ Grammarly.js:2
+_onBgPortMessage @ Grammarly.js:2
+chat.js:281 sendMessage called. filesToUpload: [File]
+chat.js:283 File 0: File {name: 'ai_concepts.md', lastModified: 1762963463942, lastModifiedDate: Wed Nov 12 2025 17:04:23 GMT+0100 (Central European Standard Time), webkitRelativePath: '', size: 1119, …}
+chat.js:284 File 0 name: ai_concepts.md
+chat.js:285 File 0 type: 
+chat.js:286 File 0 size: 1119
+chat.js:308 DEBUG: Attempting to upload file: ai_concepts.md type:  size: 1119
+api.js:79 DEBUG: In uploadFileApi, FormData prepared for upload. Appending file: ai_concepts.md
+api.js:82 DEBUG: FormData entry - Key: file, Value: [object File]
+chat.js:311 DEBUG: File uploaded successfully: ai_concepts.md
+api.js:13   POST http://0.0.0.0:8002/simple-chat 500 (Internal Server Error)
+
+
+
+✅ Database migration completed successfully!
+
+🎉 Migration completed! You can now run the application.
+Configuring LLM API keys in .env file...
+Enter your Google Gemini API Key (leave blank to skip): AIzaSyDadLwxEZ3XSI-oSRWPm5y_-0Lr_3N1NPw
+Gemini API Key configured.
+Enter your OpenAI API Key (leave blank to skip): sk-efgh5678efgh5678efgh5678efgh5678efgh5678
+OpenAI API Key configured.
+OpenRouter API Key already configured.
+Ollama (local models) is prioritized. Ensure Ollama is running and OLLAMA_BASE_URL/OLLAMA_MODEL_NAME are set in .env if you wish to use it.
+LLM_PROVIDERS_ORDER is set to 'ollama,openrouter,gemini,openai' in .env to prioritize local models.
+Setup complete. LLM API keys configured.
 yegor@tourist SPMM % make run
 Starting AI Multimedia Tutor...
 ./.venv/bin/python3 run.py
@@ -5,532 +453,93 @@ Starting AI Multimedia Tutor...
   warnings.warn(message, FutureWarning)
 /Users/yegor/Documents/STU/SPMM/.venv/lib/python3.10/site-packages/pypdf/_crypt_providers/_cryptography.py:32: CryptographyDeprecationWarning: ARC4 has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.ARC4 and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
   from cryptography.hazmat.primitives.ciphers.algorithms import AES, ARC4
-DEBUG: LLMService instance created: 6080439408, model_name: models/gemini-pro-latest
-DEBUG: Global LLMService instance created in main.py: 6080439408, model_name: models/gemini-pro-latest
+DEBUG: LLMService instance created. Provider order: ['ollama', 'openrouter', 'gemini', 'openai']
+DEBUG: Global LLMService instance created in main.py: 6433157904, configured_provider_order: ['ollama', 'openrouter', 'gemini', 'openai']
 🚀 Starting AI Multimedia Tutor...
 📍 Project root: /Users/yegor/Documents/STU/SPMM
 🌐 Server will be available at: http://localhost:8002
 📚 Upload your files and start learning!
 --------------------------------------------------
-INFO:     Started server process [78721]
+INFO:     Started server process [36351]
 INFO:     Waiting for application startup.
-📊 Database initialized with 3 users and sample data.
-DEBUG: Initializing LLMService instance: 6080439408
-DEBUG: Listing available Gemini models...
-DEBUG: Available Gemini models: ['models/embedding-gecko-001', 'models/gemini-2.5-pro-preview-03-25', 'models/gemini-2.5-flash-preview-05-20', 'models/gemini-2.5-flash', 'models/gemini-2.5-flash-lite-preview-06-17', 'models/gemini-2.5-pro-preview-05-06', 'models/gemini-2.5-pro-preview-06-05', 'models/gemini-2.5-pro', 'models/gemini-2.0-flash-exp', 'models/gemini-2.0-flash', 'models/gemini-2.0-flash-001', 'models/gemini-2.0-flash-lite-001', 'models/gemini-2.0-flash-lite', 'models/gemini-2.0-flash-lite-preview-02-05', 'models/gemini-2.0-flash-lite-preview', 'models/gemini-2.0-pro-exp', 'models/gemini-2.0-pro-exp-02-05', 'models/gemini-exp-1206', 'models/gemini-2.0-flash-thinking-exp-01-21', 'models/gemini-2.0-flash-thinking-exp', 'models/gemini-2.0-flash-thinking-exp-1219', 'models/gemini-2.5-flash-preview-tts', 'models/gemini-2.5-pro-preview-tts', 'models/learnlm-2.0-flash-experimental', 'models/gemma-3-1b-it', 'models/gemma-3-4b-it', 'models/gemma-3-12b-it', 'models/gemma-3-27b-it', 'models/gemma-3n-e4b-it', 'models/gemma-3n-e2b-it', 'models/gemini-flash-latest', 'models/gemini-flash-lite-latest', 'models/gemini-pro-latest', 'models/gemini-2.5-flash-lite', 'models/gemini-2.5-flash-image-preview', 'models/gemini-2.5-flash-image', 'models/gemini-2.5-flash-preview-09-2025', 'models/gemini-2.5-flash-lite-preview-09-2025', 'models/gemini-robotics-er-1.5-preview', 'models/gemini-2.5-computer-use-preview-10-2025', 'models/embedding-001', 'models/text-embedding-004', 'models/gemini-embedding-exp-03-07', 'models/gemini-embedding-exp', 'models/gemini-embedding-001', 'models/aqa', 'models/imagen-3.0-generate-002', 'models/imagen-4.0-generate-preview-06-06', 'models/imagen-4.0-ultra-generate-preview-06-06', 'models/imagen-4.0-generate-001', 'models/imagen-4.0-ultra-generate-001', 'models/imagen-4.0-fast-generate-001', 'models/veo-2.0-generate-001', 'models/veo-3.0-generate-preview', 'models/veo-3.0-fast-generate-preview', 'models/veo-3.0-generate-001', 'models/veo-3.0-fast-generate-001', 'models/veo-3.1-generate-preview', 'models/veo-3.1-fast-generate-preview', 'models/gemini-2.0-flash-live-001', 'models/gemini-live-2.5-flash-preview', 'models/gemini-2.5-flash-live-preview', 'models/gemini-2.5-flash-native-audio-latest', 'models/gemini-2.5-flash-native-audio-preview-09-2025']
-✅ Gemini model 'models/gemini-pro-latest' initialized successfully for instance: 6080439408
+✅ Guest user created
+✅ Test user created
+Adding sample assets for test user...
+Adding sample chats for test user...
+✅ Sample chats created
+Adding sample quizzes for test user...
+✅ Sample quizzes created
+📊 Database initialized with 2 users and sample data.
+DEBUG: Initializing LLMService instance: 6433157904
+✅ Ollama client initialized successfully for instance: 6433157904, model: llama3
+✅ OpenRouter client initialized successfully for instance: 6433157904, model: mistralai/mistral-7b-instruct:free
+✅ Gemini model 'models/gemini-pro-latest' initialized successfully for instance: 6433157904
+✅ OpenAI client initialized successfully for instance: 6433157904, model: gpt-3.5-turbo
+✅ LLMService initialized with active providers: ['ollama', 'openrouter', 'gemini', 'openai']
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
-INFO:     127.0.0.1:64241 - "GET / HTTP/1.1" 200 OK
-INFO:     127.0.0.1:64241 - "GET /app.js HTTP/1.1" 304 Not Modified
-INFO:     127.0.0.1:64242 - "GET /assets.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61899 - "GET /auth HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61900 - "POST /auth/register HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61969 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61969 - "GET / HTTP/1.1" 200 OK
 DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
 DEBUG: Token validated for email: that@gmail.com
 DEBUG: Fetching chats for user_id: 3
-DEBUG: Found 6 chats for user_id: 3
-INFO:     127.0.0.1:64242 - "GET /chats/list HTTP/1.1" 200 OK
+DEBUG: Found 0 chats for user_id: 3
+INFO:     127.0.0.1:61969 - "GET /chats/list HTTP/1.1" 200 OK
 DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
 DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64242 - "GET /assets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61969 - "POST /chats/new HTTP/1.1" 200 OK
 DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
 DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64263 - "POST /chats/save HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64263 - "GET /chats/2 HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64263 - "POST /chats/save HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61969 - "GET /assets HTTP/1.1" 200 OK
 DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
 DEBUG: Token validated for email: that@gmail.com
 DEBUG: Received file for upload: ai_concepts.md, content_type: application/octet-stream
 DEBUG: File size: 1119
-INFO:     127.0.0.1:64365 - "POST /documents/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61978 - "POST /documents/upload HTTP/1.1" 200 OK
 DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
 DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64365 - "POST /chats/save HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61978 - "GET /assets HTTP/1.1" 200 OK
 DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
 DEBUG: Token validated for email: that@gmail.com
-DEBUG: generate_response called for instance: 6080439408, initialized: True, model: models/gemini-pro-latest
-DEBUG: Calling Gemini generate_content_async with model: models/gemini-pro-latest for instance: 6080439408
-LLM Raw Response: ```json
-[
-    {
-        "question_text": "According to the provided text, which type of machine learning involves learning with labeled examples?",
-        "question_type": "multiple_choice",
-        "options": [
-            "Unsupervised Learning",
-            "Reinforcement Learning",
-            "Supervised Learning",
-            "Deep Learning"
-        ],
-        "correct_answer": "Supervised Learning"
-    },
-    {
-        "question_text": "What is the primary method of learning in Reinforcement Learning as described in the document?",
-        "question_type": "multiple_choice",
-        "options": [
-            "Finding patterns in unlabeled data",
-            "Learning through trial and error",
-            "Processing complex patterns",
-            "Using labeled examples"
-        ],
-        "correct_answer": "Learning through trial and error"
-    },
-    {
-        "question_text": "What is a key characteristic of Deep Learning mentioned in the content?",
-        "question_type": "multiple_choice",
-        "options": [
-            "It only works with small datasets.",
-            "It uses neural networks with multiple layers.",
-            "It is a form of Unsupervised Learning only.",
-            "It cannot be applied to healthcare."
-        ],
-        "correct_answer": "It uses neural networks with multiple layers."
-    },
-    {
-        "question_text": "Which of the following is listed as an application of AI in the education sector?",
-        "question_type": "multiple_choice",
-        "options": [
-            "Autonomous vehicles",
-            "Drug discovery",
-            "Content recommendation",
-            "Personalized learning systems"
-        ],
-        "correct_answer": "Personalized learning systems"
-    },
-    {
-        "question_text": "Based on the core concepts, which approach is defined as finding patterns in unlabeled data?",
-        "question_type": "multiple_choice",
-        "options": [
-            "Supervised Learning",
-            "Unsupervised Learning",
-            "Reinforcement Learning",
-            "Deep Learning"
-        ],
-        "correct_answer": "Unsupervised Learning"
-    }
-]
-```
-DEBUG: Extracted and cleaned JSON string (pre-parse): [
-    {
-        "question_text": "According to the provided text, which type of machine learning involves learning with labeled examples?",
-        "question_type": "multiple_choice",
-        "options": [
-            "Unsupervised Learning",
-            "Reinforcement Learning",
-            "Supervised Learning",
-            "Deep Learning"
-        ],
-        "correct_answer": "Supervised Learning"
-    },
-    {
-        "question_text": "What is the primary method of learning in Reinforcement Learning as described in the document?",
-        "question_type": "multiple_choice",
-        "options": [
-            "Finding patterns in unlabeled data",
-            "Learning through trial and error",
-            "Processing complex patterns",
-            "Using labeled examples"
-        ],
-        "correct_answer": "Learning through trial and error"
-    },
-    {
-        "question_text": "What is a key characteristic of Deep Learning mentioned in the content?",
-        "question_type": "multiple_choice",
-        "options": [
-            "It only works with small datasets.",
-            "It uses neural networks with multiple layers.",
-            "It is a form of Unsupervised Learning only.",
-            "It cannot be applied to healthcare."
-        ],
-        "correct_answer": "It uses neural networks with multiple layers."
-    },
-    {
-        "question_text": "Which of the following is listed as an application of AI in the education sector?",
-        "question_type": "multiple_choice",
-        "options": [
-            "Autonomous vehicles",
-            "Drug discovery",
-            "Content recommendation",
-            "Personalized learning systems"
-        ],
-        "correct_answer": "Personalized learning systems"
-    },
-    {
-        "question_text": "Based on the core concepts, which approach is defined as finding patterns in unlabeled data?",
-        "question_type": "multiple_choice",
-        "options": [
-            "Supervised Learning",
-            "Unsupervised Learning",
-            "Reinforcement Learning",
-            "Deep Learning"
-        ],
-        "correct_answer": "Unsupervised Learning"
-    }
-]
-DEBUG: quiz_questions_data from quiz_gen: {'questions': [{'question_text': 'According to the provided text, which type of machine learning involves learning with labeled examples?', 'question_type': 'multiple_choice', 'options': ['Unsupervised Learning', 'Reinforcement Learning', 'Supervised Learning', 'Deep Learning'], 'correct_answer': 'Supervised Learning'}, {'question_text': 'What is the primary method of learning in Reinforcement Learning as described in the document?', 'question_type': 'multiple_choice', 'options': ['Finding patterns in unlabeled data', 'Learning through trial and error', 'Processing complex patterns', 'Using labeled examples'], 'correct_answer': 'Learning through trial and error'}, {'question_text': 'What is a key characteristic of Deep Learning mentioned in the content?', 'question_type': 'multiple_choice', 'options': ['It only works with small datasets.', 'It uses neural networks with multiple layers.', 'It is a form of Unsupervised Learning only.', 'It cannot be applied to healthcare.'], 'correct_answer': 'It uses neural networks with multiple layers.'}, {'question_text': 'Which of the following is listed as an application of AI in the education sector?', 'question_type': 'multiple_choice', 'options': ['Autonomous vehicles', 'Drug discovery', 'Content recommendation', 'Personalized learning systems'], 'correct_answer': 'Personalized learning systems'}, {'question_text': 'Based on the core concepts, which approach is defined as finding patterns in unlabeled data?', 'question_type': 'multiple_choice', 'options': ['Supervised Learning', 'Unsupervised Learning', 'Reinforcement Learning', 'Deep Learning'], 'correct_answer': 'Unsupervised Learning'}]}
-DEBUG: Processing q_data: {'question_text': 'According to the provided text, which type of machine learning involves learning with labeled examples?', 'question_type': 'multiple_choice', 'options': ['Unsupervised Learning', 'Reinforcement Learning', 'Supervised Learning', 'Deep Learning'], 'correct_answer': 'Supervised Learning'}
-DEBUG: Processing q_data: {'question_text': 'What is the primary method of learning in Reinforcement Learning as described in the document?', 'question_type': 'multiple_choice', 'options': ['Finding patterns in unlabeled data', 'Learning through trial and error', 'Processing complex patterns', 'Using labeled examples'], 'correct_answer': 'Learning through trial and error'}
-DEBUG: Processing q_data: {'question_text': 'What is a key characteristic of Deep Learning mentioned in the content?', 'question_type': 'multiple_choice', 'options': ['It only works with small datasets.', 'It uses neural networks with multiple layers.', 'It is a form of Unsupervised Learning only.', 'It cannot be applied to healthcare.'], 'correct_answer': 'It uses neural networks with multiple layers.'}
-DEBUG: Processing q_data: {'question_text': 'Which of the following is listed as an application of AI in the education sector?', 'question_type': 'multiple_choice', 'options': ['Autonomous vehicles', 'Drug discovery', 'Content recommendation', 'Personalized learning systems'], 'correct_answer': 'Personalized learning systems'}
-DEBUG: Processing q_data: {'question_text': 'Based on the core concepts, which approach is defined as finding patterns in unlabeled data?', 'question_type': 'multiple_choice', 'options': ['Supervised Learning', 'Unsupervised Learning', 'Reinforcement Learning', 'Deep Learning'], 'correct_answer': 'Unsupervised Learning'}
-DEBUG: Loaded questions from DB: [<src.core.models.Question object at 0x16a9c3af0>, <src.core.models.Question object at 0x16a9c3a90>, <src.core.models.Question object at 0x16a9c3b80>, <src.core.models.Question object at 0x16a9c3bb0>, <src.core.models.Question object at 0x16a9c1810>]
-INFO:     127.0.0.1:64365 - "POST /quizzes/generate HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64365 - "POST /chats/save HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-DEBUG: Received quiz submission for quiz_id: 3
-DEBUG: QuizResult created with ID: 3
-DEBUG: Answers saved for QuizResult ID: 3
-DEBUG: generate_response called for instance: 6080439408, initialized: True, model: models/gemini-pro-latest
-DEBUG: Calling Gemini generate_content_async with model: models/gemini-pro-latest for instance: 6080439408
-DEBUG: StudySuggestion created for QuizResult ID: 3
-INFO:     127.0.0.1:64478 - "POST /quizzes/submit HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64478 - "GET /quiz-results/history HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64478 - "GET /quiz-results/stats HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64626 - "POST /chats/save HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64626 - "POST /chats/save HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64645 - "POST /chats/save HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64645 - "POST /chats/save HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64645 - "POST /chats/save HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64645 - "POST /chats/save HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64645 - "POST /chats/save HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64645 - "POST /chats/save HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64663 - "POST /chats/save HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64663 - "GET /chats/6 HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64663 - "DELETE /assets/4 HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64688 - "DELETE /assets/3 HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64688 - "DELETE /assets/5 HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-INFO:     127.0.0.1:64768 - "POST /chats/save HTTP/1.1" 200 OK
-DEBUG: Received token for verification: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
-DEBUG: Token validated for email: that@gmail.com
-DEBUG: Received file for upload: Learn All English Verb Tenses (Easiest Method).mp4, content_type: video/mp4
-DEBUG: File size: 26351784
-WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
-I0000 00:00:1762424024.108106  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424024.291669  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424024.426070  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424024.661939  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424025.061262  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424025.603872  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424026.213341  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424027.212974  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424028.013036  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424028.363939  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424028.630253  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424029.178558  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424029.753080  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424030.003229  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424030.218645  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424030.508687  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424030.998261  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424031.342561  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424031.630745  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424032.017145  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424032.610566  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424032.908423  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424033.220614  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424033.559326  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424034.291892  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424034.660370  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424035.017760  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424035.459369  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424036.104011  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424036.512577  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424036.840463  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424037.276449  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424037.903143  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424038.144283  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424038.411492  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424038.806959  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424039.375035  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424039.645812  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424039.910670  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424040.206422  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424040.721637  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424041.083745  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424041.537630  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424042.059259  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424043.036527  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424043.403566  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424043.785912  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424044.282364  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424044.930782  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424045.425164  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424045.797947  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424046.337074  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424047.048488  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424047.293499  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424047.525328  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424047.873690  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424048.400575  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424048.729123  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424048.975140  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424049.327831  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424049.859478  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424050.200838  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424050.519242  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424050.900608  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424051.684983  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424052.101222  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424052.640240  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424053.121626  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424053.719827  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424054.097075  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424054.451970  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424054.959700  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424055.578801  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424055.958328  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424056.314981  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424056.799040  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424057.430211  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424057.725280  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424058.033801  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424058.504349  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424059.014701  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424059.382215  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424059.693024  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424060.126952  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424060.702691  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424061.102156  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424061.470997  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424061.932886  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424062.542043  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424062.960741  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424063.662586  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424064.232687  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424064.844684  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424065.091836  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424065.439010  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424065.774232  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424066.278240  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424066.579968  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424066.829968  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424067.160513  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424068.013612  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424068.357411  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424068.623052  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424068.985883  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424069.505459  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424069.918194  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424070.282335  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424070.744147  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424071.354165  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424071.738623  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424072.136987  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424072.627972  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424073.277567  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424073.626008  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424073.983410  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424074.466116  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424075.083343  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424075.460185  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424075.819828  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424076.307402  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424076.945153  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424077.257099  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424077.577098  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424077.962473  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424078.504363  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424078.895685  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424079.266185  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424079.728493  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424080.343341  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424080.484038  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424080.626233  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424080.808837  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424081.207582  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424081.481713  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424081.757901  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424082.096653  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424082.617525  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424082.870597  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424083.101778  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424083.342000  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424083.795026  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424084.068715  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424084.383272  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424084.704756  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424085.181933  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424085.407913  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424085.655106  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424085.960461  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424086.435424  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424086.674814  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424087.014629  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424087.328403  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424087.819828  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424088.182772  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424088.450934  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424088.808197  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424089.313745  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424089.643636  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424089.953833  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424090.391822  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424091.010059  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424091.356518  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424091.685834  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424092.096411  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424092.658592  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424092.961712  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424093.310011  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424093.698622  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424094.230637  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424094.470643  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424094.713807  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424094.998576  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424095.467537  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424095.737254  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424096.008183  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424096.330766  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424096.866111  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424097.158915  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424097.461205  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424097.821467  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424098.330524  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424098.603256  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424098.906204  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424099.260022  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424099.767776  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424100.167405  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424100.515077  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424100.960142  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424101.533807  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424101.877664  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424102.194889  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424102.608126  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424103.424003  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424103.642247  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424103.856298  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424104.154847  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424104.652111  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424104.927248  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424105.235563  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424105.604681  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424106.124228  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424106.387784  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424106.642312  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424106.988252  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424107.515624  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424107.845186  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424108.184864  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424108.614566  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424109.213562  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424109.746737  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424110.083542  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424110.549704  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424111.125979  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424111.532327  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424111.880463  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424112.321784  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424112.966937  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424113.312581  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424113.643737  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424114.041582  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424114.776153  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424115.142635  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424115.481789  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424115.960937  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424116.552060  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424116.889727  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424117.234435  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424117.688863  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424118.268475  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424118.681661  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424119.105546  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424119.616215  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424120.235259  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424120.648433  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424121.019730  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424121.505237  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424122.112070  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424122.345574  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424122.573359  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424122.986403  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424123.497092  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424123.801422  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424124.101273  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424124.514955  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424125.054393  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424125.355393  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424125.659660  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424126.070682  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424126.601108  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424126.906041  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424127.155080  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424127.509237  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424128.004218  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424128.359318  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424128.729852  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424129.225465  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424129.819248  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424130.166701  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424130.519218  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424130.935735  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424131.531025  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424131.930848  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424132.308249  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424132.786731  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424133.430510  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424133.778167  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424134.114298  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424134.582973  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424135.202136  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424135.640973  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424136.149796  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424136.782442  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424137.526705  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424137.953362  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424138.371818  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424139.097262  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424139.744766  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424139.969137  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424140.147364  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424140.340697  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424140.832455  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424141.160359  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424141.452387  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424141.870038  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424142.482201  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424142.782810  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424143.066102  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424143.498651  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424144.103702  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424144.484481  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424144.835884  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
-I0000 00:00:1762424145.271897  776643 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
+INFO:     127.0.0.1:61978 - "POST /simple-chat HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/yegor/Documents/STU/SPMM/.venv/lib/python3.10/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/Users/yegor/Documents/STU/SPMM/.venv/lib/python3.10/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    return await self.app(scope, receive, send)
+  File "/Users/yegor/Documents/STU/SPMM/.venv/lib/python3.10/site-packages/fastapi/applications.py", line 1106, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/yegor/Documents/STU/SPMM/.venv/lib/python3.10/site-packages/starlette/applications.py", line 122, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/yegor/Documents/STU/SPMM/.venv/lib/python3.10/site-packages/starlette/middleware/errors.py", line 184, in __call__
+    raise exc
+  File "/Users/yegor/Documents/STU/SPMM/.venv/lib/python3.10/site-packages/starlette/middleware/errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/yegor/Documents/STU/SPMM/.venv/lib/python3.10/site-packages/starlette/middleware/cors.py", line 91, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/Users/yegor/Documents/STU/SPMM/.venv/lib/python3.10/site-packages/starlette/middleware/cors.py", line 146, in simple_response
+    await self.app(scope, receive, send)
+  File "/Users/yegor/Documents/STU/SPMM/.venv/lib/python3.10/site-packages/starlette/middleware/exceptions.py", line 79, in __call__
+    raise exc
+  File "/Users/yegor/Documents/STU/SPMM/.venv/lib/python3.10/site-packages/starlette/middleware/exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "/Users/yegor/Documents/STU/SPMM/.venv/lib/python3.10/site-packages/fastapi/middleware/asyncexitstack.py", line 20, in __call__
+    raise e
+  File "/Users/yegor/Documents/STU/SPMM/.venv/lib/python3.10/site-packages/fastapi/middleware/asyncexitstack.py", line 17, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/yegor/Documents/STU/SPMM/.venv/lib/python3.10/site-packages/starlette/routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "/Users/yegor/Documents/STU/SPMM/.venv/lib/python3.10/site-packages/starlette/routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "/Users/yegor/Documents/STU/SPMM/.venv/lib/python3.10/site-packages/starlette/routing.py", line 66, in app
+    response = await func(request)
+  File "/Users/yegor/Documents/STU/SPMM/.venv/lib/python3.10/site-packages/fastapi/routing.py", line 274, in app
+    raw_response = await run_endpoint_function(
+  File "/Users/yegor/Documents/STU/SPMM/.venv/lib/python3.10/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
+    return await dependant.call(**values)
+  File "/Users/yegor/Documents/STU/SPMM/src/api/main.py", line 1167, in simple_chat
+    print(f"DEBUG: Calling llm_service.generate_response from simple_chat. LLMService instance: {id(llm_service)}, initialized: {llm_service.initialized}, model_name: {llm_service.full_model_name}")
+AttributeError: 'LLMService' object has no attribute 'full_model_name'

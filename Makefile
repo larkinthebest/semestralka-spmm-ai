@@ -9,7 +9,7 @@ all: help
 
 # Install Python dependencies in a virtual environment, set up the database, and configure API key
 install: setup migrate-db configure-api-key
-	@echo "Setup complete. Gemini API key configured."
+	@echo "Setup complete. LLM API keys configured."
 
 # Internal target for setting up virtual environment and installing dependencies
 setup:
@@ -24,16 +24,52 @@ migrate-db:
 	@echo "Migrating database..."
 	./$(VENV_DIR)/bin/$(PYTHON) migrate_database.py
 
-# Internal target for configuring Gemini API key
+# Internal target for configuring LLM API keys
 configure-api-key:
+	@echo "Configuring LLM API keys in .env file..."
 	@if [ ! -f .env ]; then \
-		echo "Creating .env file for Gemini API key..."; \
-		read -p "Enter your Google Gemini API Key: " GEMINI_API_KEY_INPUT; \
-		echo "GEMINI_API_KEY=\"$$GEMINI_API_KEY_INPUT\"" > .env; \
+		echo "Creating .env file..."; \
+		touch .env; \
 		echo ".env file created. Remember to keep this file out of version control."; \
-	else \
-		echo ".env file already exists. Skipping API key configuration."; \
 	fi
+	@if ! grep -q "GEMINI_API_KEY" .env || grep -q "GEMINI_API_KEY=\"YOUR_GEMINI_API_KEY\"" .env; then \
+		read -p "Enter your Google Gemini API Key (leave blank to skip): " GEMINI_API_KEY_INPUT; \
+		if [ -n "$$GEMINI_API_KEY_INPUT" ]; then \
+			sed -i '' '/^GEMINI_API_KEY=/d' .env; \
+			echo "GEMINI_API_KEY=\"$$GEMINI_API_KEY_INPUT\"" >> .env; \
+			echo "Gemini API Key configured."; \
+		else \
+			echo "Skipping Gemini API Key configuration."; \
+		fi; \
+	else \
+		echo "Gemini API Key already configured."; \
+	fi
+	@if ! grep -q "OPENAI_API_KEY" .env || grep -q "OPENAI_API_KEY=\"YOUR_OPENAI_API_KEY\"" .env; then \
+		read -p "Enter your OpenAI API Key (leave blank to skip): " OPENAI_API_KEY_INPUT; \
+		if [ -n "$$OPENAI_API_KEY_INPUT" ]; then \
+			sed -i '' '/^OPENAI_API_KEY=/d' .env; \
+			echo "OPENAI_API_KEY=\"$$OPENAI_API_KEY_INPUT\"" >> .env; \
+			echo "OpenAI API Key configured."; \
+		else \
+			echo "Skipping OpenAI API Key configuration."; \
+		fi; \
+	else \
+		echo "OpenAI API Key already configured."; \
+	fi
+	@if ! grep -q "OPENROUTER_API_KEY" .env || grep -q "OPENROUTER_API_KEY=\"YOUR_OPENROUTER_API_KEY\"" .env; then \
+		read -p "Enter your OpenRouter API Key (leave blank to skip): " OPENROUTER_API_KEY_INPUT; \
+		if [ -n "$$OPENROUTER_API_KEY_INPUT" ]; then \
+			sed -i '' '/^OPENROUTER_API_KEY=/d' .env; \
+			echo "OPENROUTER_API_KEY=\"$$OPENROUTER_API_KEY_INPUT\"" >> .env; \
+			echo "OpenRouter API Key configured."; \
+		else \
+			echo "Skipping OpenRouter API Key configuration."; \
+		fi; \
+	else \
+		echo "OpenRouter API Key already configured."; \
+	fi
+	@echo "Ollama (local models) is prioritized. Ensure Ollama is running and OLLAMA_BASE_URL/OLLAMA_MODEL_NAME are set in .env if you wish to use it."
+	@echo "LLM_PROVIDERS_ORDER is set to 'ollama,openrouter,gemini,openai' in .env to prioritize local models."
 
 # Run the FastAPI application
 run:

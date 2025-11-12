@@ -71,7 +71,10 @@ app.add_middleware(
 
 # Initialize services
 llm_service = LLMService()
-print(f"DEBUG: Global LLMService instance created in main.py: {id(llm_service)}, model_name: {llm_service.full_model_name}")
+# Dynamically get the model name based on the active provider
+# This will be available after llm_service.initialize() is awaited in lifespan
+# For initial print, we can use a placeholder or the default model name from LLMService's __init__
+print(f"DEBUG: Global LLMService instance created in main.py: {id(llm_service)}, configured_provider_order: {llm_service.providers_order}")
 multimedia_processor = MultimediaProcessor()
 quiz_gen = QuizGenerator(llm_service)
 
@@ -1161,7 +1164,7 @@ async def simple_chat(
         truncated_context = file_context[:50000] + "\n[Content truncated for processing]\n"
         base_prompt = f"{system_prompt}\n{truncated_context}{context_instruction}\n\nQ: {message}\nA:"
     
-    print(f"DEBUG: Calling llm_service.generate_response from simple_chat. LLMService instance: {id(llm_service)}, initialized: {llm_service.initialized}, model_name: {llm_service.full_model_name}")
+    print(f"DEBUG: Calling llm_service.generate_response from simple_chat. LLMService instance: {id(llm_service)}, initialized: {llm_service.initialized}, configured_provider_order: {llm_service.providers_order}")
     try:
         response = await llm_service.generate_response(base_prompt)
     except Exception as e:

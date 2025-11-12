@@ -234,7 +234,7 @@ body {
 .assets-section {
   padding: 20px;
   border-top: 1px solid var(--border-color);
-  max-height: 150px; /* Set a smaller maximum height */
+  max-height: 200px; /* Set a smaller maximum height */
   overflow-y: auto; /* Enable vertical scrolling */
   flex-shrink: 0; /* Prevent it from shrinking below its content size */
   flex-grow: 0; /* Prevent it from growing */
