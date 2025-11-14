@@ -22,7 +22,8 @@ opencv-python
 pytest-asyncio
 pytest
 httpx==0.27.0
-google-generativeai
 python-dotenv
-openai # Added for OpenAI API integration (can also be used for OpenRouter)
+openai # Used for OpenRouter integration
+gpt4all # Added for GPT4All integration
+pdf2image # Added for PDF to image conversion
 ollama # Added for Ollama integration

@@ -148,6 +148,29 @@ body {
   margin-bottom: 8px;
 }
 
+.user-profile-button {
+  width: 100%;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  border: none;
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-profile-button:hover {
+  background: var(--hover-bg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
 .auth-actions {
   margin-top: 8px;
   font-size: 12px;
@@ -763,56 +786,155 @@ body {
 }
 
 /* Modal styles */
+/* Base modal styles */
 .modal {
-  display: none;
+  display: flex;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9999; /* Increased z-index to ensure visibility */
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal.show {
+  opacity: 1;
+  visibility: visible;
 }
 
 .modal-content {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   background: var(--bg-secondary);
   padding: 20px;
   border-radius: 10px;
-  min-width: 300px;
-  width: 1600px; /* Default large width */
-  height: 900px; /* Default large height */
-  max-width: 95vw;
-  max-height: 95vh;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+  overflow: auto;
+  transform: translateY(-20px);
+  transition: transform 0.3s ease;
+}
+
+.modal.show .modal-content {
+  transform: translateY(0);
+}
+
+/* Specific styles for the rename modal */
+#renameModal .modal-content {
+  width: 400px;
+  max-width: 90%;
+}
+
+/* Specific styles for the user profile modal */
+#userProfileModal .modal-content {
+  width: 1000px; /* Adjust as needed */
+  height: 700px; /* Adjust as needed */
   display: flex;
   flex-direction: column;
 }
 
-/* Specific styles for the quiz result preview modal */
-#quizResultPreviewModal .modal-content {
-  position: absolute; /* Ensure positioning context for centering */
-  top: 50%; /* Center vertically */
-  left: 50%; /* Center horizontally */
-  transform: translate(-50%, -50%); /* Adjust for element's own size */
-  width: 800px; /* Smaller, more focused width */
-  height: auto; /* Adjust height based on content */
-  max-height: 90vh; /* Max height to prevent overflow */
-  overflow-y: auto; /* Allow vertical scroll for content */
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); /* Add some shadow for floating effect */
-  border: 1px solid var(--border-color); /* Subtle border */
+/* File Preview Modal Styles */
+.file-preview-modal-content {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 90vw; /* Use viewport width */
+  max-height: 90vh; /* Use viewport height */
+  width: 1200px; /* Default large width for content */
+  height: 800px; /* Default large height for content */
+  overflow: hidden; /* Hide overflow for the content area itself */
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
-.modal input {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid var(--border-color);
-  border-radius: 5px;
-  background: var(--bg-secondary);
+.file-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+.file-preview-header h3 {
+  margin: 0;
+  font-size: 18px;
   color: var(--text-primary);
+}
+
+.file-preview-close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+}
+
+.file-preview-close-btn:hover {
+  color: var(--text-primary);
+}
+
+.file-preview-body {
+  flex-grow: 1; /* Allow body to take remaining space */
+  overflow-y: auto; /* Enable scrolling for the body content */
+  padding-right: 10px; /* Add some padding for scrollbar */
+}
+
+.file-preview-image,
+.file-preview-video,
+.file-preview-audio,
+.file-preview-iframe {
+  max-width: 100%;
+  height: auto; /* Maintain aspect ratio */
+  display: block; /* Remove extra space below inline elements */
+  margin: 0 auto; /* Center media */
+  border-radius: 4px;
+}
+
+.file-preview-iframe {
+  width: 100%;
+  height: 100%; /* Fill the available height in the body */
+  border: none;
+}
+
+.file-preview-text {
+  font-family: monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  background: var(--bg-tertiary);
+  padding: 15px;
+  border-radius: 4px;
+  color: var(--text-primary);
+}
+
+/* Custom Prompt Modal Input */
+.custom-modal-input {
+  width: 80%; /* 80% of the container's width */
+  padding: 10px;
+  margin: 15px auto 25px auto; /* Center horizontally, add padding below */
+  border: 2px solid var(--border-color); /* Twice as thick */
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 16px;
+  text-align: center;
+  display: block; /* Ensure margin: auto works for centering */
+}
+
+.custom-modal-input:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
 }
 
 /* User Profile Modal specific styles */

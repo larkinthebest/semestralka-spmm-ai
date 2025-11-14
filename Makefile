@@ -8,8 +8,8 @@ VENV_DIR := .venv
 all: help
 
 # Install Python dependencies in a virtual environment, set up the database, and configure API key
-install: setup migrate-db configure-api-key
-	@echo "Setup complete. LLM API keys configured."
+install: setup migrate-db download-gpt4all-model download-ollama-model
+	@echo "Setup complete. LLM models configured."
 
 # Internal target for setting up virtual environment and installing dependencies
 setup:
@@ -24,58 +24,50 @@ migrate-db:
 	@echo "Migrating database..."
 	./$(VENV_DIR)/bin/$(PYTHON) migrate_database.py
 
-# Internal target for configuring LLM API keys
-configure-api-key:
-	@echo "Configuring LLM API keys in .env file..."
-	@if [ ! -f .env ]; then \
-		echo "Creating .env file..."; \
-		touch .env; \
-		echo ".env file created. Remember to keep this file out of version control."; \
-	fi
-	@if ! grep -q "GEMINI_API_KEY" .env || grep -q "GEMINI_API_KEY=\"YOUR_GEMINI_API_KEY\"" .env; then \
-		read -p "Enter your Google Gemini API Key (leave blank to skip): " GEMINI_API_KEY_INPUT; \
-		if [ -n "$$GEMINI_API_KEY_INPUT" ]; then \
-			sed -i '' '/^GEMINI_API_KEY=/d' .env; \
-			echo "GEMINI_API_KEY=\"$$GEMINI_API_KEY_INPUT\"" >> .env; \
-			echo "Gemini API Key configured."; \
-		else \
-			echo "Skipping Gemini API Key configuration."; \
-		fi; \
+# Target for downloading GPT4All model
+download-gpt4all-model:
+	@echo "Checking for GPT4All model..."
+	@mkdir -p models
+	@MODEL_NAME=$$(grep -E '^GPT4ALL_MODEL_NAME=' .env | cut -d'=' -f2 | tr -d '"'); \
+	if [ -z "$$MODEL_NAME" ]; then \
+		echo "GPT4ALL_MODEL_NAME not found in .env. Skipping GPT4All model download."; \
 	else \
-		echo "Gemini API Key already configured."; \
-	fi
-	@if ! grep -q "OPENAI_API_KEY" .env || grep -q "OPENAI_API_KEY=\"YOUR_OPENAI_API_KEY\"" .env; then \
-		read -p "Enter your OpenAI API Key (leave blank to skip): " OPENAI_API_KEY_INPUT; \
-		if [ -n "$$OPENAI_API_KEY_INPUT" ]; then \
-			sed -i '' '/^OPENAI_API_KEY=/d' .env; \
-			echo "OPENAI_API_KEY=\"$$OPENAI_API_KEY_INPUT\"" >> .env; \
-			echo "OpenAI API Key configured."; \
+		MODEL_PATH="models/$$MODEL_NAME"; \
+		if [ ! -f "$$MODEL_PATH" ]; then \
+			echo "GPT4ALL model '$$MODEL_NAME' not found in 'models/' directory. Attempting to download..."; \
+			./$(VENV_DIR)/bin/$(PYTHON) -c "from gpt4all import GPT4All; GPT4All('$$MODEL_NAME', model_path='models/')" || { echo "Failed to download GPT4All model. Please check the model name and your internet connection."; exit 1; }; \
+			echo "GPT4ALL model '$$MODEL_NAME' downloaded to 'models/'."; \
 		else \
-			echo "Skipping OpenAI API Key configuration."; \
+			echo "GPT4ALL model '$$MODEL_NAME' already exists in 'models/'."; \
 		fi; \
-	else \
-		echo "OpenAI API Key already configured."; \
 	fi
-	@if ! grep -q "OPENROUTER_API_KEY" .env || grep -q "OPENROUTER_API_KEY=\"YOUR_OPENROUTER_API_KEY\"" .env; then \
-		read -p "Enter your OpenRouter API Key (leave blank to skip): " OPENROUTER_API_KEY_INPUT; \
-		if [ -n "$$OPENROUTER_API_KEY_INPUT" ]; then \
-			sed -i '' '/^OPENROUTER_API_KEY=/d' .env; \
-			echo "OPENROUTER_API_KEY=\"$$OPENROUTER_API_KEY_INPUT\"" >> .env; \
-			echo "OpenRouter API Key configured."; \
+
+# New target for downloading Ollama model
+download-ollama-model:
+	@echo "Checking for Ollama model..."
+	@OLLAMA_MODEL_NAME=$$(grep -E '^OLLAMA_MODEL_NAME=' .env | cut -d'=' -f2 | tr -d '"'); \
+	if [ -z "$$OLLAMA_MODEL_NAME" ]; then \
+		echo "OLLAMA_MODEL_NAME not found in .env. Skipping Ollama model download."; \
+	else \
+		if command -v ollama &> /dev/null; then \
+			echo "Ollama is installed. Attempting to pull '$$OLLAMA_MODEL_NAME'..."; \
+			ollama pull "$$OLLAMA_MODEL_NAME" || { echo "Failed to pull Ollama model. Please check the model name and your internet connection."; exit 1; }; \
+			echo "Ollama model '$$OLLAMA_MODEL_NAME' pulled successfully."; \
 		else \
-			echo "Skipping OpenRouter API Key configuration."; \
+			echo "Ollama is not installed. Please install Ollama from ollama.com to use '$$OLLAMA_MODEL_NAME'. Skipping Ollama model download."; \
 		fi; \
-	else \
-		echo "OpenRouter API Key already configured."; \
 	fi
-	@echo "Ollama (local models) is prioritized. Ensure Ollama is running and OLLAMA_BASE_URL/OLLAMA_MODEL_NAME are set in .env if you wish to use it."
-	@echo "LLM_PROVIDERS_ORDER is set to 'ollama,openrouter,gemini,openai' in .env to prioritize local models."
 
 # Run the FastAPI application
 run:
 	@echo "Starting AI Multimedia Tutor..."
 	@clear # Clear terminal for a clean start
-	./$(VENV_DIR)/bin/$(PYTHON) run.py
+	PYTHONPATH=$(shell pwd) ./$(VENV_DIR)/bin/$(PYTHON) run.py
+
+# Run tests
+test:
+	@echo "Running tests..."
+	PYTHONPATH=$(shell pwd) ./$(VENV_DIR)/bin/pytest tests/
 
 # Build the Docker image
 build-docker:
@@ -102,7 +94,7 @@ clean:
 help:
 	@echo "AI Multimedia Tutor - Makefile Commands"
 	@echo "-------------------------------------"
-	@echo "  make install        - Set up virtual environment, install Python dependencies, migrate database, and configure Gemini API key."
+	@echo "  make install        - Set up virtual environment, install Python dependencies, migrate database, and download configured LLM models (GPT4All, Ollama)."
 	@echo "  make run            - Run the FastAPI application locally (automatically uses virtual environment)."
 	@echo "  make build-docker   - Build the Docker image for the application."
 	@echo "  make run-docker     - Run the application in a Docker container."

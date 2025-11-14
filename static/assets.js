@@ -1,6 +1,6 @@
 // static/assets.js
 
-import { showNotification, getFileIcon, showDeleteConfirm, previewFile } from "./ui.js";
+import { showNotification, getFileIcon, showDeleteConfirm, previewFile, showRenamePrompt } from "./ui.js";
 import { uploadFileApi, renameAssetApi, deleteAssetApi, fetchAssetsApi } from "./api.js";
 import { currentChatId, chatAttachedAssets, chatSources, translations, currentLanguage, setCurrentChatId, setChatAttachedAssets, updateChatAttachedAssets, addChatAttachedAsset, removeChatAttachedAsset, deleteChatAttachedAssets, setChatSources, updateChatSources, addChatSource, deleteChatSource, setCurrentLanguage } from "./app.js"; // Import necessary globals from app.js
 import { saveChatToDatabase } from "./chat.js"; // Import saveChatToDatabase from chat.js
@@ -79,13 +79,13 @@ export function setupDragAndDrop() {
       const filename = e.dataTransfer.getData("text/x-asset-filename");
       if (filename) {
         console.log("DEBUG: Attaching existing asset by filename:", filename);
-        addChatAttachedAsset(currentChatId, filename);
+        // Find the actual File object for the existing asset to add to attachedFiles
+        // This is a simplification; ideally, we'd have a way to retrieve the File object or its representation
+        // For now, we'll create a dummy File object for visual display.
+        const dummyFile = { name: filename, type: 'application/octet-stream' }; // Dummy file for display
+        attachFileToMessage(dummyFile); // Add to the temporary attachedFiles for visual feedback
+        addChatAttachedAsset(currentChatId, filename); // Add to persistent chatAttachedAssets
         updateAssetSelectionUI(); // Update checkboxes in the asset list
-        // Also add to attachedFiles for display in the message input
-        // For simplicity, we'll create a dummy File object for display purposes
-        // This might need refinement if full File object properties are critical
-        const dummyFile = { name: filename, type: "application/octet-stream", size: 0 };
-        attachFileToMessage(dummyFile);
         saveChatToDatabase(); // Save the updated chat with new attached assets
       }
     } else {
@@ -249,14 +249,14 @@ export async function addFilesToAssets(files) {
         );
         const extension = (uploadedAssetData.filename && typeof uploadedAssetData.filename === 'string') ? uploadedAssetData.filename.split('.').pop().toLowerCase() : '';
         assetItem.innerHTML = `
-          <div style="display: flex; align-items: center; flex: 1; cursor: pointer;" onclick="window.previewFile(JSON.stringify('${uploadedAssetData.filename}'), '${extension}')">
+          <div style="display: flex; align-items: center; flex: 1; cursor: pointer;" onclick="window.previewFile('${encodeURIComponent(uploadedAssetData.filename)}', '${extension}')">
             <input type="checkbox" class="asset-checkbox" 
                    id="asset-checkbox-${uploadedAssetData.id}" 
                    data-filename="${uploadedAssetData.filename}" 
                    ${isSelected ? "checked" : ""} 
-                   onclick="event.stopPropagation(); window.toggleChatAssetSelection(JSON.stringify('${
-                     uploadedAssetData.filename
-                   }'))">
+                   onclick="event.stopPropagation(); window.toggleChatAssetSelection('${
+                     uploadedAssetData.filename.replace(/'/g, "\\'")
+                   }')">
             <label for="asset-checkbox-${uploadedAssetData.id}" style="margin-left: 8px; cursor: pointer;">${fileIcon} ${
             uploadedAssetData.filename
           }</label>
@@ -274,7 +274,7 @@ export async function addFilesToAssets(files) {
         saveChatToDatabase(); // Save the updated chat with new attached assets
       } else {
         assetItem.remove();
-        showNotification(`Failed to upload "${file.name}".`, "error");
+        showNotification(`File "${uploadedAssetData.filename}" already exists.`, "info");
       }
     } catch (error) {
       console.error("Error during file upload in addFilesToAssets:", error);
@@ -326,11 +326,11 @@ export async function renameAsset(assetId) {
   if (!assetItem) return;
   const currentFilename = assetItem.querySelector("label").textContent.trim().substring(2).trim();
   
-  const newFilename = prompt(`Rename asset "${currentFilename}":`, currentFilename);
+  const newFilename = await showRenamePrompt(`Rename asset "${currentFilename}":`, currentFilename);
 
-  if (newFilename && newFilename.trim() !== currentFilename) {
+  if (newFilename && newFilename.trim() !== "" && newFilename.trim() !== currentFilename) {
     try {
-      const data = await renameAssetApi(assetId, newFilename);
+      const data = await renameAssetApi(assetId, newFilename.trim());
       const label = assetItem.querySelector("label");
       if (label) label.innerHTML = `${getFileIcon(data.new_filename)} ${data.new_filename}`;
       for (const chatId in chatAttachedAssets) {
@@ -409,6 +409,12 @@ export async function loadAssetsIntoMainframe() {
   }
   assetList.innerHTML = '<div class="no-assets-message">Loading assets...</div>';
 
+  const accessToken = localStorage.getItem("access_token");
+  if (!accessToken) {
+    assetList.innerHTML = `<div class="no-assets-message">${translations[currentLanguage].noAssets}</div>`;
+    return;
+  }
+
   try {
     const data = await fetchAssetsApi();
     assetList.innerHTML = "";
@@ -429,14 +435,14 @@ export async function loadAssetsIntoMainframe() {
         );
         const extension = (asset.filename && typeof asset.filename === 'string') ? asset.filename.split('.').pop().toLowerCase() : '';
         assetItem.innerHTML = `
-          <div style="display: flex; align-items: center; flex: 1; cursor: pointer;" onclick="window.previewFile(JSON.stringify('${asset.filename}'), '${extension}')">
+          <div style="display: flex; align-items: center; flex: 1; cursor: pointer;" onclick="window.previewFile('${encodeURIComponent(asset.filename)}', '${extension}')">
             <input type="checkbox" class="asset-checkbox" 
                    id="asset-checkbox-${asset.id}" 
                    data-filename="${asset.filename}" 
                    ${isSelected ? "checked" : ""} 
-                   onclick="event.stopPropagation(); window.toggleChatAssetSelection(JSON.stringify('${
-                     asset.filename
-                   }'))">
+                   onclick="event.stopPropagation(); window.toggleChatAssetSelection('${
+                     asset.filename.replace(/'/g, "\\'")
+                   }')">
             <label for="asset-checkbox-${asset.id}" style="margin-left: 8px; cursor: pointer;">${fileIcon} ${
             asset.filename
           }</label>

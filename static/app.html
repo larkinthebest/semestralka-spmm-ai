@@ -71,10 +71,12 @@
         </div>
 
         <div class="user-section" id="userSection">
+          <button id="userProfileButton" class="user-profile-button" onclick="console.log('DEBUG: userProfileButton clicked'); event.stopPropagation(); window.openUserProfile()">
+            👤 User Profile
+          </button>
           <div
             id="userInfo"
-            class="user-info clickable"
-            onclick="window.openUserProfile()"
+            class="user-info"
           >
             👤 Guest User
           </div>
@@ -265,25 +267,6 @@
     <!-- Modals -->
     <div id="notificationContainer" class="notification-container"></div>
 
-    <!-- Modals -->
-    <div id="renameModal" class="modal">
-      <div class="modal-content">
-        <h3>Rename Chat</h3>
-        <input type="text" id="renameInput" placeholder="Enter new name" />
-        <div class="modal-buttons">
-          <button
-            class="modal-btn secondary"
-            onclick="window.closeModal('renameModal')"
-          >
-            Cancel
-          </button>
-          <button class="modal-btn primary" onclick="window.confirmRename()">
-            Rename
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- User Profile Modal -->
     <div id="userProfileModal" class="modal">
       <div class="modal-content">
@@ -322,13 +305,49 @@
         </div>
       </div>
     </div>
-    <script type="module" src="/static/app.js"></script>
     <script type="module" src="/static/api.js"></script>
     <script type="module" src="/static/ui.js"></script>
     <script type="module" src="/static/chat.js"></script>
     <script type="module" src="/static/assets.js"></script>
     <script type="module" src="/static/quiz.js"></script>
     <script type="module" src="/static/profile.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script type="module" src="/static/app.js"></script>
+    <script>
+      // MathJax configuration to potentially mitigate storage issues
+      window.MathJax = {
+        options: {
+          enableMenu: false, // Disable the MathJax contextual menu
+          ignoreHtmlClass: 'tex2jax_ignore', // Ignore elements with this class
+          processHtmlClass: 'tex2jax_process' // Process elements with this class
+        },
+        tex: {
+          inlineMath: [['\\(', '\\)']],
+          displayMath: [['\\[', '\\]']],
+          processEscapes: true,
+          packages: {'[+]': ['noerrors']} // Add noerrors package to prevent errors from stopping rendering
+        },
+        loader: {
+          load: ['input/tex', 'output/chtml', 'ui/menu'] // Removed 'a11y/assistive-mml'
+        },
+        startup: {
+          ready: () => {
+            console.log('DEBUG: MathJax is ready!');
+            // Manually typeset if needed after the page is fully loaded
+            if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+              setTimeout(() => {
+                MathJax.typesetPromise();
+              }, 500); // Small delay to ensure DOM is ready
+            }
+          }
+        }
+      };
+    </script>
+    <!-- Temporarily disabled MathJax script to debug TypeError -->
+    <!--
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+    -->
   </body>
 </html>

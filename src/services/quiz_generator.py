@@ -17,14 +17,33 @@ class QuizGenerator:
         language: str = "en"
     ) -> Dict[str, Any]:
         
-        prompt = self._build_quiz_generation_prompt(content, quiz_type, num_questions, topic, difficulty, language)
-        
+        # Truncate content to prevent exceeding LLM context window
+        # Using a larger limit for robust file analysis
+        max_content_length = 20000 
+        truncated_content = content[:max_content_length] if len(content) > max_content_length else content
+
         try:
-            llm_response = await self.llm_service.generate_response(prompt)
-            print(f"LLM Raw Response: {llm_response}") # Debugging LLM raw response
-            parsed_quiz_data = self._parse_llm_response(llm_response, quiz_type)
+            # Call the LLMService's quiz generation method directly
+            # This method now handles provider-specific prompt building and returns raw LLM response
+            llm_raw_response = await self.llm_service.generate_quiz_questions(
+                content=truncated_content,
+                quiz_type=quiz_type,
+                num_questions=num_questions,
+                topic=topic,
+                difficulty=difficulty,
+                language=language
+            )
+
+            if "error" in llm_raw_response:
+                return {"questions": [], "error": llm_raw_response["error"]}
             
-            # Enforce num_questions constraint after parsing
+            raw_response_text = llm_raw_response.get("raw_response_text", "")
+            if not raw_response_text:
+                raise ValueError("LLMService did not return raw_response_text for quiz generation.")
+
+            print(f"LLM Raw Response: {raw_response_text}") # Debugging LLM raw response
+            parsed_quiz_data = self._parse_llm_response(raw_response_text, quiz_type)
+            
             # Enforce num_questions constraint after parsing
             if len(parsed_quiz_data) > num_questions:
                 parsed_quiz_data = parsed_quiz_data[:num_questions]
@@ -37,22 +56,32 @@ class QuizGenerator:
                 remaining_questions_to_generate = num_questions - len(parsed_quiz_data)
                 print(f"Attempting to generate {remaining_questions_to_generate} more questions (Retry {retries}/{max_retries})...")
                 
-                # Build a new prompt for the remaining questions
-                retry_prompt = self._build_quiz_generation_prompt(
-                    content, quiz_type, remaining_questions_to_generate, topic, difficulty, language
+                # Call LLMService again for remaining questions
+                retry_llm_raw_response = await self.llm_service.generate_quiz_questions(
+                    content=truncated_content,
+                    quiz_type=quiz_type,
+                    num_questions=remaining_questions_to_generate, # Request only remaining questions
+                    topic=topic,
+                    difficulty=difficulty,
+                    language=language
                 )
                 
-                try:
-                    retry_llm_response = await self.llm_service.generate_response(retry_prompt)
-                    print(f"LLM Raw Response (Retry {retries}): {retry_llm_response}")
-                    new_parsed_data = self._parse_llm_response(retry_llm_response, quiz_type)
-                    
-                    # Add only unique questions from the retry
-                    for q in new_parsed_data:
-                        if len(parsed_quiz_data) < num_questions and q not in parsed_quiz_data:
-                            parsed_quiz_data.append(q)
-                except Exception as retry_e:
-                    print(f"Error during quiz generation retry {retries}: {retry_e}")
+                if "error" in retry_llm_raw_response:
+                    print(f"Error during quiz generation retry {retries}: {retry_llm_raw_response['error']}")
+                    break # Stop retrying if LLMService itself reports an error
+                
+                retry_raw_response_text = retry_llm_raw_response.get("raw_response_text", "")
+                if not retry_raw_response_text:
+                    print(f"Warning: LLMService did not return raw_response_text for quiz generation retry {retries}.")
+                    break
+
+                print(f"LLM Raw Response (Retry {retries}): {retry_raw_response_text}")
+                new_parsed_data = self._parse_llm_response(retry_raw_response_text, quiz_type)
+                
+                # Add only unique questions from the retry
+                for q in new_parsed_data:
+                    if len(parsed_quiz_data) < num_questions and q not in parsed_quiz_data:
+                        parsed_quiz_data.append(q)
             
             if len(parsed_quiz_data) < num_questions:
                 print(f"Warning: After {max_retries} retries, LLM generated {len(parsed_quiz_data)} questions, but {num_questions} were requested.")
@@ -60,174 +89,53 @@ class QuizGenerator:
             return {"questions": parsed_quiz_data}
         except ValueError as e:
             print(f"Error parsing LLM response for quiz generation: {e}")
-            # If parsing fails, return an empty list of questions or a specific error message
             return {"questions": [], "error": f"Failed to generate quiz due to LLM response parsing error: {e}"}
         except Exception as e:
             print(f"Error generating quiz with LLM: {e}")
-            # Re-raise other unexpected exceptions
             raise
-
-    def _build_quiz_generation_prompt(
-        self,
-        content: str,
-        quiz_type: str,
-        num_questions: int,
-        topic: Optional[str],
-        difficulty: Optional[str],
-        language: str
-    ) -> str:
-        
-        topic_clause = f"on the topic of '{topic}'" if topic else ""
-        difficulty_clause = f"of '{difficulty}' difficulty" if difficulty else ""
-        language_instruction = ""
-        if language == "de":
-            language_instruction = "The questions and answers MUST be in German."
-        elif language == "sk":
-            language_instruction = "The questions and answers MUST be in Slovak."
-        elif language == "en":
-            language_instruction = "The questions and answers MUST be in English."
-
-        base_prompt = f"""
-You are an expert quiz generator. Your task is to create a quiz with exactly {num_questions} questions of type '{quiz_type}' {topic_clause} {difficulty_clause} based STRICTLY ONLY on the provided content.
-{language_instruction}
-
-**CRITICAL INSTRUCTIONS:**
-1.  Generate EXACTLY {num_questions} questions. No more, no less.
-2.  The quiz MUST be of type '{quiz_type}'. Do NOT include questions of other types.
-3.  Each question MUST strictly adhere to the provided `topic` and the `Provided Content`.
-4.  Each question MUST include the `question_text`, `question_type`, and `correct_answer`.
-5.  For 'multiple_choice' questions, include an `options` list with 4 distinct choices, one of which is the `correct_answer`.
-6.  For 'true_false' questions, the `options` list MUST be `["True", "False"]`.
-7.  For 'fill_in_the_blank' questions, indicate the blank with `[BLANK]` in the `question_text` and provide the missing word/phrase as the `correct_answer`. Do NOT include options for fill-in-the-blank.
-8.  The output MUST be a JSON array of question objects. Do NOT include any other text or formatting outside the JSON.
-9.  Ensure the difficulty is {difficulty} if specified.
-
-**IMPORTANT: Adherence to Quiz Type**
-- If `quiz_type` is 'true_false', absolutely DO NOT generate 'multiple_choice', 'fill_in_the_blank', or 'short_answer' questions.
-- If `quiz_type` is 'multiple_choice', absolutely DO NOT generate 'true_false', 'fill_in_the_blank', or 'short_answer' questions.
-- If `quiz_type` is 'fill_in_the_blank', absolutely DO NOT generate 'multiple_choice', 'true_false', or 'short_answer' questions.
-- If `quiz_type` is 'short_answer', absolutely DO NOT generate 'multiple_choice', 'true_false', or 'fill_in_the_blank' questions.
-
-**Example JSON Structure for Multiple Choice:**
-```json
-[
-    {{
-        "question_text": "What is the capital of France?",
-        "question_type": "multiple_choice",
-        "options": ["Berlin", "Madrid", "Paris", "Rome"],
-        "correct_answer": "Paris"
-    }}
-]
-```
-
-**Example JSON Structure for True/False:**
-```json
-[
-    {{
-        "question_text": "The Earth is flat.",
-        "question_type": "true_false",
-        "options": ["True", "False"],
-        "correct_answer": "False"
-    }}
-]
-```
-
-**Example JSON Structure for Fill-in-the-blank:**
-```json
-[
-    {{
-        "question_text": "The chemical symbol for water is [BLANK].",
-        "question_type": "fill_in_the_blank",
-        "correct_answer": "H2O"
-    }}
-]
-```
-
-**Provided Content:**
----
-{content}
----
-
-Generate the {quiz_type} quiz questions in JSON format. Your response MUST contain ONLY the JSON array and nothing else.
-"""
-        return base_prompt
 
     def _parse_llm_response(self, llm_response: str, quiz_type: str) -> List[Dict[str, Any]]:
         try:
-            # Attempt to find the JSON array in the response
-            # Robustly handle markdown code blocks or extraneous text.
             import re
             json_str = ""
             
-            # First, try to extract JSON from a markdown code block
-            json_match = re.search(r'```json\s*(\[[\s\S]*?\])\s*```', llm_response, re.DOTALL)
+            # More robust regex to find JSON array, even if surrounded by other text
+            # It looks for the first occurrence of '[' followed by '{' and ends with ']'
+            json_match = re.search(r'\[\s*\{[\s\S]*?\}\s*\]', llm_response, re.DOTALL)
             if json_match:
-                json_str = json_match.group(1)
-            else:
-                # If no markdown block, try to find a standalone JSON array
-                json_match = re.search(r'(\[\s*\{[\s\S]*?\}\s*\])', llm_response, re.DOTALL)
-                if json_match:
-                    json_str = json_match.group(1)
+                json_str = json_match.group(0) # Get the entire matched JSON array
             
             if not json_str:
                 raise ValueError("Could not find a JSON array in the LLM response.")
             
-            # Pre-processing: Replace single quotes with double quotes, remove trailing commas
-            json_str = json_str.replace("'", '"')
-            json_str = re.sub(r',\s*([\]}])', r'\1', json_str)
-            
-            print(f"DEBUG: Extracted and cleaned JSON string (pre-parse): {json_str}")
-            
+            print(f"DEBUG: Extracted JSON string (before any cleaning): {json_str}")
+
+            # Attempt to parse directly first
             try:
                 parsed_data = json.loads(json_str)
-            except json.JSONDecodeError as e:
-                print(f"DEBUG: Initial JSON parse failed. Attempting aggressive quote escaping. Error: {e}")
-                # Aggressively escape unescaped double quotes within string values
-                # This pattern looks for a double quote that is not preceded by an odd number of backslashes
-                # and is not part of a key or structural element.
-                # This is a heuristic and might require further refinement based on LLM output patterns.
+                print(f"DEBUG: Successfully parsed JSON directly.")
+            except json.JSONDecodeError as e_direct:
+                print(f"DEBUG: Direct JSON parse failed: {e_direct}. Attempting to clean and re-parse.")
                 
-                # A more robust approach for unescaped quotes within values:
-                # Iterate through the string and escape quotes that are not part of JSON structure.
-                # This is a simplified heuristic for common cases.
-                
-                # This specific regex targets unescaped quotes within string values,
-                # assuming the overall structure is mostly correct.
-                # It looks for a quote that is not at the start/end of a key or value,
-                # and not already escaped.
-                
-                # This is a very difficult problem to solve with regex alone for all cases.
-                # A common issue is a double quote inside a string value, e.g., "text": "He said "hello"."
-                # We need to change it to: "text": "He said \"hello\"."
-                
-                # This regex attempts to fix unescaped double quotes within string values.
-                # It looks for a pattern like "key": "value with "inner" quote" and escapes the inner quote.
-                # This is a heuristic and might not catch all edge cases, but addresses common LLM output issues.
-                # A more robust approach for unescaped quotes within values:
-                # Iterate through the string and escape quotes that are not part of JSON structure.
-                # This is a simplified heuristic for common cases.
-                
-                # This regex attempts to fix unescaped double quotes within string values.
-                # It looks for a pattern like "key": "value with "inner" quote" and escapes the inner quote.
-                # This is a heuristic and might not catch all edge cases, but addresses common LLM output issues.
-                # The previous regex was too broad. Let's try a more targeted approach.
-                
-                # This is a very difficult problem to solve with regex alone for all cases.
-                # A common issue is a double quote inside a string value, e.g., "text": "He said "hello"."
-                # We need to change it to: "text": "He said \"hello\"."
-                
-                # Let's try to fix the specific error pattern: "text": "The term "AI" stands for..."
-                # This means a double quote inside a double-quoted string.
-                json_str = re.sub(r'("question_text":\s*".*?)"(.*?)"', r'\1\\"\2"', json_str, flags=re.DOTALL)
-                json_str = re.sub(r'("correct_answer":\s*".*?)"(.*?)"', r'\1\\"\2"', json_str, flags=re.DOTALL)
-                json_str = re.sub(r'("explanation":\s*".*?)"(.*?)"', r'\1\\"\2"', json_str, flags=re.DOTALL)
+                # Aggressive cleaning: remove all backslashes that are not part of a valid escape sequence
+                # This regex targets backslashes that are NOT followed by another backslash or a double quote
+                # This is a heuristic and might remove legitimate escapes if the LLM is very inconsistent.
+                # A more robust solution would involve a proper JSON parser that can handle lenient parsing.
+                cleaned_json_str = re.sub(r'\\(?!["\\])', '', json_str) # Remove backslashes not followed by " or \
+                cleaned_json_str = cleaned_json_str.replace('\\"', '"') # Unescape \" to "
+                cleaned_json_str = cleaned_json_str.replace('\\\\"', '"') # Unescape \\" to " (if any remain)
                 
                 # Remove any remaining invalid control characters (e.g., unescaped newlines, tabs)
-                json_str = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', json_str)
+                cleaned_json_str = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', cleaned_json_str)
                 
-                print(f"DEBUG: Extracted and aggressively cleaned JSON string: {json_str}")
-                parsed_data = json.loads(json_str)
-            
+                print(f"DEBUG: Cleaned JSON string (before final parse): {cleaned_json_str}")
+                
+                try:
+                    parsed_data = json.loads(cleaned_json_str)
+                    print(f"DEBUG: Successfully parsed JSON after cleaning.")
+                except json.JSONDecodeError as e_cleaned:
+                    print(f"DEBUG: Final JSON parse failed after cleaning: {e_cleaned}. Original error: {e_direct}")
+                    raise ValueError(f"Failed to parse LLM response as JSON after cleaning: {e_cleaned}")
             
             # Basic validation
             if not isinstance(parsed_data, list):
@@ -245,6 +153,26 @@ Generate the {quiz_type} quiz questions in JSON format. Your response MUST conta
                 if not all(k in q for k in ["question_text", "question_type", "correct_answer"]):
                     print(f"Warning: Missing required fields in a question object: {q}. Skipping.")
                     continue
+                
+                # Ensure 'explanation' field is present, even if empty
+                if "explanation" not in q:
+                    q["explanation"] = ""
+
+                # Ensure correct_answer is a string
+                if isinstance(q["correct_answer"], list):
+                    # For multiple choice, if it's a list, try to join or take the first element
+                    if q["question_type"] == "multiple_choice":
+                        if len(q["correct_answer"]) == 1:
+                            q["correct_answer"] = str(q["correct_answer"][0])
+                        else:
+                            # If multiple correct answers are provided for MC, join them
+                            q["correct_answer"] = ", ".join(map(str, q["correct_answer"]))
+                    else:
+                        # For other types, just convert the list to a string representation
+                        q["correct_answer"] = ", ".join(map(str, q["correct_answer"]))
+                elif not isinstance(q["correct_answer"], str):
+                    q["correct_answer"] = str(q["correct_answer"]) # Ensure it's a string
+
                 if q["question_type"] == "multiple_choice" and "options" not in q:
                     print(f"Warning: Multiple choice question missing options: {q}. Skipping.")
                     continue
@@ -284,7 +212,8 @@ Generate the {quiz_type} quiz questions in JSON format. Your response MUST conta
         except Exception as e:
             print(f"Unexpected error parsing LLM response: {e}")
             print(f"Problematic LLM response: {llm_response}")
-            raise ValueError(f"An unexpected error occurred during parsing: {e}. LLM response: {llm_response}")
+            # Return an empty list of questions if parsing fails due to unexpected errors
+            return []
 
     async def generate_study_suggestions(
         self,
@@ -335,7 +264,7 @@ Generate the {quiz_type} quiz questions in JSON format. Your response MUST conta
         full_prompt = "\n".join(prompt_parts)
 
         try:
-            suggestion_response = await self.llm_service.generate_response(full_prompt)
+            suggestion_response = await self.llm_service.generate_response(full_prompt, context={})
             return suggestion_response
         except Exception as e:
             print(f"Error generating study suggestions with LLM: {e}")

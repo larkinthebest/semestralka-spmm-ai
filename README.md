@@ -10,6 +10,7 @@ To get the AI Multimedia Tutor running on your local machine, we recommend using
 
 *   **Python 3.10 or higher** (for local development without Docker)
 *   **Git** (to clone the repository)
+*   **Ollama** (for local multimodal LLM capabilities) - Download from [ollama.com](https://ollama.com/)
 
 ### Getting Started with the Makefile
 
@@ -39,25 +40,26 @@ This option sets up the project using a Python virtual environment, which is ide
     *   Create a Python virtual environment (`.venv`).
     *   Install all Python dependencies from `requirements.txt`.
     *   Run the database migration script (`migrate_database.py`) to set up the necessary tables.
+    *   Download configured LLM models (GPT4All and Ollama).
 
     **Note:** The `make run` command automatically uses this virtual environment. If you need to manually activate it for other commands, run `source .venv/bin/activate` (on Windows, use `.\.venv\Scripts\activate`).
 
 3.  **Install System Dependencies (if not using Docker):**
-    Some Python packages (like `pytesseract`, `opencv-python`, and `whisper`) require system-level dependencies. These are *not* installed by `make install` and need to be handled manually based on your operating system.
+    Some Python packages (like `pytesseract`, `opencv-python`, `whisper`, and `pdf2image`) require system-level dependencies. These are *not* installed by `make install` and need to be handled manually based on your operating system.
 
     *   **For Debian/Ubuntu-based systems:**
         ```bash
         sudo apt-get update
-        sudo apt-get install -y tesseract-ocr tesseract-ocr-eng libgl1-mesa-glx libsm6 libxext6 ffmpeg
+        sudo apt-get install -y tesseract-ocr tesseract-ocr-eng libgl1-mesa-glx libsm6 libxext6 ffmpeg poppler-utils
         ```
     *   **For macOS (using Homebrew):**
         ```bash
-        brew install tesseract ffmpeg
+        brew install tesseract ffmpeg poppler
         ```
     *   **For Windows:**
         *   Install [Tesseract OCR](https://tesseract-ocr.github.io/tessdoc/Installation.html). Make sure to add it to your system PATH.
         *   Install [FFmpeg](https://ffmpeg.org/download.html). Make sure to add it to your system PATH.
-        *   OpenCV usually handles its dependencies better on Windows, but if you encounter issues, you might need to install Visual C++ Redistributable.
+        *   Install [Poppler](https://poppler.freedesktop.org/). You might need to find a pre-compiled binary for Windows, e.g., from [here](https://github.com/oschwartz10612/poppler-windows/releases). Add its `bin` directory to your system PATH.
 
 4.  **Run the Application:**
     After completing the `make install` step and ensuring system dependencies are met, you can start the application:
@@ -72,36 +74,32 @@ This option sets up the project using a Python virtual environment, which is ide
     http://localhost:8002
     ```
 
-### LLM Configuration (Google Gemini)
+### LLM Configuration (Ollama and GPT4All)
 
-The application now uses Google Gemini for its Large Language Model (LLM) capabilities. To use Gemini, you need to obtain an API key from Google AI Studio.
+The application is configured to use Ollama (with a multimodal model like LLaVA) as the primary LLM provider, with GPT4All as a fallback.
 
-1.  **Get a Gemini API Key:**
-    *   Go to [Google AI Studio](https://aistudio.google.com/app/apikey).
-    *   Create a new API key or use an existing one.
+1.  **Install Ollama and Download Model:**
+    *   If you haven't already, download and install Ollama from [ollama.com](https://ollama.com/).
+    *   Once installed, open your terminal and pull the `llava` model:
+        ```bash
+        ollama pull llava
+        ```
 
-2.  **Set the API Key:**
-    The application expects the API key to be provided via an environment variable named `GEMINI_API_KEY`.
+2.  **Set LLM Provider Order:**
+    The application uses an environment variable `LLM_PROVIDERS_ORDER` to determine which LLM providers to use and in what order.
 
     **Recommended for Local Development (.env file):**
-    *   Create a file named `.env` in the root directory of the project.
-    *   Add your API key to this file in the format:
+    *   Ensure your `.env` file in the project root contains:
         ```
-        GEMINI_API_KEY="YOUR_GEMINI_API_KEY_HERE"
+        OLLAMA_BASE_URL="http://localhost:11434"
+        OLLAMA_MODEL_NAME="llava"
+        GPT4ALL_MODEL_NAME="Meta-Llama-3-8B-Instruct.Q4_0.gguf"
+        LLM_PROVIDERS_ORDER="ollama,gpt4all"
         ```
-        (Replace `YOUR_GEMINI_API_KEY_HERE` with your actual key).
-    *   The application is configured to automatically load this `.env` file.
-    *   **Important:** The `.env` file is already included in `.gitignore`, so it will not be committed to your repository.
-
-    **Alternatively (for temporary use or deployment environments):**
-    *   You can set the environment variable directly in your terminal session:
-        ```bash
-        export GEMINI_API_KEY="YOUR_GEMINI_API_KEY_HERE"
-        ```
-    *   For deployment to cloud platforms, you would configure `GEMINI_API_KEY` as a secret environment variable in your deployment settings.
+    *   This prioritizes Ollama. If Ollama is not running or the `llava` model is not available, it will fall back to GPT4All.
 
 3.  **Restart the Application:**
-    After setting the `GEMINI_API_KEY`, restart the application (e.g., `make run`) to ensure the new environment variable is loaded.
+    After configuring your `.env` file and ensuring Ollama is running with the `llava` model, restart the application (e.g., `make run`) to ensure the new environment variables are loaded.
 
 ### Usage Guide
 
@@ -129,10 +127,10 @@ https://www.youtube.com/watch?v=eGbgwIOLzic
 *   **"Whisper errors" / Audio transcription issues**:
     *   Ensure `whisper` is installed (included in `requirements.txt`).
     *   Ensure `ffmpeg` is installed on your system, as it's often a dependency for audio processing.
-*   **LLM Quota Exceeded (429 Error)**:
-    *   If you encounter a `429 Quota Exceeded` error from Google Gemini, it means you have hit the rate limits for your API key.
-    *   Check your usage and quotas on [Google AI Studio Usage](https://ai.dev/usage?tab=rate-limit).
-    *   You may need to wait for your quota to reset or upgrade your plan if you require higher usage.
+*   **Ollama model not found**:
+    *   Ensure Ollama is running (`ollama serve` in a separate terminal if not running as a service).
+    *   Verify you have pulled the correct model (e.g., `ollama pull llava`).
+    *   Check `OLLAMA_MODEL_NAME` in your `.env` file.
 *   **Database issues**:
     *   Ensure `make install` completed the `migrate-db` step. If not, run `make migrate-db` manually.
     *   If you encounter `sqlite3.OperationalError: database is locked`, try restarting the application.

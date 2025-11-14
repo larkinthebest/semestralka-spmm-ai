@@ -9,14 +9,38 @@ import { currentLanguage, translations, chatTitles, chatModeHistory, chatAttache
  * Opens the user profile modal and loads all user-specific data (chats, assets, quiz history).
  * @returns {Promise<void>}
  */
-export async function openUserProfile() {
+async function openUserProfile() {
+  console.log("DEBUG: openUserProfile function called.");
   const modal = document.getElementById("userProfileModal");
-  if (modal) modal.style.display = "block";
+  if (modal) {
+    console.log("DEBUG: userProfileModal found. Adding 'show' class.");
+    modal.classList.add("show");
+    // Ensure display is block if it was none
+    modal.style.display = "flex";
+  } else {
+    console.error("DEBUG: userProfileModal not found!");
+  }
 
-  await loadProfileChats();
-  await loadProfileAssets();
-  await loadProfileQuizHistory();
+  try {
+    console.log("DEBUG: Calling loadProfileChats...");
+    await loadProfileChats();
+    console.log("DEBUG: loadProfileChats completed.");
+
+    console.log("DEBUG: Calling loadProfileAssets...");
+    await loadProfileAssets();
+    console.log("DEBUG: loadProfileAssets completed.");
+
+    console.log("DEBUG: Calling loadProfileQuizHistory...");
+    await loadProfileQuizHistory();
+    console.log("DEBUG: loadProfileQuizHistory completed.");
+  } catch (error) {
+    console.error("DEBUG: Error during profile data loading:", error);
+    showNotification(`Error loading profile data: ${error.message}`, "error");
+  }
+  console.log("DEBUG: openUserProfile function finished.");
 }
+
+window.openUserProfile = openUserProfile; // Directly expose to window
 
 /**
  * Loads and displays the user's chat list in the profile modal.
@@ -109,7 +133,7 @@ export async function loadProfileAssets() {
         const icon = getFileIcon(asset.filename);
         const extension = (asset.filename && typeof asset.filename === 'string') ? asset.filename.split('.').pop().toLowerCase() : '';
         assetDiv.innerHTML = `
-          <div class="profile-list-item-content" onclick="window.previewFile('${asset.filename}', '${extension}')">
+          <div class="profile-list-item-content" onclick="window.previewFile('${encodeURIComponent(asset.filename)}', '${extension}')">
             <div class="profile-list-item-title">${icon} ${asset.filename}</div>
             <div class="profile-list-item-meta">
               ${asset.created_at && typeof asset.created_at === 'string' ? new Date(asset.created_at).toLocaleDateString() : 'N/A'}

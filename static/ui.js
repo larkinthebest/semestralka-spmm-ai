@@ -3,6 +3,19 @@
 import { translations, currentLanguage } from './app.js'; // Assuming app.js will export these
 
 /**
+ * Checks if a string contains basic HTML tags.
+ * This is a simple heuristic and might not catch all cases,
+ * but should be sufficient for distinguishing pre-formatted HTML from markdown.
+ * @param {string} text - The string to check.
+ * @returns {boolean} True if the string appears to contain HTML, false otherwise.
+ */
+function containsHtml(text) {
+  // Regex to detect common HTML tags (e.g., <div, <p, <span, <br, <h1-h6, <ul, <ol, <li, <strong, <em, <code>)
+  // This is a simplified check and might not cover all edge cases, but should be sufficient for our purpose.
+  return /<[a-z][\s\S]*?>/i.test(text);
+}
+
+/**
  * Displays a notification message to the user.
  * @param {string} message - The message to display.
  * @param {"info" | "success" | "warning" | "error"} [type="info"] - The type of notification, affecting its styling.
@@ -96,8 +109,15 @@ export function toggleTheme() {
  * @param {string} modalId - The ID of the modal element to close.
  */
 export function closeModal(modalId) {
+  console.log(`DEBUG: closeModal called for modalId: ${modalId}`);
   const modal = document.getElementById(modalId);
-  if (modal) modal.style.display = "none";
+  if (modal) {
+    modal.classList.remove("show"); // Remove 'show' class for CSS transition
+    // Use a timeout to set display: none after the transition
+    setTimeout(() => {
+      if (modal) modal.style.display = "none";
+    }, 300); // Match CSS transition duration
+  }
 }
 
 /**
@@ -326,7 +346,7 @@ export function formatMessageText(text) {
     .replace(/\n/g, "<br>"); // Single line breaks
 
   // Render LaTeX using MathJax
-  if (typeof MathJax !== 'undefined') {
+  if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
     formatted = formatted.replace(/\\\((.*?)\\\)/g, (match, p1) => {
       return `<span class="math-inline">\\(${p1}\\)</span>`;
     });
@@ -334,9 +354,10 @@ export function formatMessageText(text) {
       return `<div class="math-display">\\[${p1}\\]</div>`;
     });
     // Trigger MathJax rendering for new content
+    // Use a small delay to ensure elements are in DOM before typesetting
     setTimeout(() => {
       MathJax.typesetPromise();
-    }, 0);
+    }, 100);
   }
 
   return formatted;
@@ -365,12 +386,12 @@ export function addMessage(text, sender, currentTutor, attachmentsHtml = "") {
       ? "/static/enola.jpg"
       : "/static/tutor.png";
 
-  // Format text for better display
-  const formattedText = formatMessageText(text);
+  // Determine if the text is already HTML or needs markdown formatting
+  const contentToDisplay = containsHtml(text) ? text : formatMessageText(text);
 
   messageDiv.innerHTML = `
           <div class="message-avatar" style="background-image: url('${avatarUrl}')"></div>
-          <div class="message-content" style="white-space: pre-wrap;">${formattedText}${attachmentsHtml}</div>
+          <div class="message-content" style="white-space: pre-wrap;">${contentToDisplay}${attachmentsHtml}</div>
       `;
 
   chatArea.appendChild(messageDiv);
@@ -445,8 +466,9 @@ export function updateSources(sources) {
         </div>`;
     }
 
+    // Pass the URL-encoded filename and extension directly as string literals
     sourceItem.innerHTML = `
-      <div style="display: flex; align-items: flex-start; gap: 8px;" onclick="previewFile('${encodedFilename}', '${extension}')" style="cursor: pointer;">
+      <div style="display: flex; align-items: flex-start; gap: 8px;" onclick="window.previewFile('${encodedFilename}', '${extension}')" style="cursor: pointer;">
         ${thumbnailHtml}
         <div style="flex: 1;">
           <div class="source-title">${fileIcon} ${source.title}</div>
@@ -467,6 +489,7 @@ export function updateSources(sources) {
  * @param {string} extension - The file extension (e.g., "pdf", "mp4").
  */
 export function previewFile(encodedFilename, extension) {
+  console.log("DEBUG: previewFile called with encodedFilename:", encodedFilename, "extension:", extension);
   if (!encodedFilename || typeof encodedFilename !== 'string' || encodedFilename.trim() === '') {
     console.error("Invalid filename provided for previewFile:", encodedFilename);
     showNotification("Cannot preview file: Invalid filename.", "error");
@@ -484,41 +507,39 @@ export function previewFile(encodedFilename, extension) {
   }
 
   const modal = document.createElement("div");
+  modal.classList.add("modal"); // Add modal class for global close handler
+  modal.classList.add("show"); // Add 'show' class to trigger CSS visibility/opacity
   modal.style.cssText = `
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.8); z-index: 2000; display: flex;
     align-items: center; justify-content: center;
   `;
-  modal.classList.add("modal"); // Add modal class for global close handler
 
-  const content = document.createElement("div");
-  content.style.cssText = `
-    background: var(--bg-secondary); border-radius: 8px; padding: 20px;
-    max-width: 80%; max-height: 80%; overflow: auto; position: relative;
+  const modalContent = document.createElement("div");
+  modalContent.className = "file-preview-modal-content";
+
+  modalContent.innerHTML = `
+    <div class="file-preview-header">
+      <h3>${filename}</h3>
+      <button class="file-preview-close-btn">&times;</button>
+    </div>
+    <div class="file-preview-body" id="filePreviewBody">
+      <!-- Content will be loaded here -->
+    </div>
   `;
 
-  const header = document.createElement("div");
-  header.innerHTML = `
-    <h3>${filename}</h3>
-    <button onclick="this.closest('.modal').remove()" style="
-      position: absolute; top: 10px; right: 15px; background: none;
-      border: none; font-size: 20px; cursor: pointer;
-    ">&times;</button>
-  `;
-
-  const body = document.createElement("div");
-  body.style.cssText = "max-height: 60vh; overflow-y: auto;"; // Add scroll for content
+  const filePreviewBody = modalContent.querySelector("#filePreviewBody");
 
   if (["jpg", "jpeg", "png", "gif", "bmp"].includes(fileExtension)) {
-    body.innerHTML = `<img src="/uploads/${encodedFilename}" style="max-width: 100%; height: auto;" alt="${filename}" loading="lazy">`;
+    filePreviewBody.innerHTML = `<img src="/uploads/${encodedFilename}" class="file-preview-image" alt="${filename}" loading="lazy">`;
   } else if (["mp4", "avi", "mov", "mkv", "webm"].includes(fileExtension)) {
-    body.innerHTML = `<video controls style="max-width: 100%; height: auto;" preload="metadata" poster="/static/tutor.png" loading="lazy"><source src="/uploads/${encodedFilename}" type="video/${fileExtension}"></video>`;
+    filePreviewBody.innerHTML = `<video controls class="file-preview-video" preload="metadata" poster="/static/tutor.png" loading="lazy"><source src="/uploads/${encodedFilename}" type="video/${fileExtension}"></video>`;
   } else if (["mp3", "wav", "m4a", "ogg"].includes(fileExtension)) {
-    body.innerHTML = `<audio controls style="width: 100%;" preload="metadata" loading="lazy"><source src="/uploads/${encodedFilename}" type="audio/${fileExtension}"></audio>`;
+    filePreviewBody.innerHTML = `<audio controls class="file-preview-audio" preload="metadata" loading="lazy"><source src="/uploads/${encodedFilename}" type="audio/${fileExtension}"></audio>`;
   } else if (["pdf", "docx", "doc", "ppt", "pptx"].includes(fileExtension)) {
-    body.innerHTML = `<iframe src="/uploads/${encodedFilename}" style="width: 100%; height: 500px; border: none;" loading="lazy"></iframe>`;
+    filePreviewBody.innerHTML = `<iframe src="/uploads/${encodedFilename}" class="file-preview-iframe" loading="lazy"></iframe>`;
   } else if (["md", "txt", "js", "css", "py", "html", "json", "xml", "yaml", "yml", "c", "cpp", "java", "go", "rb", "php", "ts", "tsx", "jsx"].includes(fileExtension)) {
-    body.innerHTML = "<div>Loading...</div>";
+    filePreviewBody.innerHTML = "<div>Loading...</div>";
     fetch(`/uploads/${encodedFilename}`)
       .then((response) => {
         if (!response.ok) {
@@ -527,23 +548,26 @@ export function previewFile(encodedFilename, extension) {
         return response.text();
       })
       .then((text) => {
-        body.innerHTML = `<pre style="white-space: pre-wrap; font-family: monospace; font-size: 14px;">${text}</pre>`;
+        // Apply markdown formatting and LaTeX rendering for text-based files
+        const formattedText = formatMessageText(text);
+        filePreviewBody.innerHTML = `<div class="file-preview-text">${formattedText}</div>`;
       })
       .catch((error) => {
         console.error("Error loading file for preview:", error);
-        body.innerHTML = `<div>Error loading file: ${error.message}</div>`;
+        filePreviewBody.innerHTML = `<div>Error loading file: ${error.message}</div>`;
       });
   } else {
-    body.innerHTML = "<div>Unsupported file type for preview.</div>";
+    filePreviewBody.innerHTML = "<div>Unsupported file type for preview.</div>";
   }
 
-  content.appendChild(header);
-  content.appendChild(body);
-  modal.appendChild(content);
+  modal.appendChild(modalContent);
   document.body.appendChild(modal);
 
+  // Close modal when clicking outside or on the close button
   modal.addEventListener("click", (e) => {
-    if (e.target === modal) modal.remove();
+    if (e.target === modal || e.target.classList.contains("file-preview-close-btn")) {
+      modal.remove();
+    }
   });
 }
 
@@ -588,5 +612,64 @@ export function showDeleteConfirm(message) {
     modal.querySelector("#deleteBtn").onclick = () => cleanup(true);
     modal.querySelector(".custom-modal-overlay").onclick = () =>
       cleanup(false);
+  });
+}
+
+/**
+ * Displays a custom prompt modal for rename operations.
+ * @param {string} message - The message to display in the prompt.
+ * @param {string} defaultValue - The default value for the input field.
+ * @returns {Promise<string | null>} A promise that resolves to the new name if confirmed, or `null` if canceled.
+ */
+export function showRenamePrompt(message, defaultValue = "") {
+  return new Promise((resolve) => {
+    const t = translations[currentLanguage];
+    const modal = document.createElement("div");
+    modal.className = "custom-modal";
+    modal.innerHTML = `
+      <div class="custom-modal-overlay"></div>
+      <div class="custom-modal-content">
+        <div class="custom-modal-icon">✏️</div>
+        <div class="custom-modal-message">${message}</div>
+        <input type="text" class="custom-modal-input" id="renamePromptInput" value="${defaultValue}" />
+        <div class="custom-modal-buttons">
+          <button class="custom-modal-btn secondary" id="cancelRenameBtn">${t.cancel}</button>
+          <button class="custom-modal-btn primary" id="confirmRenameBtn">${t.rename}</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const input = modal.querySelector("#renamePromptInput");
+    input.focus();
+    input.select();
+
+    // Animate in
+    setTimeout(() => modal.classList.add("show"), 10);
+
+    const cleanup = (result) => {
+      modal.classList.remove("show");
+      setTimeout(() => {
+        if (document.body.contains(modal)) {
+          document.body.removeChild(modal);
+        }
+      }, 300);
+      resolve(result);
+    };
+
+    modal.querySelector("#cancelRenameBtn").onclick = () => cleanup(null);
+    modal.querySelector("#confirmRenameBtn").onclick = () => cleanup(input.value.trim());
+    modal.querySelector(".custom-modal-overlay").onclick = () => cleanup(null);
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        cleanup(input.value.trim());
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        cleanup(null);
+      }
+    });
   });
 }

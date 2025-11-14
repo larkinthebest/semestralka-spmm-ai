@@ -1,34 +1,29 @@
 import os
 from pathlib import Path
-from typing import Optional, Dict, Any
-import pypdf # Changed from PyPDF2
+from typing import Optional, Dict, Any, List
+import pypdf
 from docx import Document as DocxDocument
+import base64 # Import base64 for image/video encoding
+import io # Import io for image handling
+import asyncio # Import asyncio for async calls
+from src.processors.video_audio_processor import VideoAudioProcessor # Import the new processor
 
 # Optional imports with fallbacks
 try:
     import pytesseract
     from PIL import Image, ImageEnhance, ImageFilter, ImageOps
-    import numpy as np
     OCR_AVAILABLE = True
 except ImportError:
     pytesseract = None
-    Image = ImageEnhance = ImageFilter = ImageOps = np = None
+    Image = ImageEnhance = ImageFilter = ImageOps = None
     OCR_AVAILABLE = False
 
 try:
-    import whisper
-    WHISPER_AVAILABLE = True
+    from pdf2image import convert_from_path
+    PDF2IMAGE_AVAILABLE = True
 except ImportError:
-    whisper = None
-    WHISPER_AVAILABLE = False
-
-try:
-    import cv2
-    import tempfile
-    CV2_AVAILABLE = True
-except ImportError:
-    cv2 = None
-    CV2_AVAILABLE = False
+    convert_from_path = None
+    PDF2IMAGE_AVAILABLE = False
 
 class MultimediaProcessor:
     def __init__(self):
@@ -39,58 +34,74 @@ class MultimediaProcessor:
             'video': ['.mp4', '.avi', '.mov', '.mkv', '.webm']
         }
         self._cache = {}  # Simple file processing cache
+        self.video_audio_processor = VideoAudioProcessor() # Initialize the new processor
     
-    def process_file(self, file_path: str) -> Dict[str, Any]:
+    async def process_file(self, file_path: str) -> Dict[str, Any]:
         """Process any supported file type and extract relevant information"""
-        # Check cache first
-        cache_key = f"{file_path}_{os.path.getmtime(file_path)}"
-        if cache_key in self._cache:
-            return self._cache[cache_key]
         
         file_extension = Path(file_path).suffix.lower()
         file_type = self._get_file_type(file_extension)
-        
-        try:
-            file_size = os.path.getsize(file_path)
-        except OSError:
-            file_size = 0
         
         result = {
             'filename': Path(file_path).name,
             'file_path': file_path,
             'file_type': file_type,
             'extension': file_extension,
-            'size': file_size,
+            'size': 0, # Initialize size to 0, update in try block
             'content': '',
             'metadata': {},
-            'description': ''
+            'description': '',
+            'base64_image': None,
+            'base64_video_frames': []
         }
         
         try:
+            # Check file existence and get mtime for caching
+            if not Path(file_path).exists():
+                raise FileNotFoundError(f"File not found: {file_path}")
+            
+            file_size = os.path.getsize(file_path)
+            result['size'] = file_size
+            cache_key = f"{file_path}_{os.path.getmtime(file_path)}"
+            
+            if cache_key in self._cache:
+                print(f"DEBUG: Using cached result for file: {file_path}")
+                return self._cache[cache_key]
+
+            print(f"DEBUG: Starting processing for file: {file_path} (Type: {file_type})")
             if file_type == 'text':
                 result['content'] = self._extract_text(file_path)
                 result['description'] = self._generate_text_description(result['content'])
             elif file_type == 'image':
-                # Extract text from image and include in content
                 extracted_text = self._extract_text_from_image(file_path)
                 result['content'] = extracted_text if extracted_text else f"Image file: {Path(file_path).name}"
                 result['description'] = self._generate_image_description(file_path)
+                result['base64_image'] = self._image_to_base64(file_path)
             elif file_type == 'audio':
-                transcription = self._transcribe_audio(file_path)
+                transcription = await self.video_audio_processor.transcribe_audio_file(file_path)
                 result['content'] = transcription if transcription else f"Audio file: {Path(file_path).name}"
-                result['description'] = self._generate_audio_description(file_path)
+                result['description'] = self._generate_audio_description(file_path, transcription)
             elif file_type == 'video':
-                video_text = self._extract_video_text(file_path)
-                result['content'] = video_text if video_text else f"Video file: {Path(file_path).name}"
-                result['description'] = self._generate_video_description(file_path)
+                video_processing_result = await self.video_audio_processor.process_video(file_path)
+                result['content'] = video_processing_result['content'] if video_processing_result['content'] else f"Video file: {Path(file_path).name}"
+                result['description'] = self._generate_video_description(file_path, video_processing_result['content'])
+                result['base64_video_frames'] = video_processing_result['base64_video_frames']
             else:
                 result['description'] = f"Unsupported file type: {file_extension}"
+            print(f"DEBUG: Finished processing for file: {file_path}. Content length: {len(result['content'])} chars.")
+            
+            # Cache the result only if processing was successful
+            self._cache[cache_key] = result
+            
+        except FileNotFoundError as e:
+            print(f"ERROR: File not found during processing for {file_path}: {e}")
+            result['description'] = f"Error: File not found - {str(e)}"
+            result['content'] = f"Could not process file: File not found."
         except Exception as e:
+            print(f"ERROR: Exception during file processing for {file_path}: {e}")
             result['description'] = f"Error processing file: {str(e)}"
-            result['content'] = f"Could not process file: {str(e)}"
+            result['content'] = f"Could not process file due to an error: {str(e)}"
         
-        # Cache the result
-        self._cache[cache_key] = result
         return result
     
     def _get_file_type(self, extension: str) -> str:
@@ -140,7 +151,7 @@ class MultimediaProcessor:
         try:
             text = ""
             with open(file_path, 'rb') as file:
-                pdf_reader = pypdf.PdfReader(file) # Changed from PyPDF2.PdfReader
+                pdf_reader = pypdf.PdfReader(file)
                 # Limit pages to prevent memory issues
                 max_pages_to_process = 50
                 max_text_content_size = 200000 # ~200KB limit
@@ -157,9 +168,47 @@ class MultimediaProcessor:
                         print(f"Warning: PDF content from {file_path} truncated. Original size: {len(text)} chars.")
                         text += "\n[Content truncated - file too large]"
                         break
+            
+            # Always attempt OCR if available, and combine with direct text extraction
+            if PDF2IMAGE_AVAILABLE and OCR_AVAILABLE:
+                print(f"DEBUG: Attempting OCR for PDF {file_path}.")
+                try:
+                    images = convert_from_path(file_path, first_page=1, last_page=min(num_pages, max_pages_to_process), dpi=200) # Increased DPI for better OCR
+                    ocr_texts = []
+                    for i, img in enumerate(images):
+                        # Pass the PIL Image object directly to _extract_text_from_image
+                        # Ensure the image is in a format that pytesseract can handle (e.g., RGB or L)
+                        if img.mode != 'RGB':
+                            img = img.convert('RGB')
+                        ocr_page_text = self._extract_text_from_image(img)
+                        if ocr_page_text and ocr_page_text.strip() not in ["No text detected in image", "Image contains minimal or no readable text", "OCR failed: "]:
+                            ocr_texts.append(f"--- OCR Page {i+1} ---\n{ocr_page_text}")
+                    
+                    if ocr_texts:
+                        combined_ocr_text = "\n".join(ocr_texts)
+                        # Combine direct text and OCR text, avoiding obvious duplicates
+                        if text.strip() and combined_ocr_text.strip():
+                            # Simple heuristic to combine: if direct text is very short, prioritize OCR.
+                            # Otherwise, append OCR text to direct text.
+                            if len(text.strip()) < 100: # Arbitrary threshold for "very short"
+                                text = f"{combined_ocr_text}\n\n{text}"
+                            else:
+                                text = f"{text}\n\n{combined_ocr_text}"
+                            print(f"DEBUG: Combined direct and OCR text for {file_path}.")
+                        elif combined_ocr_text.strip():
+                            text = combined_ocr_text
+                            print(f"DEBUG: Used only OCR text for {file_path} as direct text was empty.")
+                    else:
+                        print(f"DEBUG: No significant OCR text extracted for {file_path}.")
+                except Exception as ocr_e:
+                    print(f"ERROR: OCR processing failed for PDF {file_path}: {ocr_e}")
+                    text += f"\n[Warning: OCR failed for this PDF: {ocr_e}]"
+            else:
+                print(f"DEBUG: OCR or PDF2Image not available for {file_path}. Skipping OCR.")
+
             return text.strip()
         except Exception as e:
-            print(f"Error reading PDF {file_path}: {e}")
+            print(f"ERROR: Error reading PDF {file_path}: {e}")
             return f"Error reading PDF: {str(e)}"
     
     def _extract_from_docx(self, file_path: str) -> str:
@@ -197,8 +246,6 @@ class MultimediaProcessor:
     def _generate_image_description(self, file_path: str) -> str:
         """Generate description for image files with enhanced OCR text extraction"""
         try:
-            from PIL import Image
-            
             # Try OCR text extraction first
             extracted_text = self._extract_text_from_image(file_path)
             
@@ -224,33 +271,29 @@ class MultimediaProcessor:
         except Exception as e:
             return f"Image file - {Path(file_path).name}. Analysis error: {str(e)}"
     
-    def _generate_video_description(self, file_path: str) -> str:
+    def _generate_video_description(self, file_path: str, video_content: str) -> str:
         """Generate description for video files with frame extraction"""
         try:
             file_size = os.path.getsize(file_path)
             size_mb = file_size / (1024 * 1024)
             
-            video_text = self._extract_video_text(file_path)
-            
             description = f"Video file - {Path(file_path).name} ({size_mb:.1f}MB)."
             
-            if video_text and len(video_text.strip()) > 10:
-                word_count = len(video_text.split())
-                description += f" Extracted text from frames ({word_count} words): {video_text[:200]}{'...' if len(video_text) > 200 else ''}"
+            if video_content and len(video_content.strip()) > 10:
+                word_count = len(video_content.split())
+                description += f" Extracted text from frames and audio ({word_count} words): {video_content[:200]}{'...' if len(video_content) > 200 else ''}"
             else:
-                description += " Video processed, no readable text found in frames."
+                description += " Video processed, no readable text found in frames or audio."
                 
             return description
         except Exception as e:
             return f"Video file - {Path(file_path).name}. Could not analyze: {str(e)}"
     
-    def _generate_audio_description(self, file_path: str) -> str:
+    def _generate_audio_description(self, file_path: str, transcription: str) -> str:
         """Generate description for audio files with transcription"""
         try:
             file_size = os.path.getsize(file_path)
             size_mb = file_size / (1024 * 1024)
-            
-            transcription = self._transcribe_audio(file_path)
             
             description = f"Audio file - {Path(file_path).name} ({size_mb:.1f}MB)."
             
@@ -285,240 +328,148 @@ class MultimediaProcessor:
         
         return summary
     
-    def _extract_text_from_image(self, file_path: str) -> str:
+    def _image_to_base64(self, image_input: Any, max_size_kb: int = 1024) -> Optional[str]:
+        """Converts an image (file path or PIL Image) to a base64 string, resizing if necessary."""
+        if not Image:
+            return None
+        
+        img = None
+        if isinstance(image_input, str): # It's a file path
+            try:
+                img = Image.open(image_input)
+            except Exception as e:
+                print(f"Error opening image file {image_input}: {e}")
+                return None
+        elif isinstance(image_input, Image.Image): # It's a PIL Image object
+            img = image_input
+        else:
+            print(f"Invalid image_input type: {type(image_input)}")
+            return None
+
+        try:
+            # Convert to RGB if necessary (some models prefer RGB)
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+
+            # Check size and resize if too large
+            img_byte_arr = io.BytesIO()
+            img.save(img_byte_arr, format='JPEG')
+            
+            # Initial check
+            if img_byte_arr.tell() > max_size_kb * 1024:
+                # Resize logic: aim for a smaller dimension while maintaining aspect ratio
+                # and re-check size. Iterate if needed.
+                quality = 90
+                # Keep resizing until it fits or quality is too low
+                while img_byte_arr.tell() > max_size_kb * 1024 and quality >= 30: # Don't go below 30 quality
+                    width, height = img.size
+                    # Reduce dimensions by a factor, then try reducing quality
+                    if img_byte_arr.tell() > max_size_kb * 1024 * 2: # If still very large, reduce size more aggressively
+                        scale_factor = 0.7
+                    else:
+                        scale_factor = 0.9
+                    new_size = (int(width * scale_factor), int(height * scale_factor))
+                    img = img.resize(new_size, Image.Resampling.LANCZOS)
+                    
+                    img_byte_arr = io.BytesIO()
+                    img.save(img_byte_arr, format='JPEG', quality=quality)
+                    quality -= 10 # Reduce quality for next iteration
+
+            return base64.b64encode(img_byte_arr.getvalue()).decode('utf-8')
+        except Exception as e:
+            print(f"Error converting image to base64: {e}")
+            return None
+    
+    def _extract_text_from_image(self, image_input: Any) -> str: # Changed parameter name to image_input
         """Extract text from image using OCR with enhanced preprocessing"""
         if not OCR_AVAILABLE:
             return "OCR not available - install pytesseract and tesseract"
         
         try:
+            img = None
+            if isinstance(image_input, str): # It's a file path
+                img = Image.open(image_input)
+            elif isinstance(image_input, Image.Image): # It's a PIL Image object
+                img = image_input
+            else:
+                return "Invalid image input type for OCR"
+
+            # Convert to RGB if necessary
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
             
-            # Open and preprocess image for better OCR
-            with Image.open(file_path) as img:
-                # Convert to RGB if necessary
-                if img.mode != 'RGB':
-                    img = img.convert('RGB')
+            # Resize if image is too small or too large for optimal OCR
+            width, height = img.size
+            # Aim for a target DPI, e.g., 300 DPI for OCR. If original image is low res, upscale.
+            # Assuming 96 DPI as a common screen DPI for calculation.
+            target_dpi = 300
+            current_dpi = img.info.get('dpi', (96, 96))[0] # Get DPI from image info, default to 96
+            
+            if current_dpi < target_dpi:
+                scale_factor = target_dpi / current_dpi
+                new_size = (int(width * scale_factor), int(height * scale_factor))
+                img = img.resize(new_size, Image.Resampling.LANCZOS)
+                width, height = img.size # Update width, height after resize
+
+            # Further resize if image is still too small or too large after DPI adjustment
+            if width < 600 or height < 600: # Minimum reasonable size for good OCR
+                scale_factor = max(600/width, 600/height)
+                new_size = (int(width * scale_factor), int(height * scale_factor))
+                img = img.resize(new_size, Image.Resampling.LANCZOS)
+            elif width > 4000 or height > 4000: # Max reasonable size to prevent memory issues
+                scale_factor = min(4000/width, 4000/height)
+                new_size = (int(width * scale_factor), int(height * scale_factor))
+                img = img.resize(new_size, Image.Resampling.LANCZOS)
+            
+            # Convert to grayscale for better OCR
+            img = img.convert('L')
+            
+            # Apply noise reduction (more aggressive)
+            img = img.filter(ImageFilter.MedianFilter(size=5)) # Increased filter size
+            
+            # Enhance contrast and sharpness (more aggressive)
+            enhancer = ImageEnhance.Contrast(img)
+            img = enhancer.enhance(2.0) # Increased enhancement factor
+            enhancer = ImageEnhance.Sharpness(img)
+            img = enhancer.enhance(1.5) # Increased enhancement factor
+            
+            # Apply threshold to create binary image
+            img = ImageOps.autocontrast(img)
+            
+            # Try multiple OCR configurations
+            configs = [
+                r'--oem 3 --psm 6',  # Assume a single uniform block of text.
+                r'--oem 3 --psm 3',  # Default, based on page layout analysis.
+                r'--oem 3 --psm 1',  # Automatic page segmentation with OSD.
+                r'--oem 3 --psm 11', # Sparse text. Find as much text as possible in no particular order.
+                r'--oem 3 --psm 12', # Raw line. Treat the image as a single text line.
+            ]
+            
+            best_text = ""
+            for config in configs:
+                try:
+                    extracted_text = pytesseract.image_to_string(img, config=config)
+                    if len(extracted_text.strip()) > len(best_text.strip()):
+                        best_text = extracted_text
+                except Exception as e:
+                    print(f"OCR config '{config}' failed: {e}")
+                    continue
+            
+            # Clean up extracted text
+            if best_text:
+                lines = [line.strip() for line in best_text.split('\n') if line.strip()]
+                cleaned_text = '\n'.join(lines)
                 
-                # Resize if image is too small or too large
-                width, height = img.size
-                if width < 300 or height < 300:
-                    # Upscale small images
-                    scale_factor = max(300/width, 300/height)
-                    new_size = (int(width * scale_factor), int(height * scale_factor))
-                    img = img.resize(new_size, Image.Resampling.LANCZOS)
-                elif width > 3000 or height > 3000:
-                    # Downscale very large images
-                    scale_factor = min(3000/width, 3000/height)
-                    new_size = (int(width * scale_factor), int(height * scale_factor))
-                    img = img.resize(new_size, Image.Resampling.LANCZOS)
+                # Filter out very short or nonsensical results
+                if len(cleaned_text.strip()) < 5: # Increased minimum length
+                    return "Image contains minimal or no readable text"
                 
-                # Convert to grayscale for better OCR
-                img = img.convert('L')
-                
-                # Apply noise reduction
-                img = img.filter(ImageFilter.MedianFilter(size=3))
-                
-                # Enhance contrast and sharpness
-                enhancer = ImageEnhance.Contrast(img)
-                img = enhancer.enhance(1.5)
-                enhancer = ImageEnhance.Sharpness(img)
-                img = enhancer.enhance(1.2)
-                
-                # Apply threshold to create binary image
-                img = ImageOps.autocontrast(img)
-                
-                # Try multiple OCR configurations
-                configs = [
-                    r'--oem 3 --psm 6',  # Uniform block of text
-                    r'--oem 3 --psm 3',  # Fully automatic page segmentation
-                    r'--oem 3 --psm 1',  # Automatic page segmentation with OSD
-                    r'--oem 3 --psm 11', # Sparse text
-                ]
-                
-                best_text = ""
-                for config in configs:
-                    try:
-                        extracted_text = pytesseract.image_to_string(img, config=config)
-                        if len(extracted_text.strip()) > len(best_text.strip()):
-                            best_text = extracted_text
-                    except Exception:
-                        continue
-                
-                # Clean up extracted text
-                if best_text:
-                    lines = [line.strip() for line in best_text.split('\n') if line.strip()]
-                    cleaned_text = '\n'.join(lines)
-                    
-                    # Filter out very short or nonsensical results
-                    if len(cleaned_text.strip()) < 3:
-                        return "Image contains minimal or no readable text"
-                    
-                    return cleaned_text
-                else:
-                    return "No text detected in image"
+                return cleaned_text
+            else:
+                return "No text detected in image"
                 
         except ImportError:
             return "OCR dependencies missing"
         except Exception as e:
-            print(f"OCR extraction failed for {file_path}: {e}")
+            print(f"OCR extraction failed for {image_input}: {e}")
             return f"OCR failed: {str(e)}"
-    
-    def _transcribe_audio(self, file_path: str) -> str:
-        """Transcribe audio using Whisper with full unlimited transcription"""
-        if not WHISPER_AVAILABLE:
-            return "Whisper not available"
-        
-        try:
-            model = whisper.load_model("base")  # Use base model for better accuracy
-            result = model.transcribe(
-                file_path, 
-                language=None, 
-                task="transcribe",
-                verbose=False,
-                word_timestamps=True  # Enable word-level timestamps
-            )
-            
-            # Build full transcription with timestamps
-            if "segments" in result:
-                transcription_parts = []
-                for segment in result["segments"]:
-                    start_time = segment.get("start", 0)
-                    text = segment["text"].strip()
-                    if text:
-                        # Format timestamp as [MM:SS]
-                        minutes = int(start_time // 60)
-                        seconds = int(start_time % 60)
-                        timestamp = f"[{minutes:02d}:{seconds:02d}]"
-                        transcription_parts.append(f"{timestamp} {text}")
-                
-                return "\n".join(transcription_parts)
-            else:
-                return result["text"].strip()
-            
-        except ImportError:
-            return "Audio transcription not available"
-        except Exception as e:
-            print(f"Audio transcription failed: {e}")
-            return f"Audio transcription failed: {str(e)}"
-    
-    def _extract_video_text(self, file_path: str) -> str:
-        """Extract text from video frames using OCR and transcribe audio track"""
-        if not CV2_AVAILABLE:
-            return ""
-        
-        try:
-            cap = cv2.VideoCapture(file_path)
-            if not cap.isOpened():
-                return ""
-            
-            cap = cv2.VideoCapture(file_path)
-            if not cap.isOpened():
-                return ""
-            
-            fps = cap.get(cv2.CAP_PROP_FPS)
-            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            duration = total_frames / fps if fps > 0 else 0
-            
-            # For a 20-minute video (1200 seconds), extracting a frame every 5 seconds
-            # would be 1200/5 = 240 frames. Let's set a reasonable max.
-            # Max frames to process for OCR (e.g., 240 frames for a 20-min video at 5s interval)
-            max_frames_for_ocr = 240 
-            # Extract a frame every 'frame_sample_interval_seconds' seconds
-            frame_sample_interval_seconds = 5 
-            
-            frame_interval = max(int(fps * frame_sample_interval_seconds), 1) if fps > 0 else 1
-            
-            frame_texts = []
-            frame_count = 0
-            processed_ocr_frames = 0
-            
-            while frame_count < total_frames and processed_ocr_frames < max_frames_for_ocr:
-                ret, frame = cap.read()
-                if not ret:
-                    break
-                
-                if frame_count % frame_interval == 0:
-                    timestamp = frame_count / fps if fps > 0 else 0
-                    minutes = int(timestamp // 60)
-                    seconds = int(timestamp % 60)
-                    
-                    with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as temp_file:
-                        cv2.imwrite(temp_file.name, frame)
-                        
-                        if OCR_AVAILABLE:
-                            frame_text = self._extract_text_from_image(temp_file.name)
-                            if frame_text and len(frame_text.strip()) > 10 and not frame_text.startswith(("OCR", "No text", "Image")):
-                                frame_texts.append(f"[{minutes:02d}:{seconds:02d}] {frame_text.strip()}")
-                        
-                        os.unlink(temp_file.name)
-                    
-                    processed_ocr_frames += 1
-                
-                frame_count += 1
-            
-            cap.release()
-            
-            # Extract audio and transcribe
-            audio_transcription = ""
-            if WHISPER_AVAILABLE:
-                try:
-                    # Extract audio from video
-                    with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_audio:
-                        audio_path = temp_audio.name
-                    
-                    # Use ffmpeg via cv2 to extract audio (if available)
-                    import subprocess
-                    ffmpeg_command = ['ffmpeg', '-i', file_path, '-vn', '-acodec', 'pcm_s16le', '-ar', '16000', '-ac', '1', audio_path]
-                    print(f"DEBUG: Running FFmpeg command: {' '.join(ffmpeg_command)}")
-                    try:
-                        process = subprocess.run(
-                            ffmpeg_command,
-                            stdout=subprocess.PIPE, # Capture stdout
-                            stderr=subprocess.PIPE, # Capture stderr
-                            timeout=600, # Increased timeout to 10 minutes
-                            text=True # Decode stdout/stderr as text
-                        )
-                        
-                        print(f"DEBUG: FFmpeg process finished. Return code: {process.returncode}")
-                        print(f"DEBUG: FFmpeg stdout:\n{process.stdout}")
-                        print(f"DEBUG: FFmpeg stderr:\n{process.stderr}")
-
-                        if process.returncode != 0:
-                            print(f"FFmpeg audio extraction failed with error (return code {process.returncode}):\n{process.stderr}")
-                            audio_transcription = f"FFmpeg audio extraction failed: {process.stderr.strip()}"
-                        else:
-                            # Check if audio_path exists and has content
-                            if os.path.exists(audio_path) and os.path.getsize(audio_path) > 0:
-                                print(f"DEBUG: Temporary audio file created: {audio_path}, size: {os.path.getsize(audio_path)} bytes")
-                                audio_transcription = self._transcribe_audio(audio_path)
-                            else:
-                                print(f"ERROR: Temporary audio file {audio_path} was not created or is empty.")
-                                audio_transcription = "FFmpeg audio extraction failed: Temporary audio file not created or is empty."
-                        os.unlink(audio_path)
-                    except subprocess.TimeoutExpired:
-                        print(f"FFmpeg audio extraction timed out after 600 seconds for {file_path}")
-                        audio_transcription = "FFmpeg audio extraction timed out."
-                    except FileNotFoundError:
-                        print("FFmpeg command not found. Please ensure FFmpeg is installed and in your PATH.")
-                        audio_transcription = "FFmpeg not found. Cannot extract audio."
-                    except Exception as e:
-                        print(f"FFmpeg audio extraction failed: {e}")
-                        audio_transcription = f"FFmpeg audio extraction failed: {str(e)}"
-                except Exception as e:
-                    print(f"Audio extraction from video failed: {e}")
-            
-            # Combine frame text and audio transcription
-            result_parts = []
-            
-            if audio_transcription and len(audio_transcription.strip()) > 20:
-                result_parts.append(f"=== AUDIO TRANSCRIPTION ===\n{audio_transcription}")
-            
-            if frame_texts:
-                result_parts.append(f"\n=== TEXT FROM VIDEO FRAMES ===\n" + "\n".join(frame_texts))
-            
-            return "\n\n".join(result_parts) if result_parts else ""
-            
-        except ImportError:
-            return ""
-        except Exception as e:
-            print(f"Video text extraction failed: {e}")
-            return ""

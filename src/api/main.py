@@ -204,7 +204,7 @@ async def upload_asset(
         content = await file.read()
         buffer.write(content)
     
-    file_info = multimedia_processor.process_file(str(file_path))
+    file_info = await multimedia_processor.process_file(str(file_path))
     
     asset = Asset(
         filename=file.filename,
@@ -848,54 +848,84 @@ def _create_source_info(asset: Asset, file_info: dict) -> dict:
         source_info['timestamps'] = file_info['timestamps']
     return source_info
 
-def _build_file_context(assets: list, multimedia_processor: MultimediaProcessor) -> tuple[str, list]:
-    """Builds file context and extracts source information from assets."""
-    file_context = "\n\n=== STUDY MATERIALS ===\n"
+async def _build_file_context(assets: list, multimedia_processor: MultimediaProcessor) -> tuple[dict[str, any], list]:
+    """Builds file context and extracts source information from assets, including multimodal data."""
+    combined_context_data: dict[str, any] = {
+        'content': "",
+        'base64_images_list': [], # Changed to a list for multiple images
+        'base64_video_frames': []
+    }
     sources = []
-    max_context_tokens = 60000
-    current_tokens = 0
+    
+    # Max tokens for text content to avoid excessively large prompts
+    # Reducing this significantly to prevent context window overflow
+    max_text_content_chars = 1500 # Further reduced to roughly 375 tokens for safer multimodal LLM context
+    # Max number of images/video frames to send to LLM (Ollama LLaVA has limits)
+    max_visuals = 1 # Further reduced limit for visuals to prevent exceeding context window
     
     for asset in assets:
         try:
             if not asset or not asset.file_path:
+                print(f"WARNING: Skipping asset due to missing asset or file_path: {asset}")
                 continue
                 
             if hasattr(asset, '_processed_info'):
                 file_info = asset._processed_info
+                print(f"DEBUG: Using cached processed info for {asset.filename}")
             else:
-                file_info = multimedia_processor.process_file(asset.file_path)
+                print(f"DEBUG: Processing file {asset.filename} for context building.")
+                file_info = await multimedia_processor.process_file(asset.file_path)
                 if not file_info:
+                    print(f"WARNING: MultimediaProcessor returned no info for {asset.filename}. Skipping.")
                     continue
                 asset._processed_info = file_info
             
-            content_tokens = len(asset.content) // 4
+            # Append text content, truncating if necessary
+            if file_info.get('content') and len(combined_context_data['content']) < max_text_content_chars:
+                remaining_chars = max_text_content_chars - len(combined_context_data['content'])
+                if remaining_chars > 0:
+                    content_to_add = file_info['content']
+                    if len(content_to_add) > remaining_chars:
+                        content_to_add = content_to_add[:remaining_chars] + "\n[Content truncated due to size]"
+                        print(f"WARNING: Text content from {asset.filename} truncated for context.")
+                    combined_context_data['content'] += f"\n\n=== Content from {asset.filename} ===\n{content_to_add}"
+                else:
+                    print(f"WARNING: No space left for text content from {asset.filename} in combined context.")
             
-            if current_tokens + content_tokens > max_context_tokens:
-                remaining_tokens = max_context_tokens - current_tokens
-                if remaining_tokens > 100:
-                    truncated_content = asset.content[:remaining_tokens * 4]
-                    file_context += f"\n📄 **{asset.filename}** (truncated)\n"
-                    file_context += f"Content: {truncated_content}...\n"
-                    current_tokens = max_context_tokens
-                break
-            else:
-                file_context += f"\n📄 **{asset.filename}**\n"
-                file_context += f"Content: {asset.content}\n"
-                current_tokens += content_tokens
+            # Add base64 image if available, up to max_visuals limit
+            if file_info.get('base64_image') and len(combined_context_data['base64_images_list']) < max_visuals:
+                combined_context_data['base64_images_list'].append(file_info['base64_image'])
+                print(f"DEBUG: Added image from {asset.filename} to combined context.")
+            elif file_info.get('base64_image'):
+                print(f"WARNING: Max visuals limit reached. Skipping image from {asset.filename}.")
             
-            file_context += "---\n"
+            # Add base64 video frames, up to max_visuals limit
+            if file_info.get('base64_video_frames'):
+                num_frames_to_add = min(len(file_info['base64_video_frames']), max_visuals - len(combined_context_data['base64_images_list']) - len(combined_context_data['base64_video_frames']))
+                if num_frames_to_add > 0:
+                    combined_context_data['base64_video_frames'].extend(file_info['base64_video_frames'][:num_frames_to_add])
+                    print(f"DEBUG: Added {num_frames_to_add} video frames from {asset.filename} to combined context.")
+                else:
+                    print(f"WARNING: Max visuals limit reached. Skipping video frames from {asset.filename}.")
             
             source_info = _create_source_info(asset, file_info)
             if source_info:
                 sources.append(source_info)
+                print(f"DEBUG: Created source info for {asset.filename}.")
                 
         except (FileNotFoundError, PermissionError, OSError) as e:
-            print(f"File access error for {asset.filename}: {e}")
+            print(f"ERROR: File access error for {asset.filename}: {e}")
+            # Optionally, add a placeholder error message to the content or sources
+            combined_context_data['content'] += f"\n\n=== Error processing {asset.filename} ===\n[File access error: {e}]"
+            sources.append({"filename": asset.filename, "error": f"File access error: {e}"})
             continue
         except Exception as e:
-            print(f"Unexpected error processing {asset.filename}: {e}")
+            print(f"ERROR: Unexpected error processing {asset.filename}: {e}")
+            combined_context_data['content'] += f"\n\n=== Error processing {asset.filename} ===\n[Unexpected error: {e}]"
+            sources.append({"filename": asset.filename, "error": f"Unexpected error: {e}"})
             continue
-    return file_context, sources
+    
+    return combined_context_data, sources
 
 def _get_system_prompt(tutor: str, mode: str, language: str, find_what_i_need: bool = False) -> str:
     """Generates the system prompt based on tutor, mode, and language."""
@@ -909,14 +939,14 @@ def _get_system_prompt(tutor: str, mode: str, language: str, find_what_i_need: b
     
     if tutor == "enola" and mode == "explanation":
         if find_what_i_need:
-            return f"""You are Enola, a friendly and enthusiastic AI tutor who specializes in finding specific information within provided documents.{language_instruction}
+            return f"""You are Enola, a friendly and enthusiastic AI tutor who specializes in finding specific information within provided documents. You have been provided with the content of the attached files. {language_instruction}
 
 **Your role:**
 • Directly address the user's request to "find what I need"
-• Search through the attached files for the specific information requested in the user's message.
+• Search through the *provided content from the attached files* for the specific information requested in the user's message.
 • Clearly outline where the information was found (e.g., "In file 'document.pdf', on page 3, it states...")
 • Provide the relevant information concisely.
-• If the information is not found, state that clearly.
+• If the information is not found in the *provided content*, state that clearly.
 • Be helpful and precise.
 
 **CRITICAL FORMATTING REQUIREMENTS (Format like Amazon Q):**
@@ -930,6 +960,7 @@ def _get_system_prompt(tutor: str, mode: str, language: str, find_what_i_need: b
 • Use numbered lists for sequential steps
 • Use > blockquotes for important notes or tips
 • Structure: Heading → Brief intro → Sections with subheadings → Lists → Examples
+• For mathematical content, use LaTeX syntax: `$...$` for inline math and `$$...$$` for display math.
 
 **Example format:**
 ## Information Found on [Topic]
@@ -945,10 +976,10 @@ I found the following information regarding [topic] in your attached files:
 
 Would you like me to elaborate on any of these points or search for something else? 😊"""
         else:
-            return f"""You are Enola, a friendly and enthusiastic AI tutor who specializes in explanations.{language_instruction}
+            return f"""You are Enola, a friendly and enthusiastic AI tutor who specializes in explanations. You have been provided with the content of the attached files. {language_instruction}
 
 **Your role:**
-• START with concepts from the uploaded files as your foundation
+• START with concepts from the *provided content of the attached files* as your foundation
 • EXPAND and enhance these concepts with additional knowledge and context
 • Provide deeper explanations, real-world examples, and practical applications
 • Connect file concepts to broader knowledge and current developments
@@ -977,6 +1008,7 @@ When user asks to "transcribe" or wants "full transcript" or "complete transcrip
 • Use numbered lists for sequential steps
 • Use > blockquotes for important notes or tips
 • Structure: Heading → Brief intro → Sections with subheadings → Lists → Examples
+• For mathematical content, use LaTeX syntax: `$...$` for inline math and `$$...$$` for display math.
 
 **Example format:**
 ## Understanding [Concept]
@@ -1079,17 +1111,18 @@ Please provide these details so I can create the perfect test for you! 📚
         • If in 'testing' mode, guide the user towards quiz generation.
         • Always reference which parts come from the files vs. your additional insights.
         
-        **CRITICAL FORMATTING REQUIREMENTS (Format like Amazon Q):**
-        • Start with a clear ## heading for the main topic
-        • Use **bold** for important terms and key concepts
-        • Use bullet points (•) for lists with proper spacing
-        • Add emojis occasionally to make content engaging (📚 🎯 💡 ✨)
-        • Use short paragraphs (2-3 sentences) with blank lines between them
-        • Use ### subheadings to break content into sections
-        • Add line breaks generously - never create walls of text
-        • Use numbered lists for sequential steps
-        • Use > blockquotes for important notes or tips
-        • Structure: Heading → Brief intro → Sections with subheadings → Lists → Examples
+**CRITICAL FORMATTING REQUIREMENTS (Format like Amazon Q):**
+• Start with a clear ## heading for the main topic
+• Use **bold** for important terms and key concepts
+• Use bullet points (•) for lists with proper spacing
+• Add emojis occasionally to make content engaging (📚 🎯 💡 ✨)
+• Use short paragraphs (2-3 sentences) with blank lines between them
+• Use ### subheadings to break content into sections
+• Add line breaks generously - never create walls of text
+• Use numbered lists for sequential steps
+• Use > blockquotes for important notes or tips
+• Structure: Heading → Brief intro → Sections with subheadings → Lists → Examples
+• For mathematical content, use LaTeX syntax: `$...$` for inline math and `$$...$$` for display math.
 
 **Example format:**
 ## Understanding [Concept]
@@ -1109,11 +1142,14 @@ Would you like me to explain any part in more detail? 😊"""
 
 def _generate_chat_title(message: str, attached_files: list, user_assets: list) -> str:
     """Generates a chat title based on the message and attached files."""
-    if attached_files:
-        filenames = [Path(f).stem for f in attached_files]
+    valid_attached_files = [f for f in attached_files if f is not None]
+    valid_user_assets = [asset for asset in user_assets if asset and asset.filename is not None]
+
+    if valid_attached_files:
+        filenames = [Path(f).stem for f in valid_attached_files]
         return f"Chat about {', '.join(filenames[:2])}"
-    elif user_assets:
-        filenames = [Path(asset.filename).stem for asset in user_assets]
+    elif valid_user_assets:
+        filenames = [Path(asset.filename).stem for asset in valid_user_assets]
         return f"Chat about {', '.join(filenames[:2])}"
     else:
         return message[:50] + "..." if len(message) > 50 else message
@@ -1153,20 +1189,29 @@ async def simple_chat(
         no_files_response = _get_no_files_response(tutor)
         return {"response": no_files_response, "sources": [], "requires_files": True}
     
-    file_context, sources = _build_file_context(user_assets, multimedia_processor)
+    file_context, sources = await _build_file_context(user_assets, multimedia_processor)
     
-    system_prompt = _get_system_prompt(tutor, mode, language, find_what_i_need)
-    context_instruction = f"\n\n**TASK:** Answer '{message}' using the provided materials. Be comprehensive but concise."
-    
-    base_prompt = f"{system_prompt}\n{file_context}{context_instruction}\n\nQ: {message}\nA:"
-    
-    if len(base_prompt) > 60000:
-        truncated_context = file_context[:50000] + "\n[Content truncated for processing]\n"
-        base_prompt = f"{system_prompt}\n{truncated_context}{context_instruction}\n\nQ: {message}\nA:"
+    # The system prompt and context instruction should be handled within llm_service.py
+    # The simple_chat endpoint should primarily pass the user's message and the file context.
     
     print(f"DEBUG: Calling llm_service.generate_response from simple_chat. LLMService instance: {id(llm_service)}, initialized: {llm_service.initialized}, configured_provider_order: {llm_service.providers_order}")
     try:
-        response = await llm_service.generate_response(base_prompt)
+        # Pass the user's message as the prompt, and the full file_context (including multimodal data)
+        # along with system prompt details as a dictionary to the context parameter.
+        response = await llm_service.generate_response(
+            prompt=message,
+            context={
+                "content": file_context.get('content', ''),
+                "base64_images_list": file_context.get('base64_images_list', []),
+                "base64_video_frames": file_context.get('base64_video_frames', []),
+                "system_prompt_details": {
+                    "tutor": tutor,
+                    "mode": mode,
+                    "language": language,
+                    "find_what_i_need": find_what_i_need
+                }
+            }
+        )
     except Exception as e:
         print(f"Error generating LLM response: {e}")
         raise HTTPException(status_code=500, detail=f"Error generating AI response: {str(e)}")

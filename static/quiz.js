@@ -198,9 +198,10 @@ export function displayQuiz(quizData) {
       quizHtml += "</div>";
     });
   } else {
+    const errorMessage = quizData.error || "No questions were generated for this quiz. Please try again with different settings or content.";
     quizHtml += `
       <div class="quiz-question">
-        <div class="question-text">No questions were generated for this quiz. Please try again with different settings or content.</div>
+        <div class="question-text">${errorMessage}</div>
       </div>
     `;
   }

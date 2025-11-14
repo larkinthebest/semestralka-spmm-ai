@@ -140,8 +140,17 @@ class DocumentProcessor:
         
         # Convert display $$...$$ to \[...\]
         text = re.sub(r'\$\$(.*?)\$\$', r'\\[\1\\]', text)
+
+        # Handle common OCR errors for mathematical notation
+        # 1. Replace 'a' with 'x' in derivative contexts (heuristic)
+        text = re.sub(r'(\d+)?a([\'"]+)\s*\(t\)', r'\1x\2(t)', text)
+        text = re.sub(r'a([\'"]+)\s*\(t\)', r'x\1(t)', text) # For x'(t), x''(t)
         
-        # Ensure common environments are properly delimited if not already
+        # 2. Replace '**' with '^{' and '}' for superscripts
+        # This is a more complex heuristic. We'll look for patterns like 'e**3t' and convert to 'e^{3t}'
+        text = re.sub(r'([a-zA-Z0-9])\*\*([a-zA-Z0-9]+)', r'\1^{\2}', text)
+        
+        # 3. Ensure common environments are properly delimited if not already
         # This is a more complex task and might require a dedicated LaTeX parser for full robustness.
         # For now, we'll focus on common delimiters.
         

@@ -23,7 +23,7 @@ MANIFEST
 
 # Virtual Environment
 venv/
-
+env/
 ENV/
 .venv/
 
@@ -64,7 +64,7 @@ Thumbs.db
 logs/
 
 # Environment variables
-
+.env
 .venv
 .env.local
 .env.development.local
@@ -76,6 +76,7 @@ logs/
 *.temp
 temp/
 tmp/
+tests/
 
 # Cache directories
 .cache/

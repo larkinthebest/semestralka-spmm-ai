@@ -20,7 +20,8 @@ import {
   getFileIcon,
   showDeleteConfirm,
   closeModal,
-  previewFile
+  previewFile,
+  showRenamePrompt
 } from "./ui.js";
 import { updateAssetSelectionUI, updateAttachedFilesDisplay, removeAttachedFile, addFilesToAssets, dragAsset, toggleChatAssetSelection, getAttachedFiles, setupDragAndDrop, loadAssetsIntoMainframe } from "./assets.js"; // Import setupDragAndDrop and loadAssetsIntoMainframe
 import { displayQuiz, hideQuiz, generateQuiz } from "./quiz.js";
@@ -85,37 +86,20 @@ export async function addNewChat() {
  * @returns {Promise<void>}
  */
 export async function renameChat(chatId) {
-  const modal = document.getElementById("renameModal");
-  const input = document.getElementById("renameInput");
   const chatItem = document.querySelector(
     `[data-chat-id="${chatId}"] span`
   );
+  if (!chatItem) return;
 
-  if (input && modal && chatItem) {
-    input.value = chatTitles[chatId] || chatItem.textContent; // Use chatTitles for current name
-    modal.style.display = "block";
-    modal.setAttribute("data-chat-id", chatId);
-  }
-}
+  const currentName = chatTitles[chatId] || chatItem.textContent;
+  const newName = await showRenamePrompt(`Rename chat "${currentName}":`, currentName);
 
-/**
- * Confirms the chat rename operation and sends the new title to the backend.
- * @returns {Promise<void>}
- */
-export async function confirmRename() {
-  const modal = document.getElementById("renameModal");
-  const chatId = modal ? parseInt(modal.getAttribute("data-chat-id")) : null;
-  const newName = document.getElementById("renameInput") ? document.getElementById("renameInput").value : "";
-
-  if (newName.trim() && chatId) {
+  if (newName && newName.trim() !== "" && newName.trim() !== currentName) {
     try {
-      await renameChatApi(chatId, newName);
-      const chatItem = document.querySelector(
-        `[data-chat-id="${chatId}"] span`
-      );
+      await renameChatApi(chatId, newName.trim());
       if (chatItem) {
-        chatItem.textContent = newName;
-        updateChatTitle(chatId, newName);
+        chatItem.textContent = newName.trim();
+        updateChatTitle(chatId, newName.trim());
         showNotification("Chat renamed successfully!", "success");
       }
     } catch (error) {
@@ -123,6 +107,13 @@ export async function confirmRename() {
       showNotification(error.message || "Failed to rename chat.", "error");
     }
   }
+}
+
+// The confirmRename function is no longer needed as showRenamePrompt handles confirmation internally.
+// Keeping it as a placeholder or removing it based on overall refactoring.
+export function confirmRename() {
+  // This function is deprecated as renameChat now uses showRenamePrompt directly.
+  // The renameModal is no longer used for chat renaming.
   closeModal("renameModal");
 }
 
@@ -353,131 +344,142 @@ export async function sendMessage() {
   addMessage(messageContent, "user", currentTutor, attachmentHtml);
   if (input) input.value = "";
 
-  const chatKey = `${currentChatId}_${currentMode}`;
-  addMessageToChatModeHistory(chatKey, {
-    type: "user",
-    content: messageContent,
-    attachments: attachmentHtml,
-  });
+    const chatKey = `${currentChatId}_${currentMode}`;
+    addMessageToChatModeHistory(chatKey, {
+      type: "user",
+      content: messageContent,
+      attachments: attachmentHtml,
+    });
 
-  setChatModeHistory(JSON.parse(JSON.stringify(chatModeHistory))); // Trigger reactivity for chatModeHistory
-
-  let suggestedTitle = null;
-  let botResponseContent = "";
-  let quizData = null;
-  let sourcesData = null;
-
-  try {
-    if (currentMode === "testing" && currentTutor === "franklin") {
-      const quizResult = await generateQuiz(message, allAvailableFiles); // generateQuiz now returns data
-      if (quizResult) {
-        quizData = quizResult;
-        botResponseContent = `Generated a quiz on ${quizResult.title || message || "general topics"}.`;
-        if (quizResult.title) { // Use quizResult.title as suggested_title
-          suggestedTitle = quizResult.title;
-        }
-        if (quizResult.sources) { // If quizResult includes sources, use them
-          sourcesData = quizResult.sources;
-        }
-      }
-      // Clear attached files after quiz generation
-      getAttachedFiles().length = 0;
-      updateAttachedFilesDisplay();
-    } else if (isEnolaFindRequest) {
-      // Handle "Enola, find what I need" request
-      const data = await simpleChatApi({
-        message: message,
-        mode: currentMode,
-        tutor: currentTutor,
-        chat_id: currentChatId,
-        attached_files: allAvailableFiles,
-        language: currentLanguage,
-        find_what_i_need: true, // Indicate this is a "find what I need" request
-      });
-
-      if (data.requires_files) {
-        showNotification("Please upload files first!", "warning");
-        removeLoadingMessage();
-        return;
-      }
-
-      botResponseContent = data.response;
-      if (data.suggested_title) {
-        suggestedTitle = data.suggested_title;
-      }
-      if (data.sources) {
-        sourcesData = data.sources;
-      }
-    }
-    else {
-      const data = await simpleChatApi({
-        message: message,
-        mode: currentMode,
-        tutor: currentTutor,
-        chat_id: currentChatId,
-        attached_files: allAvailableFiles,
-        language: currentLanguage,
-      });
-
-      if (data.requires_files) {
-        showNotification("Please upload files first!", "warning");
-        removeLoadingMessage();
-        return;
-      }
-
-      botResponseContent = data.response;
-      if (data.suggested_title) {
-        suggestedTitle = data.suggested_title;
-      }
-      if (data.sources) {
-        sourcesData = data.sources;
-      }
-    }
-
-    removeLoadingMessage();
-    addMessage(botResponseContent, "bot", currentTutor);
-
-    const messageHistoryEntry = {
-      type: "bot",
-      content: botResponseContent,
-    };
-    if (quizData) {
-      messageHistoryEntry.quizData = quizData;
-    }
-    addMessageToChatModeHistory(chatKey, messageHistoryEntry);
     setChatModeHistory(JSON.parse(JSON.stringify(chatModeHistory))); // Trigger reactivity for chatModeHistory
 
-    // Apply suggested title if available
-    if (suggestedTitle) {
-      const chatItem = document.querySelector(
-        `[data-chat-id="${currentChatId}"] span`
-      );
-      if (
-        chatItem &&
-        (chatItem.textContent === "New Chat" ||
-          chatItem.textContent.startsWith("New Chat"))
-      ) {
-        let uniqueTitle = suggestedTitle;
-        let counter = 1;
-        while (Object.values(chatTitles).includes(uniqueTitle)) {
-          uniqueTitle = `${suggestedTitle} (${counter})`;
-          counter++;
+    let suggestedTitle = null;
+    let botResponseContent = "";
+    let quizData = null;
+    let sourcesData = null;
+
+    try {
+      if (currentMode === "testing" && currentTutor === "franklin") {
+        const quizResult = await generateQuiz(message, allAvailableFiles); // generateQuiz now returns data
+        if (quizResult) {
+          quizData = quizResult;
+          botResponseContent = `Generated a quiz on ${quizResult.title || message || "general topics"}.`;
+          if (quizResult.title) { // Use quizResult.title as suggested_title
+            suggestedTitle = quizResult.title;
+          }
+          if (quizResult.sources) { // If quizResult includes sources, use them
+            sourcesData = quizResult.sources;
+          }
         }
-        if (chatItem) chatItem.textContent = uniqueTitle;
-        updateChatTitle(currentChatId, uniqueTitle);
+        // Clear attached files after quiz generation
+        getAttachedFiles().length = 0;
+        updateAttachedFilesDisplay();
+      } else if (isEnolaFindRequest) {
+        // Handle "Enola, find what I need" request
+        const data = await simpleChatApi({
+          message: message,
+          mode: currentMode,
+          tutor: currentTutor,
+          chat_id: currentChatId,
+          attached_files: allAvailableFiles,
+          language: currentLanguage,
+          find_what_i_need: true, // Indicate this is a "find what I need" request
+        });
+
+        if (data.requires_files) {
+          showNotification("Please upload files first!", "warning");
+          removeLoadingMessage();
+          return;
+        }
+
+        botResponseContent = data.response;
+        if (data.suggested_title) {
+          suggestedTitle = data.suggested_title;
+        }
+        if (data.sources) {
+          sourcesData = data.sources;
+        }
       }
-    }
+      else {
+        const data = await simpleChatApi({
+          message: message,
+          mode: currentMode,
+          tutor: currentTutor,
+          chat_id: currentChatId,
+          attached_files: allAvailableFiles,
+          language: currentLanguage,
+        });
 
-    if (sourcesData) {
-      updateChatSources(currentChatId, sourcesData);
-    }
+        if (data.requires_files) {
+          showNotification("Please upload files first!", "warning");
+          removeLoadingMessage();
+          return;
+        }
 
-    saveChatToDatabase();
-  } catch (error) {
-    removeLoadingMessage();
-    addMessage("Sorry, I encountered an error. Please try again.", "bot", currentTutor);
-    showNotification(error.message || "Error sending message.", "error");
-  }
+        botResponseContent = data.response;
+        if (data.suggested_title) {
+          suggestedTitle = data.suggested_title;
+        }
+        if (data.sources) {
+          sourcesData = data.sources;
+        }
+      }
+
+      removeLoadingMessage();
+      addMessage(botResponseContent, "bot", currentTutor);
+
+      const messageHistoryEntry = {
+        type: "bot",
+        content: botResponseContent,
+      };
+      if (quizData) {
+        messageHistoryEntry.quizData = quizData;
+      }
+      addMessageToChatModeHistory(chatKey, messageHistoryEntry);
+      setChatModeHistory(JSON.parse(JSON.stringify(chatModeHistory))); // Trigger reactivity for chatModeHistory
+
+      // Apply suggested title if available
+      if (suggestedTitle) {
+        const chatItem = document.querySelector(
+          `[data-chat-id="${currentChatId}"] span`
+        );
+        if (
+          chatItem &&
+          (chatItem.textContent === "New Chat" ||
+            chatItem.textContent.startsWith("New Chat"))
+        ) {
+          let uniqueTitle = suggestedTitle;
+          let counter = 1;
+          while (Object.values(chatTitles).includes(uniqueTitle)) {
+            uniqueTitle = `${suggestedTitle} (${counter})`;
+            counter++;
+          }
+          if (chatItem) chatItem.textContent = uniqueTitle;
+          updateChatTitle(currentChatId, uniqueTitle);
+        }
+      }
+
+      // Explicitly update chatSources with all currently attached assets
+      // This ensures that assets dragged and dropped (and thus in chatAttachedAssets)
+      // are reflected in the sources panel, even if the API response doesn't explicitly return them.
+      const currentAttachedAssets = chatAttachedAssets[currentChatId] || [];
+      const newSources = currentAttachedAssets.map(filename => ({
+        title: filename,
+        created_at: new Date().toISOString() // Use current time for newly attached sources
+      }));
+      updateChatSources(currentChatId, newSources);
+
+
+      saveChatToDatabase();
+      
+      // Clear attached files from the message input after sending
+      attachedFiles.length = 0; // Directly modify the array from assets.js
+      updateAttachedFilesDisplay();
+    } catch (error) {
+      removeLoadingMessage();
+      addMessage("Sorry, I encountered an error. Please try again.", "bot", currentTutor);
+      showNotification(error.message || "Error sending message.", "error");
+    }
 }
 
 /**
@@ -485,15 +487,30 @@ export async function sendMessage() {
  * @returns {Promise<void>}
  */
 export async function loadChatsFromDatabase() {
+  const chatList = document.getElementById("chatList");
+  if (!chatList) {
+    console.error("Chat list element not found during loadChatsFromDatabase!");
+    return;
+  }
+  chatList.innerHTML = '<div class="no-chats-message">Loading chats...</div>'; // Add a loading message
+
+  const accessToken = localStorage.getItem("access_token");
+  if (!accessToken) {
+    chatList.innerHTML = `<div class="no-chats-message">${translations[currentLanguage].newChat}</div>`; // Display "New Chat" for unauthenticated users
+    // For unauthenticated users, we still want to ensure a default chat exists
+    // This will create a new chat with ID 1 if no chats are loaded.
+    setCurrentChatId(1);
+    setCurrentMode("explanation");
+    setCurrentTutor("enola");
+    updateTutorDisplay();
+    updateModeDisplay();
+    loadModeHistory();
+    return;
+  }
+
   try {
     const data = await loadChatsFromDatabaseApi();
-    const chatList = document.getElementById("chatList");
-
-    if (!chatList) {
-      console.error("Chat list element not found during loadChatsFromDatabase!");
-      return;
-    }
-    chatList.innerHTML = "";
+    chatList.innerHTML = ""; // Clear loading message if data is fetched
 
     if (data.length > 0) {
       data.forEach((chat, index) => {
@@ -534,11 +551,15 @@ export async function loadChatsFromDatabase() {
 
       setChatCounter(Math.max(...data.map((c) => c.chat_id)));
     } else {
+      // If no chats are returned from API, create a new one
       await addNewChat();
     }
   } catch (error) {
     console.error("DEBUG: Error loading chats:", error);
+    chatList.innerHTML = `<div class="no-chats-message">Error loading chats.</div>`;
     showNotification(`Error loading chats: ${error.message}`, "error");
+    // If there's an error (e.g., network issue after auth check), still try to create a new chat
+    // to ensure the UI is not empty. This addNewChat will also handle auth internally.
     await addNewChat();
   }
 }

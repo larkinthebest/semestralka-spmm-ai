@@ -290,7 +290,7 @@ export const translations = {
 import { loadTheme, updateThemeToggleIcon, showNotification, previewFile, closeModal, toggleTheme } from './ui.js';
 import { addNewChat, switchToChat, loadModeHistory, saveChatToDatabase, loadChatsFromDatabase, handleKeyPress, renameChat, confirmRename, deleteChat, sendMessage } from './chat.js';
 import { setupDragAndDrop, handleFileUpload, addAsset, attachFile, loadAssetsIntoMainframe, dragAsset, toggleChatAssetSelection, renameAsset, deleteAsset, removeAttachedFile } from './assets.js';
-import { openUserProfile, loadProfileChats, loadProfileAssets, loadProfileQuizHistory, switchToChatFromProfile, previewQuizResult } from './profile.js';
+import { loadProfileChats, loadProfileAssets, loadProfileQuizHistory, switchToChatFromProfile, previewQuizResult } from './profile.js'; // Removed openUserProfile import
 import { selectQuizOption, nextQuestion, previousQuestion, submitQuiz, updateQuizAnswer } from './quiz.js';
 
 
@@ -342,7 +342,7 @@ window.submitQuiz = submitQuiz;
 window.updateQuizAnswer = updateQuizAnswer;
 
 // Functions from profile.js
-window.openUserProfile = openUserProfile;
+// window.openUserProfile = openUserProfile; // Removed this line as profile.js now exposes it directly
 window.loadProfileChats = loadProfileChats;
 window.loadProfileAssets = loadProfileAssets;
 window.loadProfileQuizHistory = loadProfileQuizHistory;
@@ -630,6 +630,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     loadModeHistory();
+
+    // Debugging: Check if openUserProfile is available
+    if (typeof window.openUserProfile === 'function') {
+      console.log("DEBUG: window.openUserProfile is available.");
+    } else {
+      console.error("DEBUG: window.openUserProfile is NOT available!");
+    }
+
   } catch (error) {
     console.error("Error during DOMContentLoaded initialization:", error);
     const body = document.body;

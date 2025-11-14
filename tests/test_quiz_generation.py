@@ -235,9 +235,9 @@ async def test_generate_quiz_api_integration(test_client, db_session, mock_curre
         "language": "en"
     }
 
-    # Mock get_current_user_optional to return our mock_current_user
-    from src.core.auth import get_current_user_optional
-    app.dependency_overrides[get_current_user_optional] = lambda: mock_current_user
+    # Mock get_current_user to return our mock_current_user
+    from src.core.auth import get_current_user
+    app.dependency_overrides[get_current_user] = lambda: mock_current_user
 
     response = test_client.post("/quizzes/generate", json=quiz_request_data)
     app.dependency_overrides = {} # Clear overrides
@@ -252,10 +252,8 @@ async def test_generate_quiz_api_integration(test_client, db_session, mock_curre
     
     question = response_data["questions"][0]
     assert "question_text" in question
-    # The LLM might sometimes deviate from the requested quiz_type.
-    # For this integration test, we'll assert it's one of the expected types.
-    # In a real application, more robust LLM response validation/correction might be needed.
-    assert question["question_type"] in ["multiple_choice", "true_false", "fill_in_the_blank"]
+    # With improved LLM prompt adherence, we can now assert the exact quiz_type.
+    assert question["question_type"] == quiz_request_data["quiz_type"]
     
     if question["question_type"] == "multiple_choice":
         assert "options" in question
@@ -292,8 +290,8 @@ async def test_generate_quiz_api_endpoint_no_files_integration(test_client, db_s
         "difficulty": "easy",
         "language": "en"
     }
-    from src.core.auth import get_current_user_optional
-    app.dependency_overrides[get_current_user_optional] = lambda: mock_current_user
+    from src.core.auth import get_current_user
+    app.dependency_overrides[get_current_user] = lambda: mock_current_user
 
     response = test_client.post("/quizzes/generate", json=quiz_request_data)
     app.dependency_overrides = {} # Clear overrides
@@ -311,8 +309,8 @@ async def test_generate_quiz_api_endpoint_no_relevant_assets_integration(test_cl
         "difficulty": "easy",
         "language": "en"
     }
-    from src.core.auth import get_current_user_optional
-    app.dependency_overrides[get_current_user_optional] = lambda: mock_current_user
+    from src.core.auth import get_current_user
+    app.dependency_overrides[get_current_user] = lambda: mock_current_user
 
     response = test_client.post("/quizzes/generate", json=quiz_request_data)
     app.dependency_overrides = {} # Clear overrides
